@@ -73,7 +73,7 @@ def source_files(root):
                 raise ReleaseError('Not an ordinary source file: ' + rel)
             files[rel] = {'sha256': sha(path), 'executable': bool(path.stat().st_mode & 0o111)}
     for required in ('VERSION', 'LICENSE', 'README.MD', 'Makefile', 'src/main.c',
-                     'tools/release.py', 'public-web/index.html', 'SDK/README.MD'):
+                     'tools/release.py', 'public-web/index.php', 'public-web/inc/releases.php', 'SDK/README.MD'):
         if required not in files:
             raise ReleaseError('Missing source input: ' + required)
     return dict(sorted(files.items()))

@@ -172,13 +172,13 @@ class ReleaseTests(unittest.TestCase):
                 'github':self.config['github'],'files':files}
 
     def test_source_inventory_excludes_local_and_generated_inputs(self):
-        required=('LICENSE','README.MD','Makefile','src/main.c','tools/release.py','public-web/index.html','SDK/README.MD')
+        required=('LICENSE','README.MD','Makefile','src/main.c','tools/release.py','public-web/index.php','public-web/inc/releases.php','SDK/README.MD')
         for name in required:
             path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('public')
         for name in ('work/private','outputs/archive.zip','src/main.o','AGENTS.md'):
             path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('local')
         files=support.source_files(self.root)
-        self.assertIn('public-web/index.html',files)
+        self.assertIn('public-web/index.php',files)
         self.assertFalse(any(name in files for name in ('work/private','outputs/archive.zip','src/main.o','AGENTS.md')))
         (self.root/'credential.key').write_text('private')
         with self.assertRaises(support.ReleaseError):support.source_files(self.root)

@@ -1,58 +1,73 @@
 # AmiHASS project website
 
-A buildless, responsive static site for https://amihass.retrocs.org.
-No dependencies, analytics, remote fonts, credentials or backend are required.
+A PHP website for https://amihass.retrocs.org. The dark design, real AmigaOS
+screenshots and separate app/SDK download sections need no JavaScript.
 
-Preview from this directory with `python3 -m http.server 8080` and open
-http://localhost:8080. Deploy the contents of this directory to static hosting.
-Publication is managed separately. The screenshot gallery shows actual AmigaOS
-application windows; there are no simulated application controls on the page.
-GitHub links target the project URLs supplied by the maintainer. Availability
-of a published repository or release is managed separately.
+## Hosting and preview
 
-## Automatic releases
+Use PHP 8.1 or newer with HTTPS access to api.github.com. The PHP cURL extension
+is recommended. The fallback needs allow_url_fopen, the HTTPS stream wrapper and
+OpenSSL. Configure working server CA certificates; TLS verification stays enabled.
+No database, GitHub token, frontend build or scheduled job is required.
+These web-server requirements are separate from curl/AmiSSL on the Amiga.
 
-`releases.js` reads the public GitHub REST API for `retrocs-org/amihass`.
-The latest stable release comes from `/releases/latest`; `/releases?per_page=20`
-supplies recent history. Drafts and prereleases are excluded. Version tags,
-published dates, uploaded ZIP/LHA archives, sizes and per-asset download counts
-come from GitHub. Matching `.sha256` or `.sha256sum` attachments are linked when
-present. Source archive links use the exact release tag. SDK archives are shown
-when attached as a separate SDK ZIP, below the main application downloads.
-Use the All releases link for history beyond the 20 most recent releases.
+From the repository root:
 
-No token, server, build step or scheduled job is needed. Successful metadata is
-cached in the visitor's browser for 15 minutes; visible pages refresh on that
-interval and when revisited. There is no manual Refresh control. Requests time
-out after 10 seconds. Offline/rate-limited requests may use cached metadata for
-up to 24 hours, clearly marked with its timestamp. No download counts are
-invented. Missing repositories/releases show “AmiHASS hasn’t been released yet.”
-Only published GitHub releases provide download links. Network failures show
-a separate availability error. JavaScript-disabled browsers can follow the
-GitHub releases link.
+```sh
+php -S 127.0.0.1:8765 -t public-web
+```
 
-When the repository is ready, publish a stable release and attach the app archive
-and matching checksum. The website will pick it up without changing its code.
-The public website remains `https://amihass.retrocs.org/`; the source repository
-is `https://github.com/retrocs-org/amihass`. No deployment is performed by these
-files. If a hosting Content-Security-Policy is added, permit browser connections
-to `https://api.github.com` and downloads/links to `https://github.com`.
+Open http://127.0.0.1:8765/. A Python static server cannot run this site.
+Upload the contents of public-web to a PHP-enabled web root. Make index.php the
+default document; the included .htaccess sets this for Apache. Remove any old
+index.html, releases.js and app.js from the deployed copy so an earlier static
+page cannot override PHP. Static-only hosts such as GitHub Pages cannot run it.
+Publication is managed separately; changing these files does not deploy the site.
 
-Run `node tests/test_web_releases.cjs` from the repository root to test fixture
-responses without requiring a published repository. The site uses text nodes
-for release metadata and restricts remote links to this GitHub repository.
+## Automatic GitHub releases
 
-## Page structure
+inc/releases.php requests the public retrocs-org/amihass repository:
 
-The dark design uses charcoal backgrounds, muted violet accents and native sans-serif typography.
-The Home Assistant introduction, toolkit and shared-service diagram introduce the project.
-Application releases and their history appear above the developer section.
-SDK release archives are rendered separately in `#sdk-release-content`, below
-the main download listing. Both sections use the same GitHub metadata request.
-No local build is offered when a GitHub release is absent.
+- /releases/latest selects GitHub's latest stable release.
+- /releases?per_page=20 supplies earlier releases.
+- Asset URLs, sizes and per-file download_count values come from GitHub.
+- Matching .sha256/.sha256sum assets are linked beside their archives.
+- The main LHA is preferred; SDK ZIPs stay in the developer section below it.
+- Source links use the exact published tag. Drafts and prereleases are excluded.
 
-The stylesheet has one dark theme definition. Superseded declarations and rules
-for removed sections are pruned while preserving desktop/mobile cascade order.
+Metadata is fetched on page requests and cached on the server for five minutes.
+Reloading after that interval refreshes versions, links and download counts.
+Failures retry after one minute. Recently verified metadata can be retained for
+up to 24 hours during outages, with a visible warning that counts may be outdated.
+A confirmed missing repository/release shows “AmiHASS hasn’t been released yet.”
+Network failures show an availability error. No local build or invented count is
+advertised. The same cached catalogue renders app downloads, the SDK and version.
+
+The cache uses private files in PHP's system temporary directory, outside the web
+root. Give the PHP worker a writable temporary directory (PHP sys_temp_dir) for
+shared caching. If it is unwritable, fetching still works but caching is disabled.
+Concurrent requests reuse prior data while one worker refreshes. Each HTTPS
+request has a four-second timeout and a 2 MiB response limit. Only URLs belonging
+to this repository and exact release assets are rendered; metadata is escaped.
+
+For a network-free local preview, set AMIHASS_RELEASE_OFFLINE=1. This displays
+recent cached data with an outage warning, or an availability message. It does
+not invent a release or modify the normal cache.
+
+## Checks
+
+From the repository root:
+
+```sh
+php -l public-web/index.php
+php -l public-web/inc/releases.php
+php tests/test_web_releases.php
+```
+
+The tests use offline fixtures for changing versions/counts, cache freshness,
+rate limits, outages, missing releases, app/SDK separation, checksums, unsafe
+links and malformed metadata. PHP is needed for these website-specific checks;
+the native Amiga build does not require it.
 
 ## Genuine screenshots
 

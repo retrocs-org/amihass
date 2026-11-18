@@ -171,7 +171,7 @@ discovery, state queries and explicit actions. Start with [SDK quickstart](SDK/R
 ARexx scripts use the **AMIHASS** command port for status, discovery, queries
 and supported actions. See [ARexx guide and examples](ARexx/README.MD).
 
-The static project website is in [public-web](public-web/index.html); see its
+The PHP project website is in [public-web](public-web/index.php); see its
 README for local preview and hosting. Publication is managed separately.
 
 ## Build and test
