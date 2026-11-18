@@ -29,7 +29,7 @@ Build scans public inputs, runs portable tests, forces all seven native builds,
 records executable/toolchain/source hashes, checks legacy ZIP compatibility,
 and creates the runtime LHA, SDK ZIP and their `.sha256` files. Check rejects
 changed source, native executables, configuration, archive contents or checksums.
-Prepare validates `docs/RELEASE-NOTES.md` against the 0.1 changelog and writes
+Prepare derives release notes from the matching CHANGELOG.MD entry and writes
 `release/manifest.json` plus reviewed copies under `release/publish/outputs/`.
 Changing source after a build requires a rebuild and preparation again.
 Build success does not certify execution on AmigaOS; keep native QA reports.
@@ -131,3 +131,29 @@ some bridged setups cannot reach their host. Only its public test certificate is
 trusted in the disposable guest; verification stays enabled. The test private key
 never enters the guest. Both variants remove temporary credentials and guest
 profiles afterward. An explicit private fixture can still test a real server.
+
+## Public release format
+
+GitHub and GitLab use the exact numeric version as the tag (`0.1`) and
+`AmiHASS 0.1` as the release title. Tags with a `v` prefix or project name are
+rejected. VERSION remains 0.1 until the maintainer explicitly changes it.
+
+Release bodies contain change bullets under these headings only, in this order:
+
+```markdown
+### Features
+
+### Enhancements
+
+### Bugs
+```
+
+Empty sections are omitted. The first 0.1 release contains Features only.
+Prepare reads CHANGELOG.MD automatically; there is no repeated release title,
+introduction, download list or installation guide in the body. A changelog
+heading named Bug fixes is rendered as Bugs. Optional --notes files must match
+the generated change notes exactly. docs/RELEASE-NOTES.md is a review copy.
+
+Aminet uploads are always named AmiHASS.lha with AmiHASS.readme. GitHub and
+GitLab retain versioned archive names such as AmiHASS-0.1.lha and the separate
+AmiHASS-0.1-sdk.zip. The Aminet archive is an exact copy of the verified runtime.

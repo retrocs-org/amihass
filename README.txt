@@ -22,8 +22,10 @@ for download links, installation steps, CPU requirements and connection checks.
 
 All persistent settings, including the token, are stored as local plain text in
 `ENVARC:AmiHASS/AmiHASS.cfg`. Existing AmiHASS settings migrate on saving.
-Updates preserve settings and restore the previous service state. Uninstall
-stops the service and offers **Keep settings** or **Remove settings**.
+When already installed, every Installer mode offers **Update AmiHASS** or
+**Uninstall AmiHASS**. Updates preserve settings and restore the previous service
+state. Uninstall stops the service and offers **Keep settings** (the default) or
+**Remove settings**.
 
 Preferences includes Start/Stop controls, boot startup, polling settings,
 server logs, live bridge diagnostics and About. Close discards unsaved edits;

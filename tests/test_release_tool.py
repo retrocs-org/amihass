@@ -107,6 +107,43 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(z.read_bytes(),z2.read_bytes());support.verify_zip(z,entries)
         with self.assertRaises(support.ReleaseError):support.verify_zip(z,{'other':b''})
 
+    def test_public_release_tag_and_change_headings(self):
+        self.assertEqual(release.release_tag(None,'0.1'),'0.1')
+        self.assertEqual(release.release_tag('0.1','0.1'),'0.1')
+        for tag in ('v0.1','AmiHASS-0.1','0.2','../0.1'):
+            with self.assertRaises(support.ReleaseError):release.release_tag(tag,'0.1')
+        (self.root/'CHANGELOG.MD').write_text('# Changelog\n\n## AmiHASS 0.1\n\n### Features\n\n- A feature.\n\n### Enhancements\n\n- An enhancement.\n\n### Bug fixes\n\n- A bug corrected.\n')
+        expected='### Features\n\n- A feature.\n\n### Enhancements\n\n- An enhancement.\n\n### Bugs\n\n- A bug corrected.'
+        notes=release.changelog_notes(self.root,'0.1')
+        self.assertEqual(notes,expected);release.validate_release_notes(self.root,'0.1',notes)
+        for extra in ('# AmiHASS 0.1\n','An introduction.\n','### Downloads\n'):
+            with self.assertRaises(support.ReleaseError):release.validate_release_notes(self.root,'0.1',extra+notes)
+        for invalid in ('### Downloads\n\n- A file.','### Features\n\nInstallation instructions.','### Features\n- One.\n### Features\n- Two.'):
+            (self.root/'CHANGELOG.MD').write_text('## AmiHASS 0.1\n\n'+invalid+'\n')
+            with self.assertRaises(support.ReleaseError):release.changelog_notes(self.root,'0.1')
+        (self.root/'CHANGELOG.MD').write_text('## AmiHASS 0.1\n\n### Features\n\n- First release.\n\n### Enhancements\n\n### Bugs\n')
+        self.assertEqual(release.changelog_notes(self.root,'0.1'),'### Features\n\n- First release.')
+        self.assertEqual((ROOT/'docs/RELEASE-NOTES.md').read_text().strip(),release.changelog_notes(ROOT,'0.1'))
+
+    def test_aminet_upload_names_are_not_versioned(self):
+        mod=module('make-aminet-release')
+        self.assertIn(b'Unpack AmiHASS.lha',mod.readme('Test Author','test@example.org','AmiHASS.lha'))
+        with self.assertRaises(support.ReleaseError):mod.readme('Test Author','test@example.org','AmiHASS-0.1.lha')
+        names=['AmiHASS.lha','AmiHASS.readme'];uploads=[]
+        for name in names:(self.root/name).write_bytes(name.encode())
+        class FTP:
+            def __init__(self,*args,**kwargs):pass
+            def __enter__(self):return self
+            def __exit__(self,*args):pass
+            def login(self,*args):pass
+            def cwd(self,*args):pass
+            def nlst(self):return []
+            def storbinary(self,command,reader):uploads.append((command,reader.read()))
+        manifest={'aminet':True,'uploader':'test@example.org','aminet_files':{n:sha(self.root/n) for n in names}}
+        adapter=release.Aminet(manifest,self.root,self.root/'receipt.json','a'*64,FTP)
+        adapter.publish();self.assertEqual([command for command,data in uploads],['STOR AmiHASS.lha','STOR AmiHASS.readme'])
+        adapter.publish();self.assertEqual(len(uploads),2)
+
     def test_stage_preserves_drawers_and_unrelated_files(self):
         stage=module('stage-builds');source=self.root/'source';target=self.root/'target'
         (source/'Docs').mkdir(parents=True);(target/'Docs').mkdir(parents=True)
@@ -168,7 +205,7 @@ class ReleaseTests(unittest.TestCase):
         for name in ('AmiHASS-0.1.lha','AmiHASS-0.1-sdk.zip'):
             path=self.root/name;path.write_bytes(name.encode());files[name]=support.sha(path)
         self.tool=type('Fixture',(),{'out':self.root})()
-        return {'version':'0.1','tag':'0.1','commit':'a'*40,'notes':'Initial release.',
+        return {'version':'0.1','tag':'0.1','commit':'a'*40,'notes':release.changelog_notes(ROOT,'0.1'),
                 'github':self.config['github'],'files':files}
 
     def test_source_inventory_excludes_local_and_generated_inputs(self):
@@ -193,6 +230,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(api.r['make_latest'],'true')
             self.assertEqual(api.r['name'],'AmiHASS 0.1')
             self.assertEqual(api.r['tag_name'],'0.1')
+            self.assertEqual(api.r.get('body',api.r.get('description')),m['notes'])
             patch_index = next(i for i, e in enumerate(api.events) if e[0] == 'PATCH')
             uploads = [i for i, e in enumerate(api.events) if 'uploads.github.com' in e[1]]
             self.assertEqual(len(uploads), len(m['files']))
@@ -215,6 +253,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertIn('released_at',api.r)
             self.assertEqual(api.r['name'],'AmiHASS 0.1')
             self.assertEqual(api.r['tag_name'],'0.1')
+            self.assertEqual(api.r.get('body',api.r.get('description')),m['notes'])
             self.assertIn(('GET',adapter.base+'/releases/permalink/latest'),api.events)
             api.r['upcoming_release']=True
             adapter.publish()

@@ -13,7 +13,9 @@ def emit(n,action,remove):
  if h=='set' and v[0][2]=='#level':return '(set #level '+str(qa_level)+')'
  if h=='user':return '(user 0)'
  if h=='if' and 'set #src' in raw(n):return '(set #src "QATests:")'
- if h=='askchoice':return str(action)
+ if h=='askchoice':
+  prompt=next(x for x in v if isinstance(x,dict) and head(x)=='prompt')['items'][1][2]
+  return str(remove if prompt.startswith('Keep or remove') else action)
  if h=='askbool':
   prompt=next(x for x in v if isinstance(x,dict) and head(x)=='prompt')['items'][1][2]
   if prompt.startswith('Remove AmiHASS'):return '1'

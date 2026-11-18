@@ -33,7 +33,8 @@ Apply keeps a subwindow's edits in the parent draft. Save writes configuration
 or layout and follows that window's behavior. Close/Escape discards unsaved edits.
 Ctrl-S or Right-Amiga-S activates Save where available. Closing a connection test cancels it without waiting for HTTP to finish.
 
-Uninstall through Install-AmiHASS. Keep settings preserves your bridge config
+Run Install-AmiHASS again for Update AmiHASS or Uninstall AmiHASS, in every
+mode including Novice. Keep settings is the uninstall default and preserves your bridge config
 and dashboard layout; Remove settings removes them. Updates preserve settings
 and restore the previous running/stopped service state.
 

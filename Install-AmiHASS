@@ -43,11 +43,17 @@
 ; Novice mode still offers maintenance on an existing installation.
 (if #installed
  ((user 1)
-  (set #action (askchoice (prompt "AmiHASS is installed. Choose maintenance.") (help "Update preserves settings and restores the previous service state.") (choices "Update" "Uninstall") (default 0)))))
+  (set #action (askchoice
+   (prompt "AmiHASS is already installed. Choose update or uninstall.\n\nService: " #dest "\nPreferences: " #prefs)
+   (help "Update keeps settings and restores the previous service state. Uninstall stops the service and asks whether to keep settings. Use Abort Install to leave without changes.")
+   (choices "Update AmiHASS" "Uninstall AmiHASS") (default 0)))
+  (user #level)))
 (if (= #action 1)
  ((user 1)
-  (if (= (askbool (prompt "Remove AmiHASS and its startup shortcut?") (help "The service is stopped before removing the service, Preferences, Browser and Dashboard.") (choices "Remove" "Cancel") (default 0)) 0) ((P_CLEAN) (abort "No changes made.")))
-  (set #remove-settings (askbool (prompt "Remove saved bridge configuration, token and dashboard layout?") (help "Keep settings preserves AmiHASS.cfg for a later installation.") (choices "Remove settings" "Keep settings") (default 0)))
+  (set #remove-settings (askchoice
+   (prompt "Keep or remove saved AmiHASS settings?\n\nKeep settings preserves the server configuration, token and dashboard layout for a later installation.\nRemove settings deletes them.")
+   (help "The service is stopped before removing the applications and startup shortcut. Keep settings is the default. Use Abort Install to leave without changes.")
+   (choices "Keep settings" "Remove settings") (default 0)))
   (P_STOP)
   (if #remove-settings (if (<> (run (cat "\"" #helper "\" PURGE")) 0) (abort "Settings could not be removed. Application files remain installed.")))
   (P_CLEAN)
@@ -62,7 +68,9 @@
   (set #remove-browser 1)
   (set #remove-dir #dest) (P_REMOVE_APP)
   (complete 100)
-  (message "AmiHASS stopped and removed. Unrelated files and selected retained settings remain.")
+  (set #result "AmiHASS stopped and uninstalled. Settings were kept.")
+  (if #remove-settings (set #result "AmiHASS stopped and uninstalled. Settings were removed."))
+  (message #result)
   (exit (quiet)))
  ((user #level)
   (if (<> #level 0)

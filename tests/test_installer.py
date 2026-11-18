@@ -77,7 +77,7 @@ class Scenario:
   if h in ('askchoice','askbool','askdir'):
    prompt=self.eval(tags['prompt'][0]);self.questions.append(prompt)
    if self.env['@user-level']==0:return self.eval(tags['default'][0])
-   if h=='askchoice':return self.action
+   if h=='askchoice':return self.remove if prompt.startswith('Keep or remove') else self.action
    if h=='askdir':return {'Choose the service/application drawer':'DATA:Apps/AmiHASS','Choose the Preferences drawer':'DATA:Preferences','Choose the Workbench startup drawer':'DATA:Boot'}[prompt]
    if 'Remove AmiHASS' in prompt:return 1
    if 'Remove saved' in prompt:return self.remove
@@ -134,7 +134,7 @@ for level in range(3):
   assert s.files['SYS:Utilities/AmiHASSDashboard']=='installed' and s.files['SYS:Utilities/AmiHASSDashboard.info']=='installed'
   assert s.files['SYS:Utilities/AmiHASSBrowser']=='installed' and s.files['SYS:Utilities/AmiHASSBrowser.info']=='installed'
   assert not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser')
-  assert 'Choose maintenance' in s.questions[0] and s.files['WORK:Apps/AmiHASS/unrelated']=='keep'
+  assert 'Choose update or uninstall' in s.questions[0] and s.files['WORK:Apps/AmiHASS/unrelated']=='keep'
   assert s.files[s.env['#prefs']+'/AmiHASSPrefs.info']=='installed' and 'ENVARC:AmiHASS/AmiHASS.cfg' in s.files
   if level:assert not s.has('WORK:Prefs/AmiHASSPrefs') and not s.has('WORK:Startup/AmiHASS') and not s.has('WORK:Apps/AmiHASS/AmiHASSService')
  for remove in (False,True):
@@ -144,15 +144,21 @@ for level in range(3):
   assert not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser') and not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser.info')
   assert not s.has('SYS:Utilities/AmiHASSDashboard') and not s.has('SYS:Utilities/AmiHASSDashboard.info')
   assert not s.has('SYS:Utilities/AmiHASSBrowser') and not s.has('SYS:Utilities/AmiHASSBrowser.info')
+  assert len(s.questions)==2 and s.questions[1].startswith('Keep or remove')
+  assert ('Settings were removed' if remove else 'Settings were kept') in s.messages[-1]
   assert ('ENVARC:AmiHASS/AmiHASS.cfg' in s.files)==(not remove)
   assert ('ENVARC:AmiHASS/Private/Save-recovery/old' in s.files)==(not remove)
-s=Scenario(installed=True,partial=True).run();assert 'Choose maintenance' in s.questions[0]
+s=Scenario(installed=True,partial=True).run();assert 'Choose update or uninstall' in s.questions[0]
 s=Scenario(installed=True,running=True,restart_fail=True).run();assert 'could not be restarted' in s.messages[-1] and not s.running
 s=Scenario(installed=True,stop_fail=True).run();assert s.result=='abort' and not s.copied_files and s.files['WORK:Prefs/AmiHASSPrefs']=='old prefs'
 choices=[n for n in walk(tree) if head(n)=='askchoice']
-assert len(choices)==1
-choice=next(n for n in choices[0]['items'] if isinstance(n,dict) and head(n)=='choices')
-assert [x[2] for x in choice['items'][1:]]==['Update','Uninstall']
+assert len(choices)==2
+for node,labels in zip(choices,(['Update AmiHASS','Uninstall AmiHASS'],['Keep settings','Remove settings'])):
+ choice=next(n for n in node['items'] if isinstance(n,dict) and head(n)=='choices')
+ assert [x[2] for x in choice['items'][1:]]==labels
+ default=next(n for n in node['items'] if isinstance(n,dict) and head(n)=='default')
+ assert default['items'][1][2]=='0'
+assert '"Cancel"' not in (ROOT/'Install-AmiHASS').read_text()
 print('Installer: all three modes, custom paths, prior running state, truthful results, final results in every mode, no auto-open and safe uninstall passed.')
 
 s=Scenario(installed=True,level=0,running=False);s.paths['Boot']='0';s.run();assert 'Boot startup: Disabled' in s.messages[-1] and not s.opened and s.message_levels[-1]>=1

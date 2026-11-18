@@ -6,6 +6,7 @@ from release_support import ReleaseError,version
 ROOT=Path(__file__).resolve().parents[1]
 
 def readme(author,uploader,archive_name):
+    if archive_name!='AmiHASS.lha':raise ReleaseError('Aminet archive must be named AmiHASS.lha')
     value=version(ROOT)
     if not re.fullmatch(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+',uploader) or any(c in author for c in '\r\n\0'):raise ReleaseError('Aminet needs a single-line author and uploader email')
     text=(ROOT/'CHANGELOG.MD').read_text();match=re.search(r'^## AmiHASS '+re.escape(value)+r'\n(.*?)(?=^## |\Z)',text,re.M|re.S)

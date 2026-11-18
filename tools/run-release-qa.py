@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 APP=Path('/Applications/Amiga Workbench.app/Contents/MacOS/AmigaWorkbench')
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config',type=Path,default=ROOT/'examples/release-config.json')
+    parser.add_argument('--config',type=Path,default=Path(os.environ.get('AMIHASS_RELEASE_CONFIG',str(Path.home()/'Development/tools/git-release/projects/amihass.json'))))
     parser.add_argument('--output',type=Path,default=Path('outputs/release-0.1'))
     parser.add_argument('--suite',choices=SUITES,required=True)
     parser.add_argument('--fixture',action='store_true',help='Use a public reserved-domain TLS transport fixture; HTTPS-memory only')

@@ -34,7 +34,7 @@
 - Flexible dashboard grids with guided device selection and saved actions.
 - Developer SDK with a working example client.
 - ARexx command port with status and sample-control scripts.
-- Responsive project website with an interactive sample preview.
+- PHP website with GitHub downloads and real Amiga screenshots.
 - Device-first browser with scoped entities, state details and valid all-area catalogue templates.
 - Shared sample devices with simulated controls for client apps.
 - Shared Home Assistant connection for Amiga applications.
@@ -46,4 +46,4 @@
 - Server logs, live bridge diagnostics and an About window.
 - Entity state polling and supported device controls.
 - Local message-port SDK for application integration.
-- Installer with Prefs integration, updates and removal.
+- Installer with Update, Uninstall and settings retention choices.

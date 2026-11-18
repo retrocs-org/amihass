@@ -31,20 +31,37 @@ def need(condition, message):
         raise ReleaseError(message)
 
 def changelog_notes(root, version):
-    """Render only one version's changes; the host displays the release title."""
+    """Only change bullets under the public release's allowed headings."""
     changelog = (root/'CHANGELOG.MD').read_text()
     match = re.search(r'^## AmiHASS '+re.escape(version)+r'(?:[^\n]*)\n(.*?)(?=^## |\Z)',
                       changelog, re.M | re.S)
     need(match is not None, 'Missing version in CHANGELOG.MD: '+version)
-    return re.sub(r'^### ', '## ', match.group(1).strip(), flags=re.M)
+    sections = {}; current = None
+    aliases = {'Features':'Features', 'Enhancements':'Enhancements', 'Bugs':'Bugs', 'Bug fixes':'Bugs'}
+    for line in match.group(1).strip().splitlines():
+        if not line.strip(): continue
+        heading = re.fullmatch(r'### (.+)', line)
+        if heading:
+            current = aliases.get(heading.group(1))
+            need(current is not None, 'Release notes allow only Features, Enhancements and Bugs')
+            need(current not in sections, 'Duplicate release-note heading: '+current)
+            sections[current] = []
+        else:
+            need(current is not None and line.startswith('- ') and line[2:].strip(),
+                 'Release notes contain change bullets only')
+            sections[current].append(line)
+    notes = '\n\n'.join('### '+name+'\n\n'+'\n'.join(sections[name])
+                          for name in ('Features','Enhancements','Bugs') if sections.get(name))
+    need(notes, 'Release notes must contain at least one change')
+    return notes
 
 
 def validate_release_notes(root, version, text):
-    """Repository release descriptions contain the complete changelog only."""
+    """No introduction, duplicate title, installation guide or other headings."""
     need(not re.search(r'\b(in development|unreleased|TODO|TBD)\b', text, re.I),
          'Release notes contain development placeholders')
     need(' '.join(text.split()) == ' '.join(changelog_notes(root, version).split()),
-         'Release notes must contain only the complete matching CHANGELOG.MD section')
+         'Release notes must contain only the matching Features, Enhancements and Bugs change bullets')
 
 
 def load(path):
@@ -144,9 +161,11 @@ def credential(service, config):
     return token
 
 def release_tag(value, version):
-    tag=version if value is None else value
-    need(isinstance(tag,str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*',tag) and '..' not in tag and not tag.endswith(('.','.lock')), 'Invalid release tag (use a simple name such as v0.1 or 0.1)')
+    tag = version if value is None else value
+    need(isinstance(tag, str) and tag == version,
+         'Release tag must match VERSION exactly: '+version+' (no v prefix or project name)')
     return tag
+
 
 def redact(text):
     secrets = ACTIVE_SECRETS | {value for key,value in os.environ.items()
@@ -783,9 +802,9 @@ class Release:
         self.aminet_files()
         return {name: sha(self.out / name) for name in sorted(expected)}
 
-    def prepare(self, notes):
+    def prepare(self, notes=None):
         files = self.check()
-        text = notes.read_text().strip()
+        text = changelog_notes(self.root,self.version) if notes is None else notes.read_text().strip()
         need(text and len(text.encode()) <= 100000, 'Missing or oversized release notes')
         validate_release_notes(self.root, self.version, text)
         need(not any(token and token in text for token in (os.environ.get(x) for x in SECRET_ENV)), 'Release notes contain a credential')
@@ -983,7 +1002,7 @@ def main(argv=None):
     parser.add_argument('command', choices=('source','plan', 'build', 'check', 'prepare', 'prepare-aminet', 'publish','release','readiness'))
     parser.add_argument('--config', type=Path, default=Path(os.environ.get('AMIHASS_RELEASE_CONFIG',str(Path.home()/'Development/tools/git-release/projects/amihass.json'))))
     parser.add_argument('--output', type=Path, help='Artifact directory under outputs/; use the same path for build/check/prepare/publish')
-    parser.add_argument('--notes', type=Path, default=ROOT / 'docs/RELEASE-NOTES.md')
+    parser.add_argument('--notes', type=Path, help='Optional notes file; must match the matching changelog changes exactly')
     parser.add_argument('--to', default='github')
     parser.add_argument('--confirm-publish', action='store_true')
     parser.add_argument('--confirm-push',action='store_true')
