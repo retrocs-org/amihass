@@ -1,5 +1,6 @@
 ### Features
 
+- SDK feature negotiation for rooms, combined filters and subscriptions.
 - Room selection with named rooms and paged discovery.
 - Shared project logo for the website and About window.
 - Shared entity subscriptions with automatic polling cleanup.

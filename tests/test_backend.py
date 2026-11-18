@@ -92,7 +92,7 @@ int main(void){struct Backend *b=calloc(1,sizeof(*b));struct AmiHASSMessage m;in
  unsigned int intervals[]={60,600,900,1800};int k;
  for(k=0;k<4;++k){
   memset(b,0,sizeof(*b));auto_retry=1;retry_setting=intervals[k];network_up=1;read_fail=bad_api=start_fail=0;reload(b);
-  message(&m,AMIHASS_STATUS,NULL,NULL,NULL);handle(b,&m);assert(!m.status.connected&&!strcmp(m.item.state,AMIHASS_SERVER_CONNECTING)&&m.count==3);
+  message(&m,AMIHASS_STATUS,NULL,NULL,NULL);handle(b,&m);assert(!m.status.connected&&!strcmp(m.item.state,AMIHASS_SERVER_CONNECTING)&&m.count==6&&!strcmp(m.items[3].id,AMIHASS_CAP_AREAS)&&!strcmp(m.items[4].id,AMIHASS_CAP_FILTERS)&&!strcmp(m.items[5].id,AMIHASS_CAP_SUBSCRIPTIONS)&&!strcmp(m.items[3].state,"1"));
   schedule(b,"HASS");assert(sent_phase==4&&!strcmp(sent_path,"/api/"));complete(b,-1);b->job=NULL;
   message(&m,AMIHASS_STATUS,NULL,NULL,NULL);handle(b,&m);assert(m.result==AMIHASS_OK&&!m.status.connected&&!strcmp(m.item.state,AMIHASS_SERVER_RETRY_WAIT));assert(strtoul(m.items[2].state,NULL,10)==intervals[k]);
   /* Client catalogue changes cannot bypass the configured retry time. */

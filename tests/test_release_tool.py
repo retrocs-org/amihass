@@ -107,6 +107,38 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(z.read_bytes(),z2.read_bytes());support.verify_zip(z,entries)
         with self.assertRaises(support.ReleaseError):support.verify_zip(z,{'other':b''})
 
+    def test_api_redirects_keep_credentials_on_the_same_read_origin(self):
+        import urllib.request
+        handler=release.SameOriginReadRedirect()
+        req=urllib.request.Request('https://gitlab.example.net/api/v4/projects/team%2Fapp/releases/permalink/latest',headers={'PRIVATE-TOKEN':'fixture-only'})
+        result=handler.redirect_request(req,None,302,'Found',{},'https://gitlab.example.net/api/v4/projects/57/releases/0.1')
+        self.assertEqual(result.get_header('Private-token'),'fixture-only')
+        for destination in ('https://evil.invalid/file','http://gitlab.example.net/file',urllib.parse.urlunsplit(('https','user:password@gitlab.example.net','/file','',''))):
+            self.assertIsNone(handler.redirect_request(req,None,302,'Found',{},destination))
+        for method in ('POST','PUT','DELETE'):
+            request=urllib.request.Request(req.full_url,headers={'PRIVATE-TOKEN':'fixture-only'},method=method)
+            self.assertIsNone(handler.redirect_request(request,None,302,'Found',{},'https://gitlab.example.net/elsewhere'))
+
+    def test_replacement_requires_explicit_confirmation(self):
+        replacement=module('replace-release')
+        with self.assertRaises(support.ReleaseError):replacement.replace('unused','unused',{},False)
+
+    def test_replacement_only_targets_matching_package_files(self):
+        replacement=module('replace-release');digest='a'*64
+        class PackageAPI:
+            files=[{'file_name':'AmiHASS-0.1.lha','file_sha256':digest}]
+            def pages(self,url):
+                if url.endswith('/package_files'):return self.files
+                return [{'id':7,'name':'amihass','version':'0.1','package_type':'generic'}, {'id':8,'name':'amihass','version':'0.2','package_type':'generic'}]
+        api=PackageAPI();adapter=type('Adapter',(),{'base':'https://gitlab.example.net/api/v4/projects/57','api':api})()
+        self.assertEqual(replacement.package_inventory(adapter,'0.1',{'AmiHASS-0.1.lha':digest}),[7])
+        api.files=[{'file_name':'unrelated.zip','file_sha256':digest}]
+        with self.assertRaises(support.ReleaseError):replacement.package_inventory(adapter,'0.1',{'AmiHASS-0.1.lha':digest})
+        api.files=[{'file_name':'AmiHASS-0.1.lha','file_sha256':'b'*64}]
+        with self.assertRaises(support.ReleaseError):replacement.package_inventory(adapter,'0.1',{'AmiHASS-0.1.lha':digest})
+        api.files=[{'file_name':'AmiHASS-0.1.lha','file_sha256':digest}]*2
+        with self.assertRaises(support.ReleaseError):replacement.package_inventory(adapter,'0.1',{'AmiHASS-0.1.lha':digest})
+
     def test_public_release_tag_and_change_headings(self):
         self.assertEqual(release.release_tag(None,'0.1'),'0.1')
         self.assertEqual(release.release_tag('0.1','0.1'),'0.1')

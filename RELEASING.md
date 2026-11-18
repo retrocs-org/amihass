@@ -157,3 +157,26 @@ the generated change notes exactly. docs/RELEASE-NOTES.md is a review copy.
 Aminet uploads are always named AmiHASS.lha with AmiHASS.readme. GitHub and
 GitLab retain versioned archive names such as AmiHASS-0.1.lha and the separate
 AmiHASS-0.1-sdk.zip. The Aminet archive is an exact copy of the verified runtime.
+
+## Explicit replacement of published 0.1
+
+Only use same-version replacement when the maintainer explicitly requests it.
+Build and validate in a new output directory; keep the original directory and
+publication receipts. Commit and push the updated source before preparation.
+After all required native suites pass, prepare the new release and run:
+
+```sh
+python3 tools/replace-release.py --previous outputs/release-0.1-final --output outputs/release-0.1-replacement-20261119 --confirm-replace
+```
+
+The tool verifies and retains the original packages, metadata and annotated tag,
+checks both repository identities and package hashes, and uses an exact tag
+lease when updating 0.1 to the rebuilt commit. Existing release objects keep
+version/title 0.1/AmiHASS 0.1. Only their four known assets and change notes are
+replaced. The update is not atomic across hosts; replacement-receipt.json records
+progress and permits a retry against the same prepared manifest. Never rebuild
+or edit that directory once replacement has started.
+
+Aminet receives AmiHASS.lha and AmiHASS.readme, with a Replaces header for
+util/wb/AmiHASS.lha. A pending incoming submission is not overwritten; moderation
+remains external. The original release receipts are kept intact.

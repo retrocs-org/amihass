@@ -311,6 +311,17 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
+class SameOriginReadRedirect(urllib.request.HTTPRedirectHandler):
+    """GitLab's latest permalink redirects to its canonical project URL."""
+    max_redirections = 5
+    max_repeats = 2
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        source = urllib.parse.urlsplit(req.full_url)
+        target = urllib.parse.urlsplit(newurl)
+        if req.get_method() != 'GET' or target.scheme != 'https' or target.netloc != source.netloc or target.username or target.password:
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
 class API:
     """HTTPS only; API calls never forward authorization through redirects."""
     def __init__(self, origin, token, github=False):
@@ -322,7 +333,7 @@ class API:
                                  'X-GitHub-Api-Version': '2022-11-28'})
         else:
             self.headers['PRIVATE-TOKEN'] = token
-        self.opener = urllib.request.build_opener(NoRedirect())
+        self.opener = urllib.request.build_opener(SameOriginReadRedirect())
 
     def open(self, url, method='GET', data=None, headers=None, missing=False):
         p = urllib.parse.urlsplit(url)

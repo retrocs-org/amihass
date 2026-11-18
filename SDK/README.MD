@@ -123,3 +123,12 @@ offsets for all rooms; handle WAIT/BUSY and errors asynchronously. Pass a select
 ID to `amihass_send_area` for device/entity discovery. An empty area means all
 rooms, including unassigned items. Sample mode supplies the same room catalogue
 interface locally. This additive operation preserves ABI 1 and message size.
+
+## Feature negotiation
+
+STATUS includes optional `feature.areas`, `feature.catalogue_filters` and
+`feature.subscriptions` entries in items[], each with state `1` when supported.
+Missing entries mean unverified support, even when the app version is 0.1.
+Check these keys before offering room/type-scoped discovery or subscriptions.
+Unknown keys can be ignored. Older clients keep reading the original status
+and reconnect fields. The ABI and packet size remain unchanged.

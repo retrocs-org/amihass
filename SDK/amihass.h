@@ -18,6 +18,10 @@
 #define AMIHASS_SUBSCRIBE 10
 #define AMIHASS_UNSUBSCRIBE 11
 #define AMIHASS_AREAS 12
+/* Optional STATUS metadata; additive ABI 1 feature negotiation. */
+#define AMIHASS_CAP_AREAS "feature.areas"
+#define AMIHASS_CAP_FILTERS "feature.catalogue_filters"
+#define AMIHASS_CAP_SUBSCRIPTIONS "feature.subscriptions"
 /* AREAS: paged room catalogue; items[].id is the stable area ID, name the label. */
 /* SUBSCRIBE uses QUERY_INTERVAL; renew within 120 s. Close releases this port. */
 /* QUERY refresh flag: cache/on-demand read without a continuous poll lease. */

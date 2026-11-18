@@ -238,7 +238,7 @@ static int sample_bridge_check(int dock)
  fields[0].label="Sample data";fields[0].value="1";fields[0].limit=ND_PANEL_CHECKBOX;fields[1].label="Mode";fields[1].value="Shared bridge simulation";fields[1].limit=0;
  panel=nd_panel_open("AmiHASS sample mode QA",fields,2,buttons,1);if(!panel)goto cleanup;i=nd_panel_toggle(panel,0);nd_panel_close(panel);if(!i)goto cleanup;
  if(qa_command("QATests:SetupStartup RESTART QATests:AmiHASSService"))goto cleanup;
- m=sample_exchange(&a,AMIHASS_STATUS,"SampleClient1",NULL,NULL);if(!m)goto cleanup;i=m->status.connected&&!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE);FreeVec(m);if(!i)goto cleanup;
+ m=sample_exchange(&a,AMIHASS_STATUS,"SampleClient1",NULL,NULL);if(!m)goto cleanup;i=m->status.connected&&!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE)&&m->count==6&&!strcmp(m->items[3].id,AMIHASS_CAP_AREAS)&&!strcmp(m->items[4].id,AMIHASS_CAP_FILTERS)&&!strcmp(m->items[5].id,AMIHASS_CAP_SUBSCRIPTIONS)&&!strcmp(m->items[3].state,"1")&&!strcmp(m->items[4].state,"1")&&!strcmp(m->items[5].state,"1");FreeVec(m);if(!i)goto cleanup;
  m=sample_exchange(&a,AMIHASS_AREAS,"Rooms.QA",NULL,NULL);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&m->total==4&&m->count==4&&!strcmp(m->items[3].id,"study")&&!strcmp(m->items[3].name,"Study");FreeVec(m);if(!i)goto cleanup;
  puts("PASS: room catalogue exposes stable IDs and friendly names through the shared bridge.");
  m=sample_exchange(&a,AMIHASS_QUERY,"SampleClient1","light.amihass_sample_living_room",NULL);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&!strcmp(m->item.state,"on");FreeVec(m);if(!i)goto cleanup;

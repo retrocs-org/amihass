@@ -197,10 +197,13 @@ static void handle(struct Backend *b,struct AmiHASSMessage *m)
   strcpy(m->status.server,b->sample_mode ? "sample://amihass":b->connection.url);m->status.queued=b->queued;
   for(i=0;i<SELECTED;++i)if(active_subscription(&b->subscriptions[i],now))++m->status.subscriptions;
   memset(&m->item,0,sizeof(m->item));strcpy(m->item.state,connection_state(b,now));if(b->last_error<0)strncpy(m->item.name,ah_connection_text(b->last_error),sizeof(m->item.name)-1);m->age=b->last_success && now>=b->last_success ? now-b->last_success:0;
-  m->count=m->total=3;for(i=0;i<3;++i)memset(&m->items[i],0,sizeof(m->items[i]));
+  m->count=m->total=6;for(i=0;i<6;++i)memset(&m->items[i],0,sizeof(m->items[i]));
   strcpy(m->items[0].id,"reconnect.enabled");sprintf(m->items[0].state,"%d",b->reconnect);
   strcpy(m->items[1].id,"retry.interval");sprintf(m->items[1].state,"%u",b->retry_interval);
   strcpy(m->items[2].id,"retry.remaining");sprintf(m->items[2].state,"%lu",b->reconnect && b->retry>now ? b->retry-now:0);
+  strcpy(m->items[3].id,AMIHASS_CAP_AREAS);strcpy(m->items[3].state,"1");
+  strcpy(m->items[4].id,AMIHASS_CAP_FILTERS);strcpy(m->items[4].state,"1");
+  strcpy(m->items[5].id,AMIHASS_CAP_SUBSCRIPTIONS);strcpy(m->items[5].state,"1");
   m->result=AMIHASS_OK;reply(b,m);return;
  }
  if(m->kind==AMIHASS_STOP){if(!b->stopping)ah_log_event(AH_LOG_SERVICE_STOPPING,0);b->stopping=1;b->queued=0;m->result=AMIHASS_OK;reply(b,m);return;}
