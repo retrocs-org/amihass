@@ -1,0 +1,1 @@
+{"name":"AmiHASS curl compatibility and memory baseline","application":"QATests:AmiHASSConnectionCheck","arguments":["TRANSPORT-CHECK"],"timeoutSeconds":120,"expectedReturnCode":0}

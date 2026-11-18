@@ -1,0 +1,21 @@
+{
+  "github": "https://github.com/retrocs-org/amihass",
+  "github_git": "git@github.com:retrocs-org/amihass.git",
+  "gitlab": "",
+  "gitlab_git": "",
+  "author": "NovaDock contributors",
+  "uploader": "",
+  "aminet": false,
+  "env": {},
+  "source_branch": "main",
+  "credentials": {
+    "github": {
+      "provider": "env",
+      "variable": "GITHUB_TOKEN"
+    },
+    "gitlab": {
+      "provider": "env",
+      "variable": "GITLAB_TOKEN"
+    }
+  }
+}

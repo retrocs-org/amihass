@@ -1,0 +1,9 @@
+{
+  "name": "AmiHASS 0.1 verified HTTPS transport memory (expected 404)",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": [
+    "HTTPS-TRANSPORT-MEMORY"
+  ],
+  "timeoutSeconds": 360,
+  "expectedReturnCode": 0
+}

@@ -1,0 +1,85 @@
+AmiHASS 0.1 - Requirements
+==========================
+
+Classic AmigaOS 3.x, a 68000 or better CPU, and Installer 42 or newer.
+Workbench/Intuition and GadTools 39 or newer are used by the graphical apps.
+Use a 640x256 or larger public screen for the graphical apps. Larger grids page through rows on smaller screens.
+
+Sample data works offline, without curl, a server or a Home Assistant token.
+Start the central AmiHASS service in Preferences before opening client apps.
+
+For Server data:
+- A running TCP/IP stack with an active, configured IPv4 interface.
+- A compatible C:curl with HTTPS support when using an https:// URL.
+- The TLS libraries required by that curl build (normally AmiSSL), working
+  CA certificates and a correct Amiga system clock for HTTPS.
+- A reachable Home Assistant server and a valid long-lived access token.
+- Additional Fast RAM for curl/TLS. Low memory mode reclaims unused libraries
+  after idle periods; it does not reduce the peak RAM needed during HTTPS.
+
+Native validation uses Amiga Workbench.app with Workbench 3.2.1 and a 68060
+profile. Physical-hardware validation is still pending.
+
+To run ARexx scripts, rexxsyslib.library and RexxMast are required. The C SDK,
+Browser and Dashboard can work without ARexx. RX is normally in SYS:Rexxc/.
+
+Developer builds need vbcc and the Amiga NDK. The packaged SDK has its own
+Makefile and builds independently. No Home Assistant token belongs in client
+apps or scripts; the central service stores it in ENVARC:AmiHASS/AmiHASS.cfg.
+
+Use an Amiga-compatible LHA extractor for the main archive and a ZIP extractor
+for the separate SDK. Preserve directory structure and .info files. The main
+package contains applications, documentation and ARexx examples. The SDK is a
+separate download. AmigaOS, ROMs, curl and AmiSSL are not bundled.
+
+Install networking and HTTPS support
+-----------------------------------
+Sample data needs none of these dependencies. For Server data:
+
+1. Configure and start your Amiga TCP/IP stack, including DNS and a working
+   IPv4 address. Check that the Amiga date and time are correct.
+
+2. Download the AmigaOS 3 / m68k runtime archive from the AmiSSL releases:
+   https://github.com/jens-maus/amissl/releases
+   Unpack it and run its supplied Install script. Let that installer set up
+   libraries, root certificates and startup assigns. The AmiSSL SDK is not
+   needed to run AmiHASS. Keep any older libraries required by your curl build;
+   installing a new major AmiSSL release may not replace its older API.
+   Official installation and compatibility notes:
+   https://github.com/jens-maus/amissl#installation
+
+3. Obtain an AmigaOS 3 / m68k curl executable with HTTP and HTTPS support,
+   suitable for your CPU and TCP/IP stack. Follow that package's instructions
+   for additional libraries and certificate setup, then place curl in C:.
+   AmiHASS explicitly uses C:curl; another drawer on the command path is not
+   sufficient. Download resources:
+   https://curl.se/download.html
+   https://aminet.net/search?query=curl
+   Select a Classic m68k build, not an AmigaOS 4 / PPC, MorphOS, Mac or Windows
+   executable. The curl download overview may list only AmigaOS 4 packages.
+   For builds using AmiSSL, install the AmiSSL version required by that build.
+   Other TLS backends use their own dependencies instead.
+
+4. In AmigaShell, check the installed executable:
+     C:curl --version
+   Confirm that it starts and lists https among its protocols. Its first line
+   identifies the TLS backend. Follow the curl package's CA instructions;
+   AmiSSL installs its root certificates under AmiSSL:Certs, but an individual
+   curl build may expect a CA bundle instead. Do not disable certificate checks.
+   curl certificate guidance: https://curl.se/docs/sslcerts.html
+
+5. Test HTTPS without sending your token (replace the example host):
+     C:curl --connect-timeout 10 --max-time 30 --output NIL: --write-out "%{http_code}" https://your-server.example/api/
+   An HTTP 401 is normal for Home Assistant's API without a token: HTTPS reached
+   the API, but authentication is still needed. DNS, connection or certificate
+   errors must be resolved first. A proxy may return a different HTTP status.
+
+6. Open AmiHASSPrefs, select Server data, enter the URL and token in Server
+   Settings and choose Test connection. Save and start the service. If it fails,
+   inspect Show server logs for the curl/HTTP error. Do not put the token in
+   shell commands, screenshots or support reports.
+
+CPU compatibility: the bridge targets 68000 or better, but the documented
+AmiSSL AmigaOS 3 runtime requires 68020 or better. Your chosen curl build may
+require more. Use the highest CPU/OS requirements of all installed components.
+Plain HTTP needs curl and networking, but no TLS library; it is unencrypted.

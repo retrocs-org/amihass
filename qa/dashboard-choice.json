@@ -1,0 +1,1 @@
+{"name":"AmiHASS 0.1 dashboard choice controls","application":"QATests:AmiHASSDashboard","arguments":["CHOICE-SELFTEST"],"timeoutSeconds":40,"expectedReturnCode":0}

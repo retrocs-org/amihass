@@ -1,0 +1,7 @@
+{
+  "name": "AmiHASS 0.1 rejects an unreachable server and records safe diagnostics",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": [],
+  "timeoutSeconds": 180,
+  "expectedReturnCode": 0
+}

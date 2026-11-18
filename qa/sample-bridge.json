@@ -1,0 +1,1 @@
+{"name":"AmiHASS 0.1 shared sample mode and two-client controls","application":"QATests:AmiHASSConnectionCheck","arguments":["SAMPLE-BRIDGE"],"timeoutSeconds":150,"expectedReturnCode":0}

@@ -1,0 +1,1 @@
+{ "name": "AmiHASS 0.1 unified cfg and native install/update/uninstall", "application": "QATests:AmiHASSConnectionCheck", "arguments": ["INSTALLER"], "timeoutSeconds": 240, "expectedReturnCode": 0 }

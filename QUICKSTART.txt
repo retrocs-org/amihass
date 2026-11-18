@@ -1,0 +1,42 @@
+AmiHASS 0.1 - Quick start
+=========================
+
+1. Extract the entire AmiHASS-0.1 drawer, including .info files.
+   Double-click Install-AmiHASS. Keep the extracted package in its own drawer.
+
+2. Read the Installer's final page for the actual destinations. All modes,
+   including Novice, show this page. Preferences does not open automatically.
+
+3. Open AmiHASSPrefs in the installed Preferences drawer (normally SYS:Prefs).
+   To try it offline, choose Sample data under Data source and Save. Reopen
+   Preferences and press Start. No network or server token is needed.
+
+4. First follow REQUIREMENTS.txt to install C:curl and its HTTPS dependencies
+   (normally AmiSSL), including certificates. That guide has download links
+   and AmigaShell checks. Sample data does not require them.
+   For a real server, choose Server data. Open Server Settings, enter your
+   URL and long-lived access token, and test the connection. HTTPS is selected
+   automatically for https:// URLs. Save works even while the server is offline.
+   Save the main Preferences window and use Start to run the bridge.
+
+5. Open SYS:Utilities/AmiHASSBrowser to explore devices and their entities.
+   Open SYS:Utilities/AmiHASSDashboard to create a layout. Click an empty tile,
+   choose a device type, device, entity and click action, then Apply. Use Layout
+   to set rows/columns and Edit Mode to edit or move tiles. Save stores edits. Use Controls for supported light brightness, RGB color
+   and single-target heater/AC temperature.
+
+6. Download the separate SDK ZIP for C integration and AmiHASSExample.
+   ARexx/ contains documentation and Status, Discover and SampleLight scripts.
+   The ARexx command port is AMIHASS while the service is running.
+
+Apply keeps a subwindow's edits in the parent draft. Save writes configuration
+or layout and follows that window's behavior. Close/Escape discards unsaved edits.
+Ctrl-S or Right-Amiga-S activates Save where available. Closing a connection test cancels it without waiting for HTTP to finish.
+
+Uninstall through Install-AmiHASS. Keep settings preserves your bridge config
+and dashboard layout; Remove settings removes them. Updates preserve settings
+and restore the previous running/stopped service state.
+
+Website: https://amihass.retrocs.org
+Source:  https://github.com/retrocs-org/amihass
+See REQUIREMENTS.txt, README.txt, CHANGELOG.MD, the SDK README.MD and ARexx/README.MD.

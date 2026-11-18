@@ -1,0 +1,1 @@
+{"name":"AmiHASS Browser 0.1 offline samples, filters and details", "application":"QATests:AmiHASSBrowser", "arguments":["SELFTEST"], "timeoutSeconds":120, "expectedReturnCode":0}

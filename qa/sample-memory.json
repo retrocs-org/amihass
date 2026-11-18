@@ -1,0 +1,9 @@
+{
+  "name": "AmiHASS 0.1 sample-memory stability",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": [
+    "SAMPLE-MEMORY"
+  ],
+  "timeoutSeconds": 180,
+  "expectedReturnCode": 0
+}

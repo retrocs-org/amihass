@@ -1,0 +1,1 @@
+{"name":"AmiHASS 0.1 real Novice maintenance choice", "application":"QATests:AmiHASSConnectionCheck", "arguments":["MAINTENANCE"], "timeoutSeconds":240, "expectedReturnCode":0}

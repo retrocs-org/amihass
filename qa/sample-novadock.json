@@ -1,0 +1,1 @@
+{"name":"AmiHASS Dashboard pages, presets and NovaDock shared sample controls","application":"QATests:AmiHASSConnectionCheck","arguments":["SAMPLE-DOCK"],"timeoutSeconds":180,"expectedReturnCode":0}

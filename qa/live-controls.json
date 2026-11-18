@@ -1,0 +1,9 @@
+{
+  "name": "AmiHASS approved real light and climate controls",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": [
+    "LIVE-CONTROLS"
+  ],
+  "timeoutSeconds": 360,
+  "expectedReturnCode": 0
+}
