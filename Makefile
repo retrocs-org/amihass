@@ -37,7 +37,7 @@ qa: all
 	python3 tools/stage.py build/qa
 	python3 tools/prepare_installer_qa.py
 
-RELEASE_OUTPUT ?= outputs/release-0.1
+RELEASE_OUTPUT ?= outputs/release-0.2
 RELEASE_CONFIG ?= examples/release-config.json
 release:
 	python3 tools/release.py build --config $(RELEASE_CONFIG) --output $(RELEASE_OUTPUT)

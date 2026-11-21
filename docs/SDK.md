@@ -187,7 +187,44 @@ interface locally. This additive operation preserves ABI 1 and message size.
 
 STATUS includes optional `feature.areas`, `feature.catalogue_filters` and
 `feature.subscriptions` entries in items[], each with state `1` when supported.
-Missing entries mean unverified support, even when the app version is 0.1.
+Missing entries mean unverified support, even when the app version is 0.2.
 Check these keys before offering room/type-scoped discovery or subscriptions.
 Unknown keys can be ignored. Older clients keep reading the original status
 and reconnect fields. The ABI and packet size remain unchanged.
+
+## Media-player controls
+
+The service accepts `Play`, `Pause`, `Previous`, `Next` and `Volume 0` through
+`Volume 100` for media players that advertise those capabilities. QUERY replies
+carry optional `control.media` flags (1 play, 2 pause, 4 previous, 8 next, 16
+volume), `control.media_volume`, `control.media_title` and `control.media_artist`.
+The title and artist use each item's `name`; volume uses integer-percent `state`.
+The SDK's `AHControls` decoder exposes these as typed fields. Missing metadata
+means unsupported or unknown; clients must not invent controls.
+
+ACTIONS still require a fresh available state. WAIT is queued, not confirmation:
+query again to confirm playback/volume, and compare update timestamps for track
+changes. The shared sample player supports these operations without networking.
+These optional metadata items preserve Exec message ABI 1.
+
+## Locks and doors
+
+Use Lock, Unlock or Open lock for smart locks. Open lock releases the latch
+and requires the advertised OPEN feature. QUERY replies expose control.lock,
+control.unlock and control.lock_open. Locks requiring a keypad code remain
+read-only; PIN entry is not supported. Motorised doors use Open cover,
+Close cover and Stop cover when supported. Door contact sensors are read-only.
+Dashboard tiles offer these explicit actions; confirmation follows state readback.
+The sample front-door lock and garage door can be controlled offline.
+A lock with supported_features=0 still supports lock/unlock; it has no
+latch-opening action. Bluetooth and cloud entities are separate choices.
+
+Dashboard action choices use the selected entity's reported capabilities.
+If capabilities cannot be verified, only Read only is offered. Real Unlock,
+latch-open and door-open actions ask for confirmation with the device name
+and entity ID. Cancel, Escape and closing the dialog send nothing. Sample
+controls do not need confirmation. Door contacts display Open/Closed; lock
+states remain separate. SDK and ARexx clients manage their own confirmation UI.
+
+SDK state values stay unchanged (for example off, locked, unlocked).
+`amihass_display_state` supplies human-readable UI labels without changing them.

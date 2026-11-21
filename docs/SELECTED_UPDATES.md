@@ -1,6 +1,6 @@
 # Selected-entity push investigation
 
-Status: investigated and measured on 18 November 2026. Version 0.1 continues to
+Status: investigated and measured on 18 November 2026. Version 0.2 continues to
 use the existing selected-entity REST scheduler. No persistent push transport is
 enabled or advertised by the app.
 
@@ -53,7 +53,7 @@ library-load reading must not be mistaken for steady-state usage or a leak.
   affected values stale and resume the existing bounded REST scheduler.
 - Reconcile selected entities once after reconnect; never replay device actions.
 - Keep Low memory mode on REST until measured resident RAM and fragmentation tests
-  justify an opt-in setting. No placeholder setting is shipped in version 0.1.
+  justify an opt-in setting. No placeholder setting is shipped in version 0.2.
 
 Before enabling it, implement the worker and test fragmented frames, pings,
 auth rejection, selection replacement, reconnect and idle cleanup on the minimum

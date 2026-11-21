@@ -4,7 +4,7 @@
 #include "nd_panel.h"
 unsigned int amihass_about_fields(struct NDPanelField *fields)
 {
- fields[0].label="App";fields[0].value="AmiHASS 0.1";fields[0].limit=0;
+ fields[0].label="App";fields[0].value="AmiHASS 0.2";fields[0].limit=0;
  fields[1].label="Purpose";fields[1].value="Home Assistant bridge for Amiga apps.";fields[1].limit=0;
  fields[2].label="Author";fields[2].value="NovaDock contributors";fields[2].limit=0;
  fields[3].label="Website";fields[3].value="https://amihass.retrocs.org";fields[3].limit=0;

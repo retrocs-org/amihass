@@ -2,7 +2,7 @@ from pathlib import Path
 import re,shlex
 from installer_parser import tokenize,parse,walk,head,FUNCTIONS,PARAMETERS
 ROOT=Path(__file__).resolve().parents[1]
-tree=parse(tokenize((ROOT/'Install-AmiHASS').read_text()))
+tree=parse(tokenize((ROOT/'Install').read_text()))
 procedures={n['items'][1][2].lower():n['items'][2:] for n in tree if head(n)=='procedure'}
 for n in walk(tree):
  h=head(n)
@@ -31,8 +31,9 @@ except AssertionError:pass
 else:raise AssertionError('Old broken COPYFILES form was not rejected')
 class End(Exception):pass
 class Scenario:
- def __init__(self,installed=False,action=0,remove=0,level=0,running=False,stop_fail=False,restart_fail=False,partial=False):
-  self.env={'@icon':'Bin:Package/Install-AmiHASS','@user-level':level,'@copyfiles-help':'Help'}
+ def __init__(self,installed=False,action=0,remove=0,level=0,running=False,stop_fail=False,restart_fail=False,partial=False,open_prefs=False):
+  self.open_prefs=open_prefs
+  self.env={'@icon':'Bin:Package/Install','@user-level':level,'@copyfiles-help':'Help'}
   self.files={};self.stopped=False;self.action=action;self.remove=remove;self.running=running;self.stop_fail=stop_fail;self.restart_fail=restart_fail;self.messages=[];self.message_levels=[];self.opened=False;self.restarted=False;self.copied_files=[];self.questions=[];self.result=''
   self.paths={'Service':'WORK:Apps/AmiHASS' if installed else 'SYS:Utilities/AmiHASS','Prefs':'WORK:Prefs' if installed else 'SYS:Prefs','Startup':'WORK:Startup' if installed else 'SYS:WBStartup','Boot':'1'}
   if installed:
@@ -77,6 +78,7 @@ class Scenario:
   if h in ('askchoice','askbool','askdir'):
    prompt=self.eval(tags['prompt'][0]);self.questions.append(prompt)
    if self.env['@user-level']==0:return self.eval(tags['default'][0])
+   if prompt=='Open AmiHASS Preferences now?':return int(self.open_prefs)
    if h=='askchoice':return self.remove if prompt.startswith('Keep or remove') else self.action
    if h=='askdir':return {'Choose the service/application drawer':'DATA:Apps/AmiHASS','Choose the Preferences drawer':'DATA:Preferences','Choose the Workbench startup drawer':'DATA:Boot'}[prompt]
    if 'Remove AmiHASS' in prompt:return 1
@@ -158,11 +160,18 @@ for node,labels in zip(choices,(['Update AmiHASS','Uninstall AmiHASS'],['Keep se
  assert [x[2] for x in choice['items'][1:]]==labels
  default=next(n for n in node['items'] if isinstance(n,dict) and head(n)=='default')
  assert default['items'][1][2]=='0'
-assert '"Cancel"' not in (ROOT/'Install-AmiHASS').read_text()
-print('Installer: all three modes, custom paths, prior running state, truthful results, final results in every mode, no auto-open and safe uninstall passed.')
+assert '"Cancel"' not in (ROOT/'Install').read_text()
+print('Installer: all three modes, custom paths, prior running state, truthful results, final results in every mode, optional fresh-install Preferences launch and safe uninstall passed.')
 
 s=Scenario(installed=True,level=0,running=False);s.paths['Boot']='0';s.run();assert 'Boot startup: Disabled' in s.messages[-1] and not s.opened and s.message_levels[-1]>=1
 s=Scenario(level=0);s.paths['Boot']='0';s.run();assert 'Boot startup: Enabled' in s.messages[-1] and not s.opened
 
 # Disable automatic Installer welcome before the first RUN, not only later UI.
 assert "prefix='(user 0)\\n(onerror" in (ROOT/'tools/prepare_installer_qa.py').read_text()
+
+for level in (0,1,2):
+ s=Scenario(level=level,open_prefs=True).run()
+ assert s.opened and s.result=='exit'
+ assert s.questions[-1]=='Open AmiHASS Preferences now?'
+ s=Scenario(installed=True,level=level,open_prefs=True).run()
+ assert not s.opened and 'Open AmiHASS Preferences now?' not in s.questions

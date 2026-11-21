@@ -28,6 +28,8 @@ struct Browser {
  struct AHBrowserLive live;char banner_text[96],room_id[96],room_name[64];const char *room_labels[4];
 };
 /* Keep stable IDs separate from display labels, including duplicate room names. */
+static const char *sample_display_state(const struct AHBrowserEntity *entity)
+{static struct AmiHASSEntity value;char json[700];snprintf(json,sizeof(json),"{\"entity_id\":\"%s\",\"state\":\"%s\",\"attributes\":%s}",entity->id,entity->state,entity->attributes);if(!amihass_state(json,&value))return entity->state;return amihass_display_state(&value);}
 static void set_room(struct Browser *b,const char *id,const char *name)
 {
  char copy[96],label[64];strncpy(copy,id,sizeof(copy)-1);copy[95]=0;strncpy(label,name,sizeof(label)-1);label[63]=0;
@@ -92,7 +94,7 @@ static int show_details(const struct AHBrowserEntity *entity,int selftest)
  fields[0].label="Entity ID";fields[0].value=entity->id;fields[0].limit=0;
  fields[1].label="Name";fields[1].value=entity->name;fields[1].limit=0;
  fields[2].label="Type";fields[2].value=domain;fields[2].limit=0;
- fields[3].label="State";fields[3].value=entity->state;fields[3].limit=0;
+ fields[3].label="State";fields[3].value=sample_display_state(entity);fields[3].limit=0;
  fields[4].label="Source";fields[4].value="Sample data (read-only)";fields[4].limit=0;
  length=(unsigned int)strlen(entity->attributes);if(length>350)return 0;
  n=5;for(at=0;at<length;at+=50){i=length-at;if(i>50)i=50;memcpy(parts[n-5],entity->attributes+at,i);parts[n-5][i]=0;fields[n].label=n==5 ? "Attributes":"";fields[n].value=parts[n-5];fields[n].limit=0;++n;}
@@ -108,8 +110,8 @@ static void publish_rows(struct Browser *b)
  b->labels.lh_Head=(struct Node *)&b->labels.lh_Tail;b->labels.lh_Tail=NULL;b->labels.lh_TailPred=(struct Node *)&b->labels.lh_Head;
  if(!b->sample)b->count=b->live.count;
  for(i=0;i<b->count;++i){
-  if(b->sample){const struct AHBrowserEntity *e=ah_browser_entity(b->indices[i]);sprintf(b->rows[i],"%-*.*s %.20s",b->name_columns,b->name_columns,e->name,e->state);}
-  else sprintf(b->rows[i],"%-*.*s %.20s",b->name_columns,b->name_columns,b->live.items[i].name,b->live.items[i].state);
+  if(b->sample){const struct AHBrowserEntity *e=ah_browser_entity(b->indices[i]);sprintf(b->rows[i],"%-*.*s %.20s",b->name_columns,b->name_columns,e->name,sample_display_state(e));}
+  else sprintf(b->rows[i],"%-*.*s %.20s",b->name_columns,b->name_columns,b->live.items[i].name,amihass_display_state(&b->live.items[i]));
   b->nodes[i].ln_Name=b->rows[i];AddTail(&b->labels,&b->nodes[i]);
  }
  if(b->selected>=b->count)b->selected=0;
@@ -163,7 +165,7 @@ static int show_live_details(struct Browser *b,int selftest)
  for(;;){
   sample_memory();ah_browser_live_step(&b->live);++ticks;
   if(!selftest && ticks%50==0 && !b->live.detail_loading && !b->live.client.pending)ah_browser_live_details(&b->live,(int)b->selected);
-  nd_panel_set(panel,1,b->live.detail.name);nd_panel_set(panel,3,b->live.detail.state);nd_panel_set(panel,4,b->live.detail.unit);ah_control_summary(b->live.detail.id,&b->live.controls,b->live.detail_result==AMIHASS_OK,capabilities);nd_panel_set(panel,5,capabilities);nd_panel_set(panel,6,b->live.detail.updated);
+  nd_panel_set(panel,1,b->live.detail.name);nd_panel_set(panel,3,amihass_display_state(&b->live.detail));nd_panel_set(panel,4,b->live.detail.unit);ah_control_summary(b->live.detail.id,&b->live.controls,b->live.detail_result==AMIHASS_OK,capabilities);nd_panel_set(panel,5,capabilities);nd_panel_set(panel,6,b->live.detail.updated);
   if(b->live.error[0])strcpy(source,b->live.error);
   else if(b->live.detail_loading)strcpy(source,"Refreshing live state...");
   else if(b->live.sample_mode)sprintf(source,"Sample simulation; age %lu s",b->live.age);
@@ -211,7 +213,7 @@ static struct Browser *open_browser(int sample)
  {static const char *labels[]={"Previous","Next","Refresh","Open","Close"};static const int ids[]={103,104,105,101,102};
  for(i=0;i<5;++i){ng.ng_TopEdge=height-32;ng.ng_Height=22;ng.ng_Width=(width-24)/5-6;ng.ng_LeftEdge=12+(int)i*(width-24)/5;ng.ng_GadgetText=(STRPTR)labels[i];ng.ng_Flags=PLACETEXT_IN;ng.ng_GadgetID=ids[i];
  last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto failed;if(i==0)b->previous=last;if(i==1)b->next=last;if(i==3)b->details=last;}}
- b->window=OpenWindowTags(NULL,WA_Title,(ULONG)(sample ? "AmiHASS Browser 0.1 - Sample data":"AmiHASS Browser 0.1 - Devices"),WA_PubScreen,(ULONG)b->screen,WA_Left,(b->screen->Width-width)/2,WA_Top,b->screen->BarHeight+10,WA_Width,width,WA_Height,height,WA_Flags,WFLG_CLOSEGADGET|WFLG_DRAGBAR|WFLG_DEPTHGADGET|WFLG_ACTIVATE|WFLG_SMART_REFRESH,WA_IDCMP,LISTVIEWIDCMP|STRINGIDCMP|CYCLEIDCMP|BUTTONIDCMP|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY,WA_Gadgets,(ULONG)b->gadgets,TAG_DONE);
+ b->window=OpenWindowTags(NULL,WA_Title,(ULONG)(sample ? "AmiHASS Browser 0.2 - Sample data":"AmiHASS Browser 0.2 - Devices"),WA_PubScreen,(ULONG)b->screen,WA_Left,(b->screen->Width-width)/2,WA_Top,b->screen->BarHeight+10,WA_Width,width,WA_Height,height,WA_Flags,WFLG_CLOSEGADGET|WFLG_DRAGBAR|WFLG_DEPTHGADGET|WFLG_ACTIVATE|WFLG_SMART_REFRESH,WA_IDCMP,LISTVIEWIDCMP|STRINGIDCMP|CYCLEIDCMP|BUTTONIDCMP|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY,WA_Gadgets,(ULONG)b->gadgets,TAG_DONE);
  if(!b->window)goto failed;GT_RefreshWindow(b->window,NULL);filter_rows(b,"");return b;
 failed:
  if(b->gadgets)FreeGadgets(b->gadgets);if(b->visual)FreeVisualInfo(b->visual);if(b->screen)UnlockPubScreen(NULL,b->screen);FreeVec(b);return NULL;
@@ -260,7 +262,7 @@ int main(int argc,char **argv)
   while((msg=GT_GetIMsg(b->window->UserPort))!=NULL){cls=msg->Class;code=msg->Code;id=cls==IDCMP_GADGETUP && msg->IAddress ? ((struct Gadget *)msg->IAddress)->GadgetID:0;GT_ReplyIMsg(msg);
    if(cls==IDCMP_CLOSEWINDOW || (cls==IDCMP_RAWKEY && code==0x45) || id==102){done=1;break;}
    if(id==1 && code<b->count)b->selected=code;
-   if(id==6 && code<2){int previous=b->live.sample_mode;ah_browser_live_close(&b->live);ah_browser_live_init(&b->live);b->live.sample_mode=previous;b->sample=0;b->device_view=code==0;b->selected_device[0]=0;SetWindowTitles(b->window,(STRPTR)(b->sample ? "AmiHASS Browser 0.1 - Sample data":(b->device_view ? "AmiHASS Browser 0.1 - Devices":"AmiHASS Browser 0.1 - Entities")),(STRPTR)-1);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
+   if(id==6 && code<2){int previous=b->live.sample_mode;ah_browser_live_close(&b->live);ah_browser_live_init(&b->live);b->live.sample_mode=previous;b->sample=0;b->device_view=code==0;b->selected_device[0]=0;SetWindowTitles(b->window,(STRPTR)(b->sample ? "AmiHASS Browser 0.2 - Sample data":(b->device_view ? "AmiHASS Browser 0.2 - Devices":"AmiHASS Browser 0.2 - Entities")),(STRPTR)-1);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
    if(id==7){if(code==0)set_room(b,"","");else choose_room(b,0);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
    if(id==3 || id==4 || id==100 || id==105)filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);
    if(id==106 && b->selected_device[0])return_devices(b);

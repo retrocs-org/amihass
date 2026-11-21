@@ -87,14 +87,19 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(tool.payload_names,['AmiHASS-0.1-sdk.zip','AmiHASS-0.1.lha'])
         for output in ('../outside','outputs/release','outputs/release/private'):
             with self.assertRaises(support.ReleaseError):release.Release(self.root,self.config,output=output)
-        (self.root/'VERSION').write_text('VERSION=0.2\n')
+        (self.root/'VERSION').write_text('VERSION=0.3\n')
         with self.assertRaises(support.ReleaseError):support.version(self.root)
 
-    def test_deterministic_archives_and_corruption(self):
+    @patch("release_support.time.time", return_value=1795163518)
+    def test_current_archive_dates_and_corruption(self, clock):
         entries={'AmiHASS/hello':b'hello world','AmiHASS/empty':b''}
         a=self.root/'a.lha';b=self.root/'b.lha'
         support.lha_write(a,entries);support.lha_write(b,entries)
         self.assertEqual(a.read_bytes(),b.read_bytes());support.verify_lha(a,entries)
+        import time, struct, zipfile
+        stamp=time.localtime(clock.return_value)[:6]
+        dos=struct.unpack_from('<I',a.read_bytes(),15)[0]
+        self.assertEqual((1980+(dos>>25), (dos>>21)&15, (dos>>16)&31, (dos>>11)&31, (dos>>5)&63, (dos&31)*2), stamp[:5]+(stamp[5]//2*2,))
         good=a.read_bytes()
         for invalid in (good[:-1],good+b'extra',good[:-2]+b'x\0'):
             a.write_bytes(invalid)
@@ -105,6 +110,8 @@ class ReleaseTests(unittest.TestCase):
         z=self.root/'a.zip';z2=self.root/'b.zip'
         support.zip_write(z,items);support.zip_write(z2,items)
         self.assertEqual(z.read_bytes(),z2.read_bytes());support.verify_zip(z,entries)
+        with zipfile.ZipFile(z) as archive:
+            self.assertTrue(all(i.date_time == stamp[:5]+(stamp[5]//2*2,) for i in archive.infolist()))
         with self.assertRaises(support.ReleaseError):support.verify_zip(z,{'other':b''})
 
     def test_api_redirects_keep_credentials_on_the_same_read_origin(self):
@@ -155,7 +162,7 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(support.ReleaseError):release.changelog_notes(self.root,'0.1')
         (self.root/'CHANGELOG.MD').write_text('## AmiHASS 0.1\n\n### Features\n\n- First release.\n\n### Enhancements\n\n### Bugs\n')
         self.assertEqual(release.changelog_notes(self.root,'0.1'),'### Features\n\n- First release.')
-        self.assertEqual((ROOT/'docs/RELEASE-NOTES.md').read_text().strip(),release.changelog_notes(ROOT,'0.1'))
+        self.assertEqual((ROOT/'docs/RELEASE-NOTES.md').read_text().strip(),release.changelog_notes(ROOT,support.version(ROOT)))
 
     def test_aminet_upload_names_are_not_versioned(self):
         mod=module('make-aminet-release')
@@ -228,7 +235,7 @@ class ReleaseTests(unittest.TestCase):
         from inventory import runtime_inventory,sdk_inventory
         with patch('inventory.validate',side_effect=lambda root,items:items):
             runtime=runtime_inventory(ROOT);sdk=sdk_inventory(ROOT)
-        for name in ('AmiHASSPrefs.info','AmiHASSBrowser.info','AmiHASSDashboard.info','Install-AmiHASS'):
+        for name in ('AmiHASSPrefs.info','AmiHASSBrowser.info','AmiHASSDashboard.info','Install'):
             self.assertIn(name,runtime)
         self.assertIn('AmiHASSExample',sdk);self.assertNotIn('AmiHASSExample',runtime)
 

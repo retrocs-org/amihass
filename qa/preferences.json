@@ -1,7 +1,9 @@
 {
-  "name": "AmiHASS 0.1 service controls, offline save, About and diagnostics",
+  "name": "AmiHASS 0.2 service controls, offline save, About and diagnostics",
   "application": "QATests:AmiHASSConnectionCheck",
-  "arguments": ["PREFERENCES"],
+  "arguments": [
+    "PREFERENCES"
+  ],
   "timeoutSeconds": 180,
   "expectedReturnCode": 0
 }

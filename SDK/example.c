@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "amihass.h"
-const char example_version[]="$VER: AmiHASSExample 0.1";
+const char example_version[]="$VER: AmiHASSExample 0.2";
 static struct AmiHASSMessage *exchange(struct AmiHASSClient *c,int kind,const char *entity,const char *action)
 {struct AmiHASSMessage *m;int i;if(!amihass_send(c,kind,"SDK.Example",entity,action,0,kind==AMIHASS_QUERY ? AMIHASS_QUERY_ONCE:0,NULL,NULL))return NULL;for(i=0;i<150;++i){m=amihass_reply(c);if(m)return m;if(!c->pending)break;Delay(5);}amihass_client_close(c);return NULL;}
 static int reading(struct AmiHASSClient *c,const char *entity)

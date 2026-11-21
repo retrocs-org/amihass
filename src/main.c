@@ -11,9 +11,9 @@
 #include "ah_log.h"
 #include "connectivity.h"
 #ifdef AMIHASS_SERVICE
-const char version[]="$VER: AmiHASSService 0.1 (17.11.2026)";
+const char version[]="$VER: AmiHASSService 0.2 (20.11.2026)";
 #else
-const char version[]="$VER: AmiHASSPrefs 0.1 (17.11.2026)";
+const char version[]="$VER: AmiHASSPrefs 0.2 (20.11.2026)";
 #endif
 long __stack=65536;
 static int exchange(struct AmiHASSClient *c,int kind,const char *entity,const char *action,struct AmiHASSMessage **m)
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   else {puts("AmiHASSService [SERVICE|STATUS|RECONNECT|STOP|QUERY entity|ACTION entity Toggle]");return 20;}
   if(mode==AMIHASS_STOP)return stop_service(&client);
   if(!exchange(&client,mode,argc>2 ? argv[2]:NULL,argc>3 ? argv[3]:NULL,&m)){puts("AmiHASS service is not running.");amihass_client_close(&client);return 20;}
-  if(mode==AMIHASS_STATUS)printf("AmiHASS 0.1 ABI 1; server %s; subscriptions %ld; uptime %lu seconds; connected %s\n",m->status.server,m->status.subscriptions,m->status.uptime,m->status.connected ? "yes":"no");
+  if(mode==AMIHASS_STATUS)printf("AmiHASS 0.2 ABI 1; server %s; subscriptions %ld; uptime %lu seconds; connected %s\n",m->status.server,m->status.subscriptions,m->status.uptime,m->status.connected ? "yes":"no");
   else if(mode==AMIHASS_RECONNECT)puts("Home Assistant reconnect requested.");
   else printf("%s: %s %s (%s)\n",m->item.id,m->item.state,m->item.unit,amihass_problem(m->result));n=m->result==AMIHASS_OK || m->result==AMIHASS_WAIT ? 0:10;FreeVec(m);amihass_client_close(&client);return n;
  }

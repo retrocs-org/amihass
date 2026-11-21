@@ -1,4 +1,4 @@
-; AmiHASS 0.1 installer. Installer 42+, AmigaOS 3.x.
+; AmiHASS 0.2 installer. Installer 42+, AmigaOS 3.x.
 (set @app-name "AmiHASS")
 (set @language "english")
 (if (= @icon "") (set #src (expandpath "")) (set #src (pathonly (expandpath @icon))))
@@ -31,13 +31,15 @@
  (set #del (tackon #remove-dir "AmiHASSService")) (P_DELETE)
  (set #del (tackon #remove-dir "StartInstaller")) (P_DELETE)
  (set #del (tackon #remove-dir "SetupStartup")) (P_DELETE)
+ (set #del (tackon #remove-dir "Install")) (P_DELETE)
+ (set #del (tackon #remove-dir "Install.info")) (P_DELETE)
  (set #del (tackon #remove-dir "Install-AmiHASS")) (P_DELETE)
  (set #del (tackon #remove-dir "Install-AmiHASS.info")) (P_DELETE)
  (set #del (tackon #remove-dir "README.txt")) (P_DELETE)
  (set #del (tackon #remove-dir "LICENSE")) (P_DELETE)
  (set #del (tackon #remove-dir "NOTICE")) (P_DELETE)
  )
-(welcome "AmiHASS 0.1 - Amiga Home Assistant\nShared Home Assistant service for AmigaOS applications.")
+(welcome "AmiHASS 0.2 - Amiga Home Assistant\nShared Home Assistant service for AmigaOS applications.")
 (set #level @user-level)
 (set #action 0)
 ; Novice mode still offers maintenance on an existing installation.
@@ -99,8 +101,8 @@
   (set #copy "AmiHASSService") (P_COPY)
   (set #copy "StartInstaller") (P_COPY)
   (set #copy "SetupStartup") (P_COPY)
-  (set #copy "Install-AmiHASS") (P_COPY)
-  (set #copy "Install-AmiHASS.info") (P_COPY)
+  (set #copy "Install") (P_COPY)
+  (set #copy "Install.info") (P_COPY)
   (set #copy "README.txt") (P_COPY)
   (set #copy "LICENSE") (P_COPY)
   (set #copy "NOTICE") (P_COPY)
@@ -123,7 +125,7 @@
     (set #result "AmiHASS updated. The service was restarted.")
     (set #result "AmiHASS updated, but the service could not be restarted. Open Preferences to start it manually.")))
   (if (= #installed 0)
-   (set #result "AmiHASS 0.1 installed. The service is stopped."))
+   (set #result "AmiHASS 0.2 installed. The service is stopped."))
   (set #boot-result "Disabled")
   (if #startup (set #boot-result (cat "Enabled - " #startup-dir)))
   (P_CLEAN)
@@ -140,4 +142,11 @@
    " the service, or manage its settings. Choose Server data or Sample data."
    "\nOpen AmiHASSBrowser to explore devices."
    "\nOpen AmiHASSDashboard to build your layout.")
+  (if (= #installed 0)
+   (if (askbool
+    (prompt "Open AmiHASS Preferences now?")
+    (help "Configure your server or choose Sample data, then start the service. Choose No to open Preferences later.")
+    (choices "Yes" "No") (default 0))
+    (if (<> (run (cat "\"" (tackon #dest "SetupStartup") "\" OPEN \"" (tackon #prefs "AmiHASSPrefs") "\"")) 0)
+     (message "Preferences could not be opened. Open it manually from " #prefs "."))))
   (exit (quiet))))

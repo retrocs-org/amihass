@@ -101,7 +101,7 @@ static int installer_mode_check(int mode)
 {
  struct AmiHASSConfig c,loaded;struct MsgPort *guard;struct DiskObject *icon;BPTR lock,f;int ok;
  lock=CreateDir("RAM:AmiHASS-QA");if(lock)UnLock(lock);
- amihass_config_defaults(&c);c.boot=1;c.connection.poll=45;strcpy(c.connection.url,"https://127.0.0.1:1");strcpy(c.token,"fixture-config-token-for-validation");strcpy(c.service_dir,"RAM:AmiHASS-QA/Service");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
+ amihass_config_defaults(&c);c.sample_mode=1;c.boot=1;c.connection.poll=45;strcpy(c.connection.url,"https://127.0.0.1:1");strcpy(c.token,"fixture-config-token-for-validation");strcpy(c.service_dir,"RAM:AmiHASS-QA/Service");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
  if(!amihass_config_save(&c) || !amihass_config_load(&loaded) || strcmp(loaded.token,c.token) || loaded.connection.poll!=45){puts("FAIL: unified native cfg roundtrip.");return 10;}
  printf("QA: Installer mode %d\n",mode);
  puts("PASS: unified native cfg preserves server, token, polling, boot and component paths.");
@@ -134,7 +134,7 @@ static int maintenance_choice_check(void)
  l=CreateDir("RAM:AmiHASS-QA");if(l)UnLock(l);l=CreateDir(c.service_dir);if(l)UnLock(l);l=CreateDir(c.prefs_dir);if(l)UnLock(l);
  f=Open("RAM:AmiHASS-QA/Service/AmiHASSService",MODE_NEWFILE);if(!f)return 10;Close(f);f=Open("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs",MODE_NEWFILE);if(!f)return 10;Close(f);
  if(!amihass_config_save(&c))return 10;amihass_erase(&c,sizeof(c));
- rc=qa_command("SYS:System/Installer QATests:Install-AmiHASS APPNAME AmiHASS MINUSER NOVICE DEFUSER NOVICE NOPRETEND NOLOG NOPRINT LOGFILE AutoRun:maintenance-choice.log");
+ rc=qa_command("SYS:System/Installer QATests:Install APPNAME AmiHASS MINUSER NOVICE DEFUSER NOVICE NOPRETEND NOLOG NOPRINT LOGFILE AutoRun:maintenance-choice.log");
  if(!qa_exists("RAM:AmiHASS-QA/Service/AmiHASSService") || !qa_exists(AMIHASS_CONFIG_FILE))return 10;
  puts("PASS: real Installer maintenance was inspected in Novice mode and cancelled without changes.");return 0;
 }
@@ -263,6 +263,7 @@ static int sample_bridge_check(int dock)
  puts("PASS: Dashboard reads six tiles; independent SDK example changes a light seen by another client.");
  m=sample_exchange(&a,AMIHASS_DIAGNOSTICS,"SampleClient1",NULL,NULL);if(!m)goto cleanup;i=m->count>10&&!strcmp(m->items[8].state,"0")&&!strcmp(m->items[9].state,"0")&&!strcmp(m->items[10].state,"0")&&!strcmp(m->items[11].state,"0");FreeVec(m);if(!i)goto cleanup;
  if(dock&&(qa_command("QATests:AmiHASSNovaDockCheck >AutoRun:novadock.log")||qa_command("QATests:NovaDockHASS CONTROL-SELFTEST >AutoRun:novadock-ui.log")))goto cleanup;
+ {const char *ids[]={"lock.amihass_sample_front_door","lock.amihass_sample_front_door","lock.amihass_sample_front_door","cover.amihass_sample_garage","cover.amihass_sample_garage","cover.amihass_sample_garage"};const char *commands[]={"Unlock","Lock","Open lock","Open cover","Stop cover","Close cover"};int k;for(k=0;k<6;++k){struct AHControls controls;m=sample_exchange(&a,AMIHASS_ACTION,"LockQA.A",ids[k],commands[k]);if(!m)goto cleanup;i=m->result==AMIHASS_WAIT;FreeVec(m);if(!i)goto cleanup;m=sample_exchange(&b,AMIHASS_QUERY,"LockQA.B",ids[k],NULL);if(!m)goto cleanup;amihass_controls_items(m->items,m->count,&controls);i=m->result==AMIHASS_OK&&amihass_control_matches(&controls,m->item.state,commands[k]);FreeVec(m);if(!i)goto cleanup;}puts("PASS: shared smart-lock and motorised-door actions confirmed by a second client.");}
  if(!selected_client_check())goto cleanup;puts("PASS: sample device browsing, state reads and controls make zero HTTP requests.");ok=1;
 cleanup:
  amihass_client_close(&a);amihass_client_close(&b);qa_command("QATests:AmiHASSService STOP");Forbid();i=FindPort(AMIHASS_PORT)!=NULL;Permit();if(i)ok=0;DeleteFile(AMIHASS_CONFIG_FILE);return ok ? 0:10;

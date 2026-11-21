@@ -13,7 +13,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / 'Install-AmiHASS'
+SCRIPT = ROOT / 'Install'
 
 FUNCTIONS = {
     # control flow and data

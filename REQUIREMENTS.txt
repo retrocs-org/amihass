@@ -1,4 +1,4 @@
-AmiHASS 0.1 - Requirements
+AmiHASS 0.2 - Requirements
 ==========================
 
 Classic AmigaOS 3.x, a 68000 or better CPU, and Installer 42 or newer.

@@ -124,3 +124,25 @@ It refuses to interrupt an existing emulator, configures shared Sample data
 without a token and captures actual rendered windows. Original guest PPM files
 and the test report remain in `outputs/website-captures/`; lossless PNG copies
 are written to `public-web/assets/screenshots/`.
+
+## NovaDock 0.5 / AmiHASS 0.2 candidate pairing
+
+The 21 November 2026 local pairing check passed against the packaged AmiHASS
+0.2 ZIP and NovaDock 0.5 LHA. Selected JUnit/transcripts and archive hashes are
+retained in `outputs/novadock-0.5-pairing/qa/`.
+
+- The actual native Installer file/startup/removal operations passed with the
+  generated answers in all three logical user modes: fresh install,
+  running/stopped updates, reinstall, both settings policies and unrelated files.
+- Two-client sample controls, SDK example and ARexx passed with zero HTTP calls.
+- Five hundred controls plus five hundred reads retained 32 bytes after warm-up,
+  below the 64 KiB budget; this is a system-wide Fast RAM observation.
+- The standalone SDK compiled from the archive payload. Public SDK hashes match
+  NovaDock's recorded ABI 1 snapshot, paired with AmiHASS 0.2.
+- NovaDock's actual native HASS client passed missing-service guidance,
+  room/type/device/search filtering, brightness readback and three outages.
+
+No live device actions or publication occurred. These local development-package
+results do not replace source-bound readiness after freezing a clean release.
+Physical-device tests and interactive Installer prompt inspection remain separate
+checks. The application version remains 0.2.

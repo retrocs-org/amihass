@@ -1,11 +1,11 @@
-AmiHASS 0.1 - Quick start
+AmiHASS 0.2 - Quick start
 =========================
 
-1. Extract the entire AmiHASS-0.1 drawer, including .info files.
-   Double-click Install-AmiHASS. Keep the extracted package in its own drawer.
+1. Extract the entire AmiHASS-0.2 drawer, including .info files.
+   Double-click Install. Keep the extracted package in its own drawer.
 
 2. Read the Installer's final page for the actual destinations. All modes,
-   including Novice, show this page. Preferences does not open automatically.
+   including Novice, show this page. Fresh installations then offer to open Preferences.
 
 3. Open AmiHASSPrefs in the installed Preferences drawer (normally SYS:Prefs).
    To try it offline, choose Sample data under Data source and Save. Reopen
@@ -33,7 +33,7 @@ Apply keeps a subwindow's edits in the parent draft. Save writes configuration
 or layout and follows that window's behavior. Close/Escape discards unsaved edits.
 Ctrl-S or Right-Amiga-S activates Save where available. Closing a connection test cancels it without waiting for HTTP to finish.
 
-Run Install-AmiHASS again for Update AmiHASS or Uninstall AmiHASS, in every
+Run Install again for Update AmiHASS or Uninstall AmiHASS, in every
 mode including Novice. Keep settings is the uninstall default and preserves your bridge config
 and dashboard layout; Remove settings removes them. Updates preserve settings
 and restore the previous running/stopped service state.
@@ -41,3 +41,8 @@ and restore the previous running/stopped service state.
 Website: https://amihass.retrocs.org
 Source:  https://github.com/retrocs-org/amihass
 See REQUIREMENTS.txt, README.txt, CHANGELOG.MD, the SDK README.MD and ARexx/README.MD.
+
+Locks and doors (0.2)
+Add a Lock or Door / cover tile and choose its click action.
+Try the sample front-door lock and garage door without a server.
+Door contact sensors are read-only. Locks needing PIN entry are read-only.

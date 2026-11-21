@@ -1,1 +1,9 @@
-{"name":"AmiHASS 0.1 authenticated live server, catalogue and state read", "application":"QATests:AmiHASSConnectionCheck", "arguments":["LIVE-READONLY"], "timeoutSeconds":240, "expectedReturnCode":0}
+{
+  "name": "AmiHASS 0.2 authenticated live server, catalogue and state read",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": [
+    "LIVE-READONLY"
+  ],
+  "timeoutSeconds": 240,
+  "expectedReturnCode": 0
+}

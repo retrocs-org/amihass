@@ -4,7 +4,7 @@ import sys,argparse
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tests'))
 from installer_parser import parse,tokenize,head
-parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,default=ROOT/'Install-AmiHASS');parser.add_argument('--destination',type=Path,default=ROOT/'build/qa');args=parser.parse_args();args.destination.mkdir(parents=True,exist_ok=True)
+parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,default=ROOT/'Install');parser.add_argument('--destination',type=Path,default=ROOT/'build/qa');args=parser.parse_args();args.destination.mkdir(parents=True,exist_ok=True)
 nodes=parse(tokenize(args.source.read_text()));qa_level=1
 def emit(n,action,remove):
  if isinstance(n,tuple):return '"'+n[2]+'"' if n[0]=='str' else n[2]

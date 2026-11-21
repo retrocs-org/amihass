@@ -38,7 +38,14 @@ void ah_sample_request(struct AHSample *s,struct AmiHASSMessage *m,unsigned long
   if(m->kind==AMIHASS_ACTION){
    if(!amihass_action(e->id,m->action,path,body)||!amihass_control_allowed(&s->controls[i],m->action)){m->result=AMIHASS_UNSUPPORTED;return;}
    if(!amihass_available(e) && strncmp(e->id,"scene.",6)){m->result=AMIHASS_UNAVAILABLE;return;}
-   if(!strncmp(m->action,"Brightness ",11)){s->controls[i].level_known=1;s->controls[i].level=atoi(m->action+11);strcpy(e->state,s->controls[i].level ? "on":"off");}
+   if(!strcmp(m->action,"Lock"))strcpy(e->state,"locked");
+   else if(!strcmp(m->action,"Unlock"))strcpy(e->state,"unlocked");
+   else if(!strcmp(m->action,"Open lock"))strcpy(e->state,"open");
+   else if(!strcmp(m->action,"Play"))strcpy(e->state,"playing");
+   else if(!strcmp(m->action,"Pause"))strcpy(e->state,"paused");
+   else if(!strcmp(m->action,"Next")||!strcmp(m->action,"Previous")){strcpy(s->controls[i].media_title,!strcmp(m->action,"Next") ? "Next sample track":"Previous sample track");}
+   else if(!strncmp(m->action,"Volume ",7)){s->controls[i].volume_known=1;s->controls[i].volume=atoi(m->action+7);}
+   else if(!strncmp(m->action,"Brightness ",11)){s->controls[i].level_known=1;s->controls[i].level=atoi(m->action+11);strcpy(e->state,s->controls[i].level ? "on":"off");}
    else if(!strncmp(m->action,"Color ",6)){s->controls[i].color_known=1;s->controls[i].rgb=strtoul(m->action+7,NULL,16);strcpy(e->state,"on");if(!s->controls[i].level)s->controls[i].level=100;}
    else if(!strncmp(m->action,"Fan speed ",10)){s->controls[i].speed_known=1;s->controls[i].speed=atoi(m->action+10);strcpy(e->state,s->controls[i].speed ? "on":"off");}
    else if(!strncmp(m->action,"Position ",9)){s->controls[i].position_known=1;s->controls[i].position_value=atoi(m->action+9);strcpy(e->state,s->controls[i].position_value ? "open":"closed");}
@@ -52,7 +59,7 @@ void ah_sample_request(struct AHSample *s,struct AmiHASSMessage *m,unsigned long
     if(s->controls[i].level>0)s->remembered_level[i]=s->controls[i].level;
     if(!strcmp(e->state,"on")&&s->controls[i].level==0){s->controls[i].level=s->remembered_level[i];s->controls[i].level_known=1;}
    }
-   sprintf(e->updated,"Sample change %lu",now);m->result=AMIHASS_WAIT;
+   sprintf(e->updated,"Sample change %lu.%lu",now,++s->revision);m->result=AMIHASS_WAIT;
   }else m->result=amihass_available(e) ? AMIHASS_OK:AMIHASS_UNAVAILABLE;
   m->item=*e;{struct AHControls controls=s->controls[i];if(controls.brightness&&!strcmp(e->state,"off")){controls.level=0;controls.level_known=1;}if(controls.fan_speed&&!strcmp(e->state,"off")){controls.speed=0;controls.speed_known=1;}m->count=amihass_control_items(&controls,m->items,AMIHASS_PAGE);}return;
  }else{m->result=AMIHASS_UNSUPPORTED;return;}

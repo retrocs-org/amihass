@@ -76,9 +76,9 @@ int main(void)
  book=AllocVec(sizeof(*book),MEMF_PUBLIC|MEMF_CLEAR);if(!book)goto done;ah_dashboard_book_defaults(book);ah_dashboard_template(&book->pages[0],2);strcpy(book->pages[0].tiles[0].action,"Controls");if(!ah_dashboard_book_save(book,AH_DASH_FILE)){FreeVec(book);goto done;}FreeVec(book);
  if(!launch("QATests:AmiHASSService SERVICE")||!sample_ready())goto done;
  if(!launch("QATests:AmiHASSPrefs"))goto done;w=await_window("AmiHASS Preferences");Delay(150);if(!capture(w,"preferences"))goto done;if(!escape_window("AmiHASS Preferences"))goto done;
- if(!launch("QATests:AmiHASSBrowser"))goto done;w=await_window("AmiHASS Browser 0.1 - Devices");Delay(150);if(!w||!gadget_click(w,6))goto done;w=await_window("AmiHASS Browser 0.1 - Entities");Delay(200);if(!capture(w,"device-browser"))goto done;
- if(!gadget_click(w,7))goto done;w=await_window("AmiHASS - Select room");Delay(100);if(!capture(w,"room-selector"))goto done;if(!escape_window("AmiHASS - Select room")||!escape_window("AmiHASS Browser 0.1 - Entities"))goto done;
- if(!launch("QATests:AmiHASSDashboard"))goto done;w=await_window("AmiHASS Dashboard 0.1");Delay(300);if(!capture(w,"dashboard"))goto done;if(!escape_window("AmiHASS Dashboard 0.1"))goto done;
+ if(!launch("QATests:AmiHASSBrowser"))goto done;w=await_window("AmiHASS Browser 0.2 - Devices");Delay(150);if(!w||!gadget_click(w,6))goto done;w=await_window("AmiHASS Browser 0.2 - Entities");Delay(200);if(!capture(w,"device-browser"))goto done;
+ if(!gadget_click(w,7))goto done;w=await_window("AmiHASS - Select room");Delay(100);if(!capture(w,"room-selector"))goto done;if(!escape_window("AmiHASS - Select room")||!escape_window("AmiHASS Browser 0.2 - Entities"))goto done;
+ if(!launch("QATests:AmiHASSDashboard"))goto done;w=await_window("AmiHASS Dashboard 0.2");Delay(300);if(!capture(w,"dashboard"))goto done;if(!escape_window("AmiHASS Dashboard 0.2"))goto done;
  if(!launch("QATests:AmiHASSPrefs ABOUT"))goto done;w=await_window("About AmiHASS");if(!capture(w,"about"))goto done;if(!escape_window("About AmiHASS"))goto done;
  ok=1;
  done:if(screen)UnlockPubScreen(NULL,screen);if(CyberGfxBase)CloseLibrary(CyberGfxBase);if(GfxBase)CloseLibrary((struct Library *)GfxBase);if(IntuitionBase)CloseLibrary((struct Library *)IntuitionBase);puts(ok ? "PASS: genuine Preferences, Browser, room selector, Dashboard and About screenshots.":"FAIL: native website capture.");return ok ? 0:10;

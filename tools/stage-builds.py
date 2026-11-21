@@ -40,6 +40,21 @@ def copy_files(source, target, names):
         if dst.read_bytes()!=src.read_bytes():raise ValueError('Staging verification failed: '+dst.name)
 
 
+
+def remove_legacy_installer(target):
+    """Remove only superseded installer names after the replacement is staged."""
+    for name in ('Install', 'Install.info'):
+        if not (target/name).is_file() or (target/name).is_symlink():
+            raise ValueError('Missing replacement installer: '+name)
+    for name in ('Install-AmiHASS', 'Install-AmiHASS.info'):
+        path=target/name
+        if path.is_symlink() or (path.exists() and not path.is_file()):
+            raise ValueError('Invalid legacy installer path: '+name)
+    for name in ('Install-AmiHASS', 'Install-AmiHASS.info'):
+        path=target/name
+        if path.exists():path.unlink()
+
+
 def ensure_drawer_icon(source, destination):
     """Restore the outer drawer icon without overwriting user customizations."""
     icon=destination/'AmiHASS.info'
@@ -88,6 +103,7 @@ def main():
             if member.startswith('AmiHASS/'):
                 name=member[len('AmiHASS/'):];path=stage/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data);names.append(name)
         copy_files(stage,target,names)
+    remove_legacy_installer(target)
     copy_files(args.output,args.destination,[archive,archive+'.sha256'])
     print('Verified installer: '+str(target))
     print('Existing Workbench drawer locks and unrelated files retained.')

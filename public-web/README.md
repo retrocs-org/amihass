@@ -72,7 +72,7 @@ the native Amiga build does not require it.
 ## Genuine screenshots
 
 `assets/screenshots/` contains lossless PNG conversions of guest window captures.
-They show AmiHASS 0.1 on AmigaOS 3.2.1 in Amiga Workbench.app, using shared
+They show AmiHASS 0.2 on AmigaOS 3.2.1 in Amiga Workbench.app, using shared
 Sample data and no server token. Window frames and contents are captured from
 the emulator screen bitmap; no interface elements are drawn by the website.
 
@@ -88,3 +88,9 @@ Browser, the room selector, Dashboard and About. It never stops an existing
 session. Original PPM files, guest logs and JUnit reports are retained under
 `outputs/website-captures/`. The website PNGs preserve the captured dimensions;
 only file format conversion is performed.
+
+## Development information
+
+The 0.2 development section describes unreleased lock/door controls, media SDK
+controls, shared samples and installer changes. Download versions and links
+continue to come only from published GitHub releases.

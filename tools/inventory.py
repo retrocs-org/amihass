@@ -1,7 +1,7 @@
 """One explicit inventory for runtime, SDK, staging and release verification."""
 from pathlib import Path
 BINARIES=('AmiHASSExample','AmiHASSPrefs','AmiHASSService','AmiHASSBrowser','AmiHASSDashboard','StartInstaller','SetupStartup')
-RUNTIME=('AmiHASSDashboard','AmiHASSDashboard.info','AmiHASSBrowser','AmiHASSBrowser.info','AmiHASSPrefs','AmiHASSPrefs.info','AmiHASSService','StartInstaller','SetupStartup','Install-AmiHASS','Install-AmiHASS.info','README.txt','README.MD','CHANGELOG.MD','LICENSE','LICENSE.MD','NOTICE','QUICKSTART.txt','REQUIREMENTS.txt')
+RUNTIME=('AmiHASSDashboard','AmiHASSDashboard.info','AmiHASSBrowser','AmiHASSBrowser.info','AmiHASSPrefs','AmiHASSPrefs.info','AmiHASSService','StartInstaller','SetupStartup','Install','Install.info','README.txt','README.MD','CHANGELOG.MD','LICENSE','LICENSE.MD','NOTICE','QUICKSTART.txt','REQUIREMENTS.txt')
 
 def validate(root, inventory):
     for name,source in inventory.items():

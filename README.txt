@@ -1,4 +1,4 @@
-# AmiHASS 0.1
+# AmiHASS 0.2
 
 A shared Home Assistant bridge for Classic AmigaOS 3.x and 68000 or better.
 AmiHASSService runs the bridge, AmiHASSPrefs manages its settings and status,
@@ -7,7 +7,7 @@ Amiga applications.
 
 ## Install
 
-Run `Install-AmiHASS`. Novice mode uses the standard drawers, enables boot
+Run `Install`. Novice mode uses the standard drawers, enables boot
 startup and shows the final results page. Other modes let you
 choose service, Preferences and startup drawers. The results page shows where
 to open Preferences to configure the server and start the service.
@@ -226,24 +226,24 @@ Installation and update always finish with an Installer results page, including
 Novice mode. It lists the service and Preferences locations, Browser/Dashboard
 Utilities drawer, boot startup status and settings drawer, plus manual setup
 instructions. Updates report whether the service restarted or remained stopped.
-Preferences is never launched automatically after installation.
+Fresh installations offer to open Preferences after the results page. Updates leave it closed.
 
 Dashboard Controls supports light brightness, RGB color and single-target heater/AC temperature when the entity advertises support. Changes use the shared bridge and confirmed state readback.
 
 Server tokens are hidden by default with Show/Hide. Dashboard closing protects unsaved layouts with Save, Discard and Keep Editing.
 
-Selected-entity push updates were investigated; [findings and measurements](docs/SELECTED_UPDATES.md) describe the required native worker. Version 0.1 retains selected-entity REST polling.
+Selected-entity push updates were investigated; [findings and measurements](docs/SELECTED_UPDATES.md) describe the required native worker. Version 0.2 retains selected-entity REST polling.
 
 ## Release packaging
 
 See [RELEASING.md](RELEASING.md) for the build, verification, preparation and
-publication workflow. The main download is `AmiHASS-0.1.lha`; the client SDK
-is a separate `AmiHASS-0.1-sdk.zip`. Both include SHA-256 checksum files.
+publication workflow. The main download is `AmiHASS-0.2.lha`; the client SDK
+is a separate `AmiHASS-0.2-sdk.zip`. Both include SHA-256 checksum files.
 
 The native SDK also exposes fan speed and cover position/open/close/stop when
 the selected entity advertises those features. NovaDock uses these structured
 bridge controls. They also work with the shared offline sample fan and cover.
-The service remains version 0.1 and its Exec message ABI remains version 1.
+The service remains version 0.2 and its Exec message ABI remains version 1.
 
 ## Shared polling and action feedback
 
@@ -261,3 +261,22 @@ Diagnostics cycles through Totals, Clients and RAM. RAM shows system-wide free
 Fast memory, observed HTTP lows, memory after a request, idle reclamation and
 largest free block. These are sampled observations; other programs affect them.
 Diagnostic exports include the numeric memory counters, without credentials.
+
+## Locks and doors
+
+Use Lock, Unlock or Open lock for smart locks. Open lock releases the latch
+and requires the advertised OPEN feature. QUERY replies expose control.lock,
+control.unlock and control.lock_open. Locks requiring a keypad code remain
+read-only; PIN entry is not supported. Motorised doors use Open cover,
+Close cover and Stop cover when supported. Door contact sensors are read-only.
+Dashboard tiles offer these explicit actions; confirmation follows state readback.
+The sample front-door lock and garage door can be controlled offline.
+A lock with supported_features=0 still supports lock/unlock; it has no
+latch-opening action. Bluetooth and cloud entities are separate choices.
+
+Dashboard action choices use the selected entity's reported capabilities.
+If capabilities cannot be verified, only Read only is offered. Real Unlock,
+latch-open and door-open actions ask for confirmation with the device name
+and entity ID. Cancel, Escape and closing the dialog send nothing. Sample
+controls do not need confirmation. Door contacts display Open/Closed; lock
+states remain separate. SDK and ARexx clients manage their own confirmation UI.

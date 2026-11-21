@@ -17,7 +17,7 @@ def verify(archive):
         kit=base/'AmiHASS-SDK'
         subprocess.run(['make','-B','VC='+shlex.join(compiler),'CFLAGS='+shlex.join(flags)],cwd=kit,check=True)
         data=(kit/'AmiHASSExample').read_bytes()
-        if data[:4]!=b'\0\0\3\xf3' or b'$VER: AmiHASSExample 0.1' not in data:raise ReleaseError('SDK example is not a native 0.1 executable')
+        if data[:4]!=b'\0\0\3\xf3' or b'$VER: AmiHASSExample 0.2' not in data:raise ReleaseError('SDK example is not a native 0.2 executable')
     print('Standalone release SDK compiled successfully.')
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('archive',type=Path);args=parser.parse_args();verify(args.archive)

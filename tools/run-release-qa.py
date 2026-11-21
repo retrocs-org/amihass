@@ -11,7 +11,7 @@ APP=Path('/Applications/Amiga Workbench.app/Contents/MacOS/AmigaWorkbench')
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config',type=Path,default=Path(os.environ.get('AMIHASS_RELEASE_CONFIG',str(Path.home()/'Development/tools/git-release/projects/amihass.json'))))
-    parser.add_argument('--output',type=Path,default=Path('outputs/release-0.1'))
+    parser.add_argument('--output',type=Path,default=Path('outputs/release-0.2'))
     parser.add_argument('--suite',choices=SUITES,required=True)
     parser.add_argument('--fixture',action='store_true',help='Use a public reserved-domain TLS transport fixture; HTTPS-memory only')
     parser.add_argument('--local-fixture',action='store_true',help='Use a disposable local TLS server when guest-to-host routing is available')
@@ -31,7 +31,7 @@ def main():
     subprocess.run(['make','qa','VC='+vc],cwd=ROOT,env=env,check=True)
     key=args.suite+'-'+uuid.uuid4().hex[:10]
     payload=ROOT/'build'/('qa-release-'+key)
-    subprocess.run([sys.executable,str(ROOT/'tools/prepare_release_qa.py'),str(tool.out/'AmiHASS-0.1.lha'),str(payload)],cwd=ROOT,env=env,check=True)
+    subprocess.run([sys.executable,str(ROOT/'tools/prepare_release_qa.py'),str(tool.out/'AmiHASS-0.2.lha'),str(payload)],cwd=ROOT,env=env,check=True)
     result=ROOT/'build/qa-results'/key
     command=[str(APP),'--workbench','workbench-3.2.1','--mount','QATests:'+str(payload)]
     with contextlib.ExitStack() as stack:

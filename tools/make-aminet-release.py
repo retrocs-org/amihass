@@ -28,8 +28,8 @@ Server data needs TCP/IP, curl with HTTPS, CA certificates and a valid token.
 Shared sample devices work offline. The separate SDK ZIP contains C client
 source, headers and a working compiled example.
 
-Unpack {archive_name}, open AmiHASS and run Install-AmiHASS.
-Read the final installer page, then open the installed AmiHASSPrefs manually.
+Unpack {archive_name}, open AmiHASS and run Install.
+Read the final installer page. Fresh installs offer to open AmiHASSPrefs.
 Updates preserve settings and restore the previous service running state.
 Uninstall can keep or remove settings. See README.txt and Docs/USAGE.md.
 

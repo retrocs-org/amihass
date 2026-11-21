@@ -7,8 +7,9 @@ c=art.Canvas();b=c.box;l=c.line;f=c.frame
 l(3,13,16,2,3);l(16,2,29,13,3);f(7,12,19,13,2);b(10,15,5,5,4);b(18,15,5,8,1);b(19,16,3,6,5)
 l(4,27,28,27,4);l(6,26,6,30,2);l(26,26,26,30,2);b(2,25,5,4,3);b(25,25,5,4,5);b(14,25,5,4,6)
 (ROOT/'Icons/AmiHASS.png').write_bytes(art.png(c.p));(ROOT/'Icons/AmiHASS.iff').write_bytes(art.ilbm(c.p))
-(ROOT/'Install-AmiHASS.info').write_bytes(wb.disk_object(wb.installer_art(),4,default_tool='StartInstaller',tool_types=('MINUSER=NOVICE','DEFUSER=NOVICE')))
-(ROOT/'AmiHASS.drawer.info').write_bytes(wb.disk_object(wb.drawer_art(),2))
+# Reuse AmiRocket's installer artwork; retain AmiHASS launcher metadata.
+(ROOT/'Install.info').write_bytes((ROOT/'Icons/installer/Install.info').read_bytes())
+(ROOT/'AmiHASS.drawer.info').write_bytes((ROOT/'Icons/installer/Drawer.info').read_bytes())
 
 # Matching native four-pen icons. Shared home badge identifies AmiHASS.
 def window_icon():

@@ -1,1 +1,6 @@
-{"name":"AmiHASS 0.1 genuine website screenshots in sample mode","application":"QATests:AmiHASSWebsiteCapture","timeoutSeconds":180,"expectedReturnCode":0}
+{
+  "name": "AmiHASS 0.2 genuine website screenshots in sample mode",
+  "application": "QATests:AmiHASSWebsiteCapture",
+  "timeoutSeconds": 180,
+  "expectedReturnCode": 0
+}

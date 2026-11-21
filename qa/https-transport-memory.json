@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.1 verified HTTPS transport memory (expected 404)",
+  "name": "AmiHASS 0.2 verified HTTPS transport memory (expected 404)",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "HTTPS-TRANSPORT-MEMORY"

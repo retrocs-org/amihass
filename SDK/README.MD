@@ -1,4 +1,4 @@
-# AmiHASS SDK 0.1
+# AmiHASS SDK 0.2
 
 A small C client for the central AmiHASSService on AmigaOS 3.x. Applications use
 local Exec messages, never a Home Assistant token or their own HTTP connection.
@@ -128,7 +128,32 @@ interface locally. This additive operation preserves ABI 1 and message size.
 
 STATUS includes optional `feature.areas`, `feature.catalogue_filters` and
 `feature.subscriptions` entries in items[], each with state `1` when supported.
-Missing entries mean unverified support, even when the app version is 0.1.
+Missing entries mean unverified support, even when the app version is 0.2.
 Check these keys before offering room/type-scoped discovery or subscriptions.
 Unknown keys can be ignored. Older clients keep reading the original status
 and reconnect fields. The ABI and packet size remain unchanged.
+
+Media players expose capability-gated playback, track/artist metadata and volume.
+See the Media-player controls section in the SDK reference.
+
+## Locks and doors
+
+Use Lock, Unlock or Open lock for smart locks. Open lock releases the latch
+and requires the advertised OPEN feature. QUERY replies expose control.lock,
+control.unlock and control.lock_open. Locks requiring a keypad code remain
+read-only; PIN entry is not supported. Motorised doors use Open cover,
+Close cover and Stop cover when supported. Door contact sensors are read-only.
+Dashboard tiles offer these explicit actions; confirmation follows state readback.
+The sample front-door lock and garage door can be controlled offline.
+A lock with supported_features=0 still supports lock/unlock; it has no
+latch-opening action. Bluetooth and cloud entities are separate choices.
+
+Dashboard action choices use the selected entity's reported capabilities.
+If capabilities cannot be verified, only Read only is offered. Real Unlock,
+latch-open and door-open actions ask for confirmation with the device name
+and entity ID. Cancel, Escape and closing the dialog send nothing. Sample
+controls do not need confirmation. Door contacts display Open/Closed; lock
+states remain separate. SDK and ARexx clients manage their own confirmation UI.
+
+SDK state values stay unchanged (for example off, locked, unlocked).
+`amihass_display_state` supplies human-readable UI labels without changing them.

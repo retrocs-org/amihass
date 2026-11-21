@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.1 sample-memory stability",
+  "name": "AmiHASS 0.2 sample-memory stability",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "SAMPLE-MEMORY"

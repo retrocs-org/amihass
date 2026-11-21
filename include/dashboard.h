@@ -10,6 +10,8 @@ void ah_dashboard_sample(struct AHDashboardLayout *layout);
 unsigned int ah_dashboard_count(const struct AHDashboardLayout *layout);
 int ah_dashboard_move(struct AHDashboardLayout *layout,unsigned int from,unsigned int to);
 int ah_dashboard_resize(struct AHDashboardLayout *layout,unsigned int columns,unsigned int rows);
+unsigned int ah_dashboard_supported_actions(const char *entity,const struct AHControls *controls,int known,const char **labels,unsigned int cap);
+int ah_dashboard_confirm_required(const char *entity,const char *action,int sample);
 unsigned int ah_dashboard_actions(const char *entity,const char **labels,unsigned int capacity);
 int ah_dashboard_load(struct AHDashboardLayout *layout,const char *path);
 int ah_dashboard_save(const struct AHDashboardLayout *layout,const char *path);

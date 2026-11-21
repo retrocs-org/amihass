@@ -1,4 +1,4 @@
-# AmiHASS 0.1 - Amiga Home Assistant
+# AmiHASS 0.2 - Amiga Home Assistant
 
 A standalone Home Assistant bridge for Classic AmigaOS 3.x and 68000 or better.
 AmiHASSService owns the connection, credentials, selected-entity cache and
@@ -12,7 +12,7 @@ color light and dimmable light; other device integrations remain unverified.
 
 ## Install
 
-Unpack into a separate drawer and double-click Install-AmiHASS. Installer 42+
+Unpack into a separate drawer and double-click Install. Installer 42+
 is required. Novice uses standard service/Preferences/startup drawers, enables
 boot startup and shows the final results page. Other modes can
 choose all three drawers. Every mode offers Update or Uninstall when installed.
@@ -123,7 +123,7 @@ file; existing AmiHASS connection/path files migrate on the next successful save
 Uninstall offers Keep settings or Remove settings for this file.
 
 Novice installation uses default drawers, enables boot startup and shows
-the final results page. Open Preferences manually afterward. Other modes can choose service, Preferences
+the final results page. Fresh installations then offer to open Preferences. Other modes can choose service, Preferences
 and startup drawers. All modes offer Update or Uninstall when installed.
 Updates preserve settings, restart a previously running service and leave a
 stopped service stopped. The results page reports the service state and the
@@ -263,7 +263,7 @@ Installation and update always finish with an Installer results page, including
 Novice mode. It lists the service and Preferences locations, Browser/Dashboard
 Utilities drawer, boot startup status and settings drawer, plus manual setup
 instructions. Updates report whether the service restarted or remained stopped.
-Preferences is never launched automatically after installation.
+Fresh installations offer to open Preferences after the results page. Updates leave it closed.
 
 Save shortcuts: Ctrl-S or Right-Amiga-S saves in windows with a Save button.
 Apply accepts a subwindow draft; Close discards it.
@@ -333,3 +333,22 @@ and entities without a room. **Previous/Next** browse additional 16-room pages;
 Room, type and name filters combine, and Back preserves them. Shared Sample
 data offers House, Kitchen, Living room and Study without network requests.
 If the service is stopped or unreachable, All rooms remains available.
+
+## Locks and doors
+
+Use Lock, Unlock or Open lock for smart locks. Open lock releases the latch
+and requires the advertised OPEN feature. QUERY replies expose control.lock,
+control.unlock and control.lock_open. Locks requiring a keypad code remain
+read-only; PIN entry is not supported. Motorised doors use Open cover,
+Close cover and Stop cover when supported. Door contact sensors are read-only.
+Dashboard tiles offer these explicit actions; confirmation follows state readback.
+The sample front-door lock and garage door can be controlled offline.
+A lock with supported_features=0 still supports lock/unlock; it has no
+latch-opening action. Bluetooth and cloud entities are separate choices.
+
+Dashboard action choices use the selected entity's reported capabilities.
+If capabilities cannot be verified, only Read only is offered. Real Unlock,
+latch-open and door-open actions ask for confirmation with the device name
+and entity ID. Cancel, Escape and closing the dialog send nothing. Sample
+controls do not need confirmation. Door contacts display Open/Closed; lock
+states remain separate. SDK and ARexx clients manage their own confirmation UI.

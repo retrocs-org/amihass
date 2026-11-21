@@ -1,12 +1,13 @@
-"""Build a clean, deterministic ZIP release from explicit application inputs."""
+"""Build a clean ZIP release from explicit application inputs."""
 from pathlib import Path
 import argparse,hashlib,shutil,stat,subprocess,sys,tempfile,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 def package(output,web=None):
  values=dict(line.split('=',1) for line in (ROOT/'VERSION').read_text().splitlines() if '=' in line)
- version=values['VERSION'];assert version=='0.1','Version changes require maintainer approval'
+ version=values['VERSION'];assert version=='0.2','Version changes require maintainer approval'
  name='AmiHASS-'+version;output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
- day,month,year=map(int,values['DATE'].split('.'));stamp=(year,month,day,0,0,0)
+ from release_support import archive_timestamp
+ _,stamp=archive_timestamp()
  with tempfile.TemporaryDirectory(prefix='amihass-release-') as tmp:
   staging=Path(tmp);app=staging/name
   subprocess.run([sys.executable,str(ROOT/'tools/stage.py'),str(app)],check=True)
