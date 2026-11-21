@@ -11,7 +11,7 @@ def readme(author,uploader,archive_name):
     if not re.fullmatch(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+',uploader) or any(c in author for c in '\r\n\0'):raise ReleaseError('Aminet needs a single-line author and uploader email')
     text=(ROOT/'CHANGELOG.MD').read_text();match=re.search(r'^## AmiHASS '+re.escape(value)+r'\n(.*?)(?=^## |\Z)',text,re.M|re.S)
     if not match:raise ReleaseError('Missing matching changelog section')
-    changes=match.group(1).strip().replace('### ','').replace('`','')
+    changes=re.sub(r'^#{1,3}[ \t]+','',text.strip(),flags=re.M).replace('`','')
     result=f'''Short:        Home Assistant bridge for classic AmigaOS
 Author:       {author}
 Uploader:     {uploader}

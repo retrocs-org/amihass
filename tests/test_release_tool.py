@@ -164,6 +164,18 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(release.changelog_notes(self.root,'0.1'),'### Features\n\n- First release.')
         self.assertEqual((ROOT/'docs/RELEASE-NOTES.md').read_text().strip(),release.changelog_notes(ROOT,support.version(ROOT)))
 
+    def test_aminet_readme_includes_full_changelog(self):
+        mod=module('make-aminet-release')
+        (self.root/'VERSION').write_text('VERSION=0.2\n')
+        (self.root/'CHANGELOG.MD').write_text('# Changelog\n\n## AmiHASS 0.2\n\n### Features\n\n- Latest feature.\n\n### Enhancements\n\n- Current polish.\n\n## AmiHASS 0.1\n\n### Features\n\n- First version feature.\n')
+        with patch.object(mod,'ROOT',self.root):
+            text=mod.readme('Test Author','test@example.org','AmiHASS.lha').decode('ascii')
+        self.assertIn('Version:      0.2',text)
+        for line in ('Changelog','AmiHASS 0.2','- Latest feature.','- Current polish.','AmiHASS 0.1','- First version feature.'):
+            self.assertIn(line,text)
+        self.assertLess(text.index('AmiHASS 0.2'),text.index('AmiHASS 0.1'))
+        self.assertNotIn('##',text)
+
     def test_aminet_upload_names_are_not_versioned(self):
         mod=module('make-aminet-release')
         self.assertIn(b'Unpack AmiHASS.lha',mod.readme('Test Author','test@example.org','AmiHASS.lha'))

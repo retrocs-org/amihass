@@ -79,7 +79,9 @@ verifies existing assets for resumable uploads and retains publication receipts.
 Never reuse a receipted output directory for a different build. GitLab is optional;
 configure both web and Git URLs before selecting it. Aminet is disabled by default;
 configure author/uploader and use `prepare-aminet` to review its LHA/readme before
-explicit publication. Existing release receipts must remain intact.
+explicit publication. The Aminet readme includes the full changelog, newest version
+first; GitHub/GitLab release notes contain only the selected version.
+Existing release receipts must remain intact.
 
 Release-tool copyright notices are retained in NOTICE and
 `tools/RELEASE-LICENSE.txt`, also included in runtime and SDK downloads.
