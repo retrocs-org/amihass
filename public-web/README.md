@@ -89,8 +89,8 @@ session. Original PPM files, guest logs and JUnit reports are retained under
 `outputs/website-captures/`. The website PNGs preserve the captured dimensions;
 only file format conversion is performed.
 
-## Development information
+## Bridge features
 
-The 0.2 development section describes unreleased lock/door controls, media SDK
-controls, shared samples and installer changes. Download versions and links
-continue to come only from published GitHub releases.
+The compact Features section sits between Overview and Screenshots and lists
+shared connections, device controls, selected updates, sample data, SDK/ARexx
+and diagnostics. Download versions and links still come from GitHub releases.

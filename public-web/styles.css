@@ -1692,3 +1692,21 @@ main>.novadock-info {
  .native-shot > a { padding:10px; }
  .native-shot figcaption { padding:16px; }
 }
+
+/* Compact bridge features between the toolkit overview and screenshots. */
+.bridge-features { border-top: 1px solid #ffffff12; }
+.bridge-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 36px;
+  margin: 32px 0 0;
+}
+.bridge-feature-grid > div { border-top: 1px solid #ffffff1c; padding-top: 18px; }
+.bridge-feature-grid dt { color: #b8a4ff; font-size: 18px; font-weight: 500; }
+.bridge-feature-grid dd { margin: 8px 0 0; color: #a0a6b3; font-size: 16px; line-height: 1.6; }
+@media (max-width: 800px) {
+  .bridge-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+}
+@media (max-width: 520px) {
+  .bridge-feature-grid { grid-template-columns: 1fr; gap: 22px; }
+}
