@@ -80,8 +80,8 @@ static int choose_room(struct Browser *b,int selftest)
   if(loading && !client.pending && ticks>=next){if(!amihass_send(&client,AMIHASS_AREAS,"AmiHASS.Rooms",NULL,NULL,offset,refresh,NULL,NULL)){loading=0;strcpy(status,"Start the bridge in Preferences; All rooms is available");}refresh=0;}
   nd_panel_set(panel,1,status);nd_panel_enable(panel,100,valid&&!loading&&offset>0);nd_panel_enable(panel,101,valid&&!loading&&offset+count<total);nd_panel_enable(panel,102,!loading);
   selected=nd_panel_choice(panel,0);nd_panel_enable(panel,103,selected==0 || (valid&&!loading&&selected<=(unsigned int)count));
-  if(selftest){if(!loading){action=-1;if(valid)for(i=0;i<count;++i)if(!strcmp(page->items[i].id,"study")){nd_panel_choices(panel,0,page->labels,i+1);action=103;break;}}else action=0;}
-  else action=nd_panel_event(panel);
+  action=nd_panel_event(panel);
+  if(selftest){if(action==-1||action==104)break;if(!loading){action=-1;if(valid)for(i=0;i<count;++i)if(!strcmp(page->items[i].id,"study")){nd_panel_choices(panel,0,page->labels,i+1);action=103;break;}}else action=0;}
   if(action==-1 || action==104)break;
   if(action==103){selected=nd_panel_choice(panel,0);if(selected==0){set_room(b,"","");chosen=1;break;}if(valid&&!loading&&selected<=(unsigned int)count){set_room(b,page->items[selected-1].id,page->items[selected-1].name);chosen=1;break;}}
   if((action==100 && offset>0) || (action==101 && valid && offset+count<total) || action==102){

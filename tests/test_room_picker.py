@@ -18,7 +18,7 @@ prefix=r'''
 struct AHBrowserLive {char area[96];};
 struct Browser {void *window,*area;struct AHBrowserLive live;char room_id[96],room_name[64];const char *room_labels[4];};
 struct NDPanel {unsigned int choice;const char **labels;int enabled[105];};
-static struct NDPanel ui;static int mode,stage,allocs,requests,force_wait;
+static struct NDPanel ui;static int mode,stage,allocs,requests,force_wait,drained;
 void *AllocVec(size_t n,int flags){void *p=calloc(1,n);if(p)++allocs;return p;}
 void FreeVec(void *p){if(p){--allocs;free(p);}}
 void Delay(int n){(void)n;}
@@ -47,6 +47,7 @@ int amihass_send(struct AmiHASSClient *c,int kind,const char *owner,const char *
 }
 struct AmiHASSMessage *amihass_reply(struct AmiHASSClient *c){struct AmiHASSMessage *m=c->pending;if(force_wait)return NULL;c->pending=NULL;return m;}
 int nd_panel_event(struct NDPanel *p){
+ if(mode==4){++drained;return 0;}
  if(mode==1)return 103; /* All rooms remains available during a pending reply. */
  if(mode==2)return -1;
  if(mode==3)return 103; /* All rooms remains available without a running service. */
@@ -58,11 +59,11 @@ int nd_panel_event(struct NDPanel *p){
 '''
 main=r'''
 int main(void){struct Browser b;int ok;
- for(mode=0;mode<6;++mode){memset(&b,0,sizeof(b));strcpy(b.room_id,"existing");strcpy(b.room_name,"Existing room");stage=requests=0;force_wait=mode==1||mode==2;ok=choose_room(&b,mode==4);assert(!allocs);
+ for(mode=0;mode<6;++mode){memset(&b,0,sizeof(b));strcpy(b.room_id,"existing");strcpy(b.room_name,"Existing room");stage=requests=drained=0;force_wait=mode==1||mode==2;ok=choose_room(&b,mode==4);assert(!allocs);
   if(mode==0){assert(ok&&requests==4&&!strcmp(b.room_id,"room_18")&&!strcmp(b.live.area,"room_18"));}
   if(mode==1||mode==3)assert(ok&&!b.room_id[0]);
   if(mode==2)assert(!ok&&!strcmp(b.room_id,"existing"));
-  if(mode==4)assert(ok&&!strcmp(b.room_id,"study")&&!strcmp(b.room_name,"Study"));
+  if(mode==4)assert(drained>0&&ok&&!strcmp(b.room_id,"study")&&!strcmp(b.room_name,"Study"));
   if(mode==5)assert(ok&&requests==2&&!strcmp(b.room_id,"room_2"));
  }
  puts("Room picker: paged discovery, previous/next, stable IDs with duplicate names, offline All rooms, pending cancellation and retry passed.");return 0;
