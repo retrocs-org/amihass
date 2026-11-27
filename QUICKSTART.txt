@@ -1,7 +1,7 @@
-AmiHASS 0.2 - Quick start
+AmiHASS 0.3 - Quick start
 =========================
 
-1. Extract the entire AmiHASS-0.2 drawer, including .info files.
+1. Extract the entire AmiHASS-0.3 drawer, including .info files.
    Double-click Install. Keep the extracted package in its own drawer.
 
 2. Read the Installer's final page for the actual destinations. All modes,
@@ -42,7 +42,10 @@ Website: https://amihass.retrocs.org
 Source:  https://github.com/retrocs-org/amihass
 See REQUIREMENTS.txt, README.txt, CHANGELOG.MD, the SDK README.MD and ARexx/README.MD.
 
-Locks and doors (0.2)
+Locks and doors (0.3)
 Add a Lock or Door / cover tile and choose its click action.
 Try the sample front-door lock and garage door without a server.
 Door contact sensors are read-only. Locks needing PIN entry are read-only.
+
+Shared service, helpers and manual: SYS:AmiHASS/. Expert installation can
+choose another parent drawer. Saved settings stay in ENVARC:AmiHASS/.

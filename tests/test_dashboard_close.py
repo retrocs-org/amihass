@@ -15,6 +15,9 @@ static int events[3],next,saves,fail_first,opens,prompts,errors,panel_fail,close
 static BPTR CreateDir(const char *path){assert(!strcmp(path,"ENVARC:AmiHASS"));return 1;}static void UnLock(BPTR lock){assert(lock==1);}
 int ah_dashboard_book_save(const struct AHDashboardBook *layout,const char *path){(void)layout;assert(!strcmp(path,AH_DASH_FILE));++saves;return !(fail_first&&saves==1);}
 static void update(struct Dash *d){(void)d;}static void ui_close(struct Dash *d){(void)d;++closes;}static void pause_client(struct Dash *d){(void)d;}static int ui_open(struct Dash *d){(void)d;++opens;return 1;}static void Delay(int n){(void)n;}
+/* Production loops wait on signals; in tests this is one scripted Delay step. */
+void nd_panel_wait(struct NDPanel *p,unsigned long e,unsigned long t){(void)p;(void)e;(void)t;Delay(5);}
+
 struct NDPanel *nd_panel_open(const char *t,const struct NDPanelField *f,unsigned int count,const char **buttons,unsigned int n){(void)t;(void)f;assert(count==1&&n==3&&!strcmp(buttons[0],"Save")&&!strcmp(buttons[1],"Discard")&&!strcmp(buttons[2],"Keep Editing"));++prompts;return panel_fail?NULL:&panel;}
 int nd_panel_event(struct NDPanel *p){(void)p;assert(next<3);return events[next++];}void nd_panel_close(struct NDPanel *p){(void)p;}void nd_panel_title(struct NDPanel *p,const char *t){(void)p;assert(strstr(t,"Could not save"));++errors;}
 '''+s[a:b]+r'''

@@ -9,10 +9,16 @@
 #include <proto/gadtools.h>
 #include <stdio.h>
 #include <string.h>
+#include "ah_locale.h"
+#include "attribute_view.h"
+#include "help.h"
 #include "nd_version.h"
 #include "nd_panel.h"
 #include "browser_data.h"
 #include "browser_live.h"
+#include "wait.h"
+#include "camera.h"
+#include "catalogue_picker.h"
 #include "control_summary.h"
 #include <ctype.h>
 const char version[]=ND_VER_STRING("AmiHASSBrowser");
@@ -22,21 +28,21 @@ static void sample_memory(void){unsigned long n=AvailMem(MEMF_FAST);if(n<memory_
 struct IntuitionBase *IntuitionBase=NULL;
 struct Library *GadToolsBase=NULL;
 struct Browser {
- struct Screen *screen;struct Window *window;struct Gadget *gadgets,*list,*search,*type,*area,*status,*details,*source,*banner,*previous,*next,*back;APTR visual;
+ struct Screen *screen;struct Window *window;struct Gadget *gadgets,*list,*search,*type,*area,*label,*status,*details,*source,*banner,*previous,*next,*back;APTR visual;
  struct List labels;struct Node nodes[AH_BROWSER_MAX];char rows[AH_BROWSER_MAX][100],summary[100];
  unsigned int indices[AH_BROWSER_MAX],count,selected;int sample,device_view,visible_rows,name_columns,provider_mode;char selected_device[96],device_name[64],device_search[64],device_type[24];
- struct AHBrowserLive live;char banner_text[96],room_id[96],room_name[64];const char *room_labels[4];
+ struct AHBrowserLive live;char label_text[64],banner_text[96],room_id[96],room_name[64];const char *room_labels[4];
 };
 /* Keep stable IDs separate from display labels, including duplicate room names. */
 static const char *sample_display_state(const struct AHBrowserEntity *entity)
-{static struct AmiHASSEntity value;char json[700];snprintf(json,sizeof(json),"{\"entity_id\":\"%s\",\"state\":\"%s\",\"attributes\":%s}",entity->id,entity->state,entity->attributes);if(!amihass_state(json,&value))return entity->state;return amihass_display_state(&value);}
+{static struct AmiHASSEntity value;char json[700];snprintf(json,sizeof(json),ah_txf("{\"entity_id\":\"%s\",\"state\":\"%s\",\"attributes\":%s}"),entity->id,entity->state,entity->attributes);if(!amihass_state(json,&value))return entity->state;return amihass_display_state(&value);}
 static void set_room(struct Browser *b,const char *id,const char *name)
 {
  char copy[96],label[64];strncpy(copy,id,sizeof(copy)-1);copy[95]=0;strncpy(label,name,sizeof(label)-1);label[63]=0;
  strcpy(b->room_id,copy);strcpy(b->room_name,label);strcpy(b->live.area,copy);
  b->room_labels[0]="All rooms";b->room_labels[1]=copy[0] ? b->room_name:"Choose room...";
  b->room_labels[2]=copy[0] ? "Choose room...":NULL;b->room_labels[3]=NULL;
- if(b->window)GT_SetGadgetAttrs(b->area,b->window,NULL,GTCY_Labels,(ULONG)b->room_labels,GTCY_Active,copy[0] ? 1:0,TAG_DONE);
+ if(b->window)GT_SetGadgetAttrs(b->area,b->window,NULL,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(b->room_labels)),GTCY_Active,copy[0] ? 1:0,TAG_DONE);
 }
 /* One 16-room page at a time; the modal remains responsive during transport. */
 static int choose_room(struct Browser *b,int selftest)
@@ -64,7 +70,7 @@ static int choose_room(struct Browser *b,int selftest)
      for(i=0;i<count;++i){page->items[i]=m->items[i];page->items[i].id[95]=page->items[i].name[63]=0;page->labels[i+1]=page->items[i].name;}
      page->labels[count+1]=NULL;selected=0;for(i=0;i<count;++i)if(!strcmp(b->room_id,page->items[i].id))selected=i+1;
      nd_panel_choices(panel,0,page->labels,selected);valid=1;loading=0;
-     if(count)sprintf(status,"Rooms %d-%d of %d",offset+1,offset+count,total);else strcpy(status,"No rooms configured - use All rooms");
+     if(count)sprintf(status,ah_txf("Rooms %d-%d of %d"),offset+1,offset+count,total);else strcpy(status,"No rooms configured - use All rooms");
     }else if(m->result==AMIHASS_WAIT || m->result==AMIHASS_BUSY)next=ticks+5;
     else{loading=0;strncpy(status,m->result==AMIHASS_UNSUPPORTED ? "Update the bridge to browse rooms":amihass_problem(m->result),sizeof(status)-1);status[95]=0;}
     FreeVec(m);
@@ -82,7 +88,7 @@ static int choose_room(struct Browser *b,int selftest)
    if(action==100)offset-=AMIHASS_PAGE;else if(action==101)offset+=AMIHASS_PAGE;
    amihass_client_close(&client);loading=1;valid=0;count=0;refresh=action==102;started=ticks;next=ticks;strcpy(status,"Loading rooms from the bridge...");page->labels[1]=NULL;nd_panel_choices(panel,0,page->labels,0);
   }
-  Delay(5);
+  nd_panel_wait(panel,amihass_client_signal(&client),5);
  }
  amihass_client_close(&client);nd_panel_close(panel);FreeVec(page);set_room(b,b->room_id,b->room_name);return chosen;
 }
@@ -99,14 +105,15 @@ static int show_details(const struct AHBrowserEntity *entity,int selftest)
  length=(unsigned int)strlen(entity->attributes);if(length>350)return 0;
  n=5;for(at=0;at<length;at+=50){i=length-at;if(i>50)i=50;memcpy(parts[n-5],entity->attributes+at,i);parts[n-5][i]=0;fields[n].label=n==5 ? "Attributes":"";fields[n].value=parts[n-5];fields[n].limit=0;++n;}
  panel=nd_panel_open("AmiHASS Browser - Sample entity",fields,n,buttons,1);if(!panel)return 0;
- if(!selftest)for(;;){event=nd_panel_event(panel);if(event==-1 || event==100)break;Delay(5);}
+ if(!selftest)for(;;){event=nd_panel_event(panel);if(event==-1 || event==100)break;nd_panel_wait(panel,0,50);}
  nd_panel_close(panel);return 1;
 }
 static void publish_rows(struct Browser *b)
 {
  unsigned int i;
- if(!b->sample && b->provider_mode!=b->live.sample_mode){b->provider_mode=b->live.sample_mode;b->selected_device[0]=0;b->device_view=1;set_room(b,"","");GT_SetGadgetAttrs(b->source,b->window,NULL,GTCY_Active,0,TAG_DONE);GT_SetGadgetAttrs(b->search,b->window,NULL,GTST_String,(ULONG)"",TAG_DONE);GT_SetGadgetAttrs(b->type,b->window,NULL,GTST_String,(ULONG)"All",TAG_DONE);}
+ if(!b->sample && b->provider_mode!=b->live.sample_mode){b->provider_mode=b->live.sample_mode;strcpy(b->label_text,"Choose label...");RefreshGList(b->label,b->window,NULL,1);b->selected_device[0]=0;b->device_view=1;set_room(b,"","");GT_SetGadgetAttrs(b->source,b->window,NULL,GTCY_Active,0,TAG_DONE);GT_SetGadgetAttrs(b->search,b->window,NULL,GTST_String,(ULONG)"",TAG_DONE);GT_SetGadgetAttrs(b->type,b->window,NULL,GTST_String,(ULONG)"All",TAG_DONE);}
  GT_SetGadgetAttrs(b->list,b->window,NULL,GTLV_Labels,~0UL,TAG_DONE);
+
  b->labels.lh_Head=(struct Node *)&b->labels.lh_Tail;b->labels.lh_Tail=NULL;b->labels.lh_TailPred=(struct Node *)&b->labels.lh_Head;
  if(!b->sample)b->count=b->live.count;
  for(i=0;i<b->count;++i){
@@ -118,7 +125,7 @@ static void publish_rows(struct Browser *b)
  if(b->sample){sprintf(b->summary,"%u sample entities - read-only",b->count);strcpy(b->banner_text,"Sample data - offline");}
  else{
   if(b->live.sample_mode)strcpy(b->banner_text,"Sample bridge - simulated data");
-  else if(b->selected_device[0])sprintf(b->banner_text,"Device: %.24s",b->device_name);
+  else if(b->selected_device[0])sprintf(b->banner_text,ah_txf("Device: %.24s"),b->device_name);
   else strcpy(b->banner_text,b->live.connected ? (b->device_view ? "Devices - catalogue only":"All entities - catalogue only"):"Live bridge - not connected");
   if(b->live.error[0])strcpy(b->summary,b->live.error);
   else if(b->live.loading)strcpy(b->summary,"Loading entities from Home Assistant...");
@@ -131,8 +138,8 @@ static void publish_rows(struct Browser *b)
  GT_SetGadgetAttrs(b->next,b->window,NULL,GA_Disabled,b->sample || b->live.loading || !b->count || b->live.offset+b->live.count>=b->live.total,TAG_DONE);
  GT_SetGadgetAttrs(b->back,b->window,NULL,GA_Disabled,!b->selected_device[0],TAG_DONE);
  GT_SetGadgetAttrs(b->type,b->window,NULL,GA_Disabled,FALSE,TAG_DONE);
- GT_SetGadgetAttrs(b->status,b->window,NULL,GTTX_Text,(ULONG)b->summary,TAG_DONE);
- GT_SetGadgetAttrs(b->banner,b->window,NULL,GTTX_Text,(ULONG)b->banner_text,TAG_DONE);b->live.dirty=0;
+ GT_SetGadgetAttrs(b->status,b->window,NULL,GTTX_Text,(ULONG)ah_tx((const char *)(b->summary)),TAG_DONE);
+ GT_SetGadgetAttrs(b->banner,b->window,NULL,GTTX_Text,(ULONG)ah_tx((const char *)(b->banner_text)),TAG_DONE);b->live.dirty=0;
 }
 static void filter_rows(struct Browser *b,const char *query)
 {
@@ -150,7 +157,7 @@ static void return_devices(struct Browser *b)
 static int show_live_details(struct Browser *b,int selftest)
 {
  struct NDPanelField fields[8];struct NDPanel *panel;struct AHBrowserEntity e;char domain[96],source[96],capabilities[96];int event=0,ok=1,ticks=0;
- static const char *buttons[]={"Close"};
+ static const char *buttons[]={"Close","Snapshot","Attributes"};
  ah_browser_live_details(&b->live,(int)b->selected);e.id=b->live.detail.id;e.name=b->live.detail.name;e.state=b->live.detail.state;e.attributes="";
  if(!ah_browser_domain(&e,domain,sizeof(domain)))return 0;
  fields[0].label="Entity ID";fields[0].value=e.id;fields[0].limit=0;
@@ -161,20 +168,20 @@ static int show_live_details(struct Browser *b,int selftest)
  fields[5].label="Controls";fields[5].value="Checking supported controls...";fields[5].limit=0;
  fields[6].label="Updated";fields[6].value=b->live.detail.updated;fields[6].limit=0;
  fields[7].label="Source";fields[7].value="Refreshing live state...";fields[7].limit=0;
- panel=nd_panel_open("AmiHASS Browser - Live entity",fields,8,buttons,1);if(!panel){ah_browser_live_cancel_details(&b->live);return 0;}
+ panel=nd_panel_open("AmiHASS Browser - Live entity",fields,8,buttons,3);if(!panel){ah_browser_live_cancel_details(&b->live);return 0;}
  for(;;){
   sample_memory();ah_browser_live_step(&b->live);++ticks;
   if(!selftest && ticks%50==0 && !b->live.detail_loading && !b->live.client.pending)ah_browser_live_details(&b->live,(int)b->selected);
   nd_panel_set(panel,1,b->live.detail.name);nd_panel_set(panel,3,amihass_display_state(&b->live.detail));nd_panel_set(panel,4,b->live.detail.unit);ah_control_summary(b->live.detail.id,&b->live.controls,b->live.detail_result==AMIHASS_OK,capabilities);nd_panel_set(panel,5,capabilities);nd_panel_set(panel,6,b->live.detail.updated);
   if(b->live.error[0])strcpy(source,b->live.error);
   else if(b->live.detail_loading)strcpy(source,"Refreshing live state...");
-  else if(b->live.sample_mode)sprintf(source,"Sample simulation; age %lu s",b->live.age);
-  else sprintf(source,"Live %sreading; age %lu s",b->live.detail_result==AMIHASS_STALE ? "stale ":"",b->live.age);
+  else if(b->live.sample_mode)sprintf(source,ah_txf("Sample simulation; age %lu s"),b->live.age);
+  else sprintf(source,ah_txf("Live %sreading; age %lu s"),b->live.detail_result==AMIHASS_STALE ? "stale ":"",b->live.age);
   nd_panel_set(panel,7,source);
   if(selftest && (!b->live.detail_loading || ticks>600)){ok=b->live.detail_result==AMIHASS_OK || b->live.detail_result==AMIHASS_UNAVAILABLE || b->live.detail_result==AMIHASS_STALE;break;}
-  event=nd_panel_event(panel);if(event==-1 || event==100)break;Delay(5);
+  nd_panel_enable(panel,101,!strncmp(e.id,"camera.",7));nd_panel_enable(panel,102,!b->live.sample_mode||strstr(e.id,".amihass_sample_")!=NULL);event=nd_panel_event(panel);if(event==-1 || event==100||event==101||event==102)break;nd_panel_wait(panel,amihass_client_signal(&b->live.client),5);
  }
- nd_panel_close(panel);ah_browser_live_cancel_details(&b->live);publish_rows(b);return ok;
+ nd_panel_close(panel);if(event==101&&!strncmp(e.id,"camera.",7)){ah_browser_live_cancel_details(&b->live);ah_camera_view(e.id,0);}if(event==102){char id[96];strncpy(id,e.id,95);id[95]=0;ah_browser_live_cancel_details(&b->live);amihass_attributes_ui(id);}ah_browser_live_cancel_details(&b->live);publish_rows(b);return ok;
 }
 static struct Browser *open_browser(int sample)
 {
@@ -189,37 +196,39 @@ static struct Browser *open_browser(int sample)
  last=CreateContext(&b->gadgets);if(!last)goto failed;
  memset(&ng,0,sizeof(ng));ng.ng_VisualInfo=b->visual;ng.ng_TextAttr=&font;
  ng.ng_LeftEdge=12;ng.ng_TopEdge=top;ng.ng_Width=width-268;ng.ng_Height=16;ng.ng_GadgetID=2;
- b->banner=last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)b->banner_text,TAG_DONE);if(!last)goto failed;
- ng.ng_LeftEdge=width-248;ng.ng_Width=56;ng.ng_Height=20;ng.ng_GadgetID=106;ng.ng_GadgetText="Back";ng.ng_Flags=PLACETEXT_IN;
+ b->banner=last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)ah_tx((const char *)(b->banner_text)),TAG_DONE);if(!last)goto failed;
+ ng.ng_LeftEdge=width-248;ng.ng_Width=56;ng.ng_Height=20;ng.ng_GadgetID=106;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Back"));ng.ng_Flags=PLACETEXT_IN;
  b->back=last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto failed;
- {static STRPTR modes[]={"Devices","All entities",NULL};ng.ng_LeftEdge=width-184;ng.ng_Width=172;ng.ng_Height=20;ng.ng_GadgetID=6;ng.ng_GadgetText=NULL;ng.ng_Flags=0;
- b->source=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)modes,GTCY_Active,0,TAG_DONE);if(!last)goto failed;}
- ng.ng_LeftEdge=68;ng.ng_TopEdge=top+24;ng.ng_Width=width-360;ng.ng_Height=20;ng.ng_GadgetText="Search";ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=3;
+ {static STRPTR modes[]={"Devices","All entities",NULL};ng.ng_LeftEdge=width-184;ng.ng_Width=172;ng.ng_Height=20;ng.ng_GadgetID=6;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)(NULL));ng.ng_Flags=0;
+ b->source=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(modes)),GTCY_Active,0,TAG_DONE);if(!last)goto failed;}
+ ng.ng_LeftEdge=68;ng.ng_TopEdge=top+24;ng.ng_Width=width-360;ng.ng_Height=20;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Search"));ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=3;
  b->search=last=CreateGadget(STRING_KIND,last,&ng,GTST_MaxChars,63,GTST_String,(ULONG)"",TAG_DONE);if(!last)goto failed;
- ng.ng_LeftEdge=width-242;ng.ng_Width=148;ng.ng_GadgetText="Type";ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=4;
+ ng.ng_LeftEdge=width-242;ng.ng_Width=148;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Type"));ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=4;
  b->type=last=CreateGadget(STRING_KIND,last,&ng,GTST_MaxChars,23,GTST_String,(ULONG)"All",TAG_DONE);if(!last)goto failed;
- ng.ng_LeftEdge=width-86;ng.ng_Width=74;ng.ng_GadgetText="Search";ng.ng_Flags=PLACETEXT_IN;ng.ng_GadgetID=100;
+ ng.ng_LeftEdge=width-86;ng.ng_Width=74;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Search"));ng.ng_Flags=PLACETEXT_IN;ng.ng_GadgetID=100;
  last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto failed;
- ng.ng_LeftEdge=68;ng.ng_TopEdge=top+50;ng.ng_Width=width-80;ng.ng_Height=20;ng.ng_GadgetText="Room";ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=7;
+ ng.ng_LeftEdge=68;ng.ng_TopEdge=top+50;ng.ng_Width=(width-160)/2;ng.ng_Height=20;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Room"));ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=7;
  b->room_labels[0]="All rooms";b->room_labels[1]="Choose room...";
- b->area=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)b->room_labels,GTCY_Active,0,TAG_DONE);if(!last)goto failed;
+ b->area=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(b->room_labels)),GTCY_Active,0,TAG_DONE);if(!last)goto failed;
+ ng.ng_LeftEdge=width/2+50;ng.ng_Width=width/2-62;ng.ng_GadgetID=8;strcpy(b->label_text,"Choose label...");ng.ng_GadgetText=(STRPTR)ah_tx((const char *)(b->label_text));ng.ng_Flags=PLACETEXT_IN;b->label=last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto failed;
  b->labels.lh_Head=(struct Node *)&b->labels.lh_Tail;b->labels.lh_TailPred=(struct Node *)&b->labels.lh_Head;
  b->name_columns=(width-48)/8-21;if(b->name_columns>45)b->name_columns=45;if(b->name_columns<20)b->name_columns=20;
  b->visible_rows=(height-top-142-4)/8;if(b->visible_rows<1)b->visible_rows=1;if(b->visible_rows>32)b->visible_rows=32;
- ng.ng_LeftEdge=12;ng.ng_TopEdge=top+78;ng.ng_Width=width-24;ng.ng_Height=height-top-142;ng.ng_GadgetText=NULL;ng.ng_Flags=0;ng.ng_GadgetID=1;
+ ng.ng_LeftEdge=12;ng.ng_TopEdge=top+78;ng.ng_Width=width-24;ng.ng_Height=height-top-142;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)(NULL));ng.ng_Flags=0;ng.ng_GadgetID=1;
  b->list=last=CreateGadget(LISTVIEW_KIND,last,&ng,GTLV_Labels,(ULONG)&b->labels,GTLV_ShowSelected,NULL,TAG_DONE);if(!last)goto failed;
  ng.ng_TopEdge=height-56;ng.ng_Height=16;ng.ng_GadgetID=5;
- b->status=last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)b->summary,TAG_DONE);if(!last)goto failed;
+ b->status=last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)ah_tx((const char *)(b->summary)),TAG_DONE);if(!last)goto failed;
  {static const char *labels[]={"Previous","Next","Refresh","Open","Close"};static const int ids[]={103,104,105,101,102};
- for(i=0;i<5;++i){ng.ng_TopEdge=height-32;ng.ng_Height=22;ng.ng_Width=(width-24)/5-6;ng.ng_LeftEdge=12+(int)i*(width-24)/5;ng.ng_GadgetText=(STRPTR)labels[i];ng.ng_Flags=PLACETEXT_IN;ng.ng_GadgetID=ids[i];
+ for(i=0;i<5;++i){ng.ng_TopEdge=height-32;ng.ng_Height=22;ng.ng_Width=(width-24)/5-6;ng.ng_LeftEdge=12+(int)i*(width-24)/5;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)((STRPTR)labels[i]));ng.ng_Flags=PLACETEXT_IN;ng.ng_GadgetID=ids[i];
  last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto failed;if(i==0)b->previous=last;if(i==1)b->next=last;if(i==3)b->details=last;}}
- b->window=OpenWindowTags(NULL,WA_Title,(ULONG)(sample ? "AmiHASS Browser 0.2 - Sample data":"AmiHASS Browser 0.2 - Devices"),WA_PubScreen,(ULONG)b->screen,WA_Left,(b->screen->Width-width)/2,WA_Top,b->screen->BarHeight+10,WA_Width,width,WA_Height,height,WA_Flags,WFLG_CLOSEGADGET|WFLG_DRAGBAR|WFLG_DEPTHGADGET|WFLG_ACTIVATE|WFLG_SMART_REFRESH,WA_IDCMP,LISTVIEWIDCMP|STRINGIDCMP|CYCLEIDCMP|BUTTONIDCMP|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY,WA_Gadgets,(ULONG)b->gadgets,TAG_DONE);
+ b->window=OpenWindowTags(NULL,WA_Title,(ULONG)ah_tx((const char *)((sample ? "AmiHASS Browser 0.3 - Sample data":"AmiHASS Browser 0.3 - Devices"))),WA_PubScreen,(ULONG)b->screen,WA_Left,(b->screen->Width-width)/2,WA_Top,b->screen->BarHeight+10,WA_Width,width,WA_Height,height,WA_Flags,WFLG_CLOSEGADGET|WFLG_DRAGBAR|WFLG_DEPTHGADGET|WFLG_ACTIVATE|WFLG_SMART_REFRESH,WA_IDCMP,LISTVIEWIDCMP|STRINGIDCMP|CYCLEIDCMP|BUTTONIDCMP|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY,WA_Gadgets,(ULONG)b->gadgets,TAG_DONE);
  if(!b->window)goto failed;GT_RefreshWindow(b->window,NULL);filter_rows(b,"");return b;
 failed:
  if(b->gadgets)FreeGadgets(b->gadgets);if(b->visual)FreeVisualInfo(b->visual);if(b->screen)UnlockPubScreen(NULL,b->screen);FreeVec(b);return NULL;
 }
 static void close_browser(struct Browser *b)
 {if(b){ah_browser_live_close(&b->live);if(b->window)CloseWindow(b->window);if(b->gadgets)FreeGadgets(b->gadgets);if(b->visual)FreeVisualInfo(b->visual);if(b->screen)UnlockPubScreen(NULL,b->screen);FreeVec(b);}if(GadToolsBase)CloseLibrary(GadToolsBase);if(IntuitionBase)CloseLibrary((struct Library *)IntuitionBase);GadToolsBase=NULL;IntuitionBase=NULL;}
+static unsigned long browser_clock;
 int main(int argc,char **argv)
 {
  struct Browser *b;struct IntuiMessage *msg;ULONG cls;UWORD id,code;int done=0,ok=1,loops;unsigned int i;char query[64];
@@ -260,9 +269,11 @@ int main(int argc,char **argv)
  while(!done){
   if(!b->sample){sample_memory();ah_browser_live_step(&b->live);if(b->live.dirty)publish_rows(b);}
   while((msg=GT_GetIMsg(b->window->UserPort))!=NULL){cls=msg->Class;code=msg->Code;id=cls==IDCMP_GADGETUP && msg->IAddress ? ((struct Gadget *)msg->IAddress)->GadgetID:0;GT_ReplyIMsg(msg);
+   if(cls==IDCMP_RAWKEY && code==0x5F)ah_help_open();
    if(cls==IDCMP_CLOSEWINDOW || (cls==IDCMP_RAWKEY && code==0x45) || id==102){done=1;break;}
    if(id==1 && code<b->count)b->selected=code;
-   if(id==6 && code<2){int previous=b->live.sample_mode;ah_browser_live_close(&b->live);ah_browser_live_init(&b->live);b->live.sample_mode=previous;b->sample=0;b->device_view=code==0;b->selected_device[0]=0;SetWindowTitles(b->window,(STRPTR)(b->sample ? "AmiHASS Browser 0.2 - Sample data":(b->device_view ? "AmiHASS Browser 0.2 - Devices":"AmiHASS Browser 0.2 - Entities")),(STRPTR)-1);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
+   if(id==6 && code<2){int previous=b->live.sample_mode;ah_browser_live_close(&b->live);ah_browser_live_init(&b->live);b->live.sample_mode=previous;b->sample=0;b->device_view=code==0;b->selected_device[0]=0;SetWindowTitles(b->window,(STRPTR)ah_tx((const char *)(b->sample ? "AmiHASS Browser 0.3 - Sample data":(b->device_view ? "AmiHASS Browser 0.3 - Devices":"AmiHASS Browser 0.3 - Entities"))),(STRPTR)-1);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
+   if(id==8){char id[96],name[64];ah_browser_live_close(&b->live);if(ah_catalogue_choose(AMIHASS_LABELS,b->live.label,id,name,0)){strcpy(b->live.label,id);strcpy(b->label_text,id[0]?name:"All labels");RefreshGList(b->label,b->window,NULL,1);}filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
    if(id==7){if(code==0)set_room(b,"","");else choose_room(b,0);filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);}
    if(id==3 || id==4 || id==100 || id==105)filter_rows(b,((struct StringInfo *)b->search->SpecialInfo)->Buffer);
    if(id==106 && b->selected_device[0])return_devices(b);
@@ -275,7 +286,10 @@ int main(int argc,char **argv)
      else show_live_details(b,0);
     }}
   }
-  Delay(5);
+  /* Idle: sleep up to 1 s until input; while loading, wake on the bridge
+   * reply. Step counting follows real time when the loop sleeps longer. */
+  {int busy=!b->sample&&(b->live.loading||b->live.wanted||b->live.detail_loading||b->live.client.pending);ah_port_wait(b->window->UserPort,busy ? amihass_client_signal(&b->live.client):0,busy ? 5:50);
+   if(!b->sample){unsigned long elapsed=ah_elapsed100(&browser_clock);if(elapsed>1)b->live.ticks+=elapsed-1;}}
  }
  close_browser(b);return 0;
 }

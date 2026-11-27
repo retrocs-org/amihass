@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 authenticated live server, catalogue and state read",
+  "name": "AmiHASS 0.3 authenticated live server, catalogue and state read",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "LIVE-READONLY"

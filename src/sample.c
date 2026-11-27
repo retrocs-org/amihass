@@ -5,7 +5,7 @@
 #include <string.h>
 #include "sample.h"
 #include "browser_data.h"
-static const unsigned char groups[AH_SAMPLE_COUNT]={0,1,2,0,3,3,3,3,3,0,3,3,3,3,3,3,3,3,3,3,3,3};
+static const unsigned char groups[AH_SAMPLE_COUNT]={0,1,2,0,3,3,3,3,3,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3};
 static const char *names[]={"Sample living room","Sample desk","Sample kitchen","Sample house"};
 static int area_match(const char *area,int group)
 {static const char *labels[]={"Living room","Study","Kitchen","House"};static const char *ids[]={"living_room","study","kitchen","house"};const char *p,*q;int kind;if(!*area)return 1;for(kind=0;kind<2;++kind){p=area;q=kind ? ids[group]:labels[group];while(*p&&*q&&tolower((unsigned char)*p)==tolower((unsigned char)*q)){++p;++q;}if(!*p&&!*q)return 1;}return 0;}
@@ -16,9 +16,12 @@ void ah_sample_init(struct AHSample *s)
  memset(s,0,sizeof(*s));for(i=0;i<AH_SAMPLE_COUNT;++i){e=ah_browser_entity(i);if(!e)break;dot=strchr(e->id,'.');sprintf(id,"%.*s.amihass_sample_%s",(int)(dot-e->id),e->id,dot+1);
  sprintf(json,"{\"entity_id\":\"%s\",\"state\":\"%s\",\"attributes\":%s}",id,e->state,e->attributes);amihass_state(json,&s->entities[i]);amihass_controls(json,&s->controls[i]);amihass_control_unit(&s->controls[i],NULL);s->remembered_level[i]=s->controls[i].level>0 ? s->controls[i].level:100;strcpy(s->entities[i].name,e->name);strcpy(s->entities[i].updated,"Sample initial state");}
 }
+static int sample_label(const char *label,const struct AmiHASSEntity *e)
+{if(!*label||!strcmp(label,"amiga"))return 1;if(!strcmp(label,"lighting"))return !strncmp(e->id,"light.",6);if(!strcmp(label,"climate"))return !strncmp(e->id,"climate.",8)||!strncmp(e->id,"sensor.",7);if(!strcmp(label,"media"))return !strncmp(e->id,"media_player.",13);return 0;}
 void ah_sample_request(struct AHSample *s,struct AmiHASSMessage *m,unsigned long now)
 {
- int i,j,k,match,n=0,matched[AH_SAMPLE_COUNT],group=-1;char id[96],path[96],body[180],area[96];struct AmiHASSEntity *e;
+ int i,j,k,match,n=0,matched[AH_SAMPLE_COUNT],group=-1;char id[96],path[96],body[180],area[96],label[64];struct AmiHASSEntity *e;
+ if(m->kind==AMIHASS_LABELS){static const char *ids[]={"amiga","climate","lighting","media"};static const char *names[]={"Amiga samples","Climate","Lighting","Media"};int j;m->total=4;m->count=0;if(m->offset<0)m->offset=0;for(j=m->offset;j<4&&m->count<AMIHASS_PAGE;++j){e=&m->items[m->count++];memset(e,0,sizeof(*e));strcpy(e->id,ids[j]);strcpy(e->name,names[j]);}m->result=AMIHASS_OK;return;}
  if(m->kind==AMIHASS_AREAS){
   static const char *ids[]={"house","kitchen","living_room","study"};
   static const char *labels[]={"House","Kitchen","Living room","Study"};
@@ -26,11 +29,11 @@ void ah_sample_request(struct AHSample *s,struct AmiHASSMessage *m,unsigned long
   for(i=offset;i<4 && m->count<AMIHASS_PAGE;++i){e=&m->items[m->count++];memset(e,0,sizeof(*e));strcpy(e->id,ids[i]);strcpy(e->name,labels[i]);}
   m->result=AMIHASS_OK;return;
  }
- strncpy(area,m->item.id,95);area[95]=0;m->count=m->total=0;m->age=0;if(m->kind==AMIHASS_DEVICES){
-  for(i=0;i<4;++i){struct AmiHASSEntity d;memset(&d,0,sizeof(d));device_id(i,d.id);strcpy(d.name,names[i]);strcpy(d.state,"AmiHASS sample");match=0;for(k=0;k<AH_SAMPLE_COUNT;++k)if(groups[k]==i&&amihass_matches(&s->entities[k],m->domain,NULL))match=1;if(match&&area_match(area,i)&&amihass_matches(&d,NULL,m->filter))matched[n++]=i;}
+ strncpy(label,m->item.name,63);label[63]=0;strncpy(area,m->item.id,95);area[95]=0;m->count=m->total=0;m->age=0;if(m->kind==AMIHASS_DEVICES){
+  for(i=0;i<4;++i){struct AmiHASSEntity d;memset(&d,0,sizeof(d));device_id(i,d.id);strcpy(d.name,names[i]);strcpy(d.state,"AmiHASS sample");match=0;for(k=0;k<AH_SAMPLE_COUNT;++k)if(groups[k]==i&&sample_label(label,&s->entities[k])&&amihass_matches(&s->entities[k],m->domain,NULL))match=1;if(match&&area_match(area,i)&&amihass_matches(&d,NULL,m->filter))matched[n++]=i;}
  }else if(m->kind==AMIHASS_LIST){
   if(m->entity[0]){for(i=0;i<4;++i){device_id(i,id);if(!strcmp(id,m->entity))group=i;}if(group<0){m->result=AMIHASS_FAILED;return;}}
-  for(i=0;i<AH_SAMPLE_COUNT;++i)if(area_match(area,groups[i])&&(group<0 || groups[i]==group) && amihass_matches(&s->entities[i],m->domain,m->filter))matched[n++]=i;
+  for(i=0;i<AH_SAMPLE_COUNT;++i)if(sample_label(label,&s->entities[i])&&area_match(area,groups[i])&&(group<0 || groups[i]==group) && amihass_matches(&s->entities[i],m->domain,m->filter))matched[n++]=i;
  }else if(m->kind==AMIHASS_QUERY || m->kind==AMIHASS_ACTION){
   if(!m->owner[0]){m->result=AMIHASS_UNCONFIGURED;return;}
   for(i=0;i<AH_SAMPLE_COUNT;++i)if(!strcmp(s->entities[i].id,m->entity))break;
@@ -38,7 +41,8 @@ void ah_sample_request(struct AHSample *s,struct AmiHASSMessage *m,unsigned long
   if(m->kind==AMIHASS_ACTION){
    if(!amihass_action(e->id,m->action,path,body)||!amihass_control_allowed(&s->controls[i],m->action)){m->result=AMIHASS_UNSUPPORTED;return;}
    if(!amihass_available(e) && strncmp(e->id,"scene.",6)){m->result=AMIHASS_UNAVAILABLE;return;}
-   if(!strcmp(m->action,"Lock"))strcpy(e->state,"locked");
+   if(!strcmp(m->action,"Press")){++s->controls[i].delivery;}
+   else if(!strcmp(m->action,"Lock"))strcpy(e->state,"locked");
    else if(!strcmp(m->action,"Unlock"))strcpy(e->state,"unlocked");
    else if(!strcmp(m->action,"Open lock"))strcpy(e->state,"open");
    else if(!strcmp(m->action,"Play"))strcpy(e->state,"playing");

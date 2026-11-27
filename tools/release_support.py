@@ -4,6 +4,10 @@ import json
 import os
 import re
 import struct
+try:
+    from lh5 import compress as lh5_compress, decompress as lh5_decompress
+except ImportError:  # imported as a package module
+    from .lh5 import compress as lh5_compress, decompress as lh5_decompress
 import subprocess
 import tempfile
 import time
@@ -47,7 +51,7 @@ def binaries(root):
 def version(root):
     values=dict(line.split('=',1) for line in (root/'VERSION').read_text().splitlines() if '=' in line)
     result=values.get('VERSION','')
-    if result not in ('0.1', '0.2'):raise ReleaseError('App version remains pinned to 0.2 until the maintainer requests a change')
+    if result not in ('0.1', '0.2', '0.3'):raise ReleaseError('App version remains pinned to 0.3 until the maintainer requests a change')
     return result
 
 def source_files(root):
@@ -136,8 +140,32 @@ def lha_environment():
     return {key:value for key,value in os.environ.items()
             if not key.upper().endswith(('_TOKEN','_PASSWORD','_SECRET'))}
 
+def lha_portable_paths(path):
+    """Normalize level-0 names for Amiga OLHa without touching packed data."""
+    raw=bytearray(path.read_bytes());offset=0;changed=False
+    while True:
+        if offset>=len(raw):raise ReleaseError('Truncated LHA')
+        size=raw[offset]
+        if not size:
+            if offset+1!=len(raw):raise ReleaseError('Trailing LHA data')
+            break
+        end=offset+2+size
+        if end>len(raw):raise ReleaseError('Truncated LHA header')
+        body=bytearray(raw[offset+2:end])
+        if len(body)<22 or sum(body)&255!=raw[offset+1] or body[18]!=0 or body[:5] not in (b'-lh0-',b'-lh5-') or len(body)!=22+body[19]:
+            raise ReleaseError('Unexpected LHA header for path normalization')
+        packed=struct.unpack_from('<I',body,5)[0]
+        if packed>64*1024*1024 or end+packed>=len(raw):raise ReleaseError('Truncated or oversized LHA member')
+        name=bytes(body[20:20+body[19]])
+        portable=name.replace(b'\xff',b'/').replace(b'\\',b'/')
+        if portable!=name:
+            body[20:20+body[19]]=portable;raw[offset+2:end]=body;raw[offset+1]=sum(body)&255;changed=True
+        offset=end+packed
+    if changed:path.write_bytes(raw)
+
 def lha_write(path, entries, tool=None):
-    """LHA level 0, -lh0- stored members. No external compressor required."""
+    """LHA level 0 members: -lh5- (built-in compressor) or -lh0- when that is
+    not smaller. No external archiver required; with `tool`, it is used."""
     epoch, stamp = archive_timestamp()
     year, month, day, hour, minute, second = stamp
     dos_time = ((year-1980)<<25) | (month<<21) | (day<<16) | (hour<<11) | (minute<<5) | (second//2)
@@ -150,19 +178,28 @@ def lha_write(path, entries, tool=None):
             result=subprocess.run([tool,'ao5g0q2',str(path.resolve()),*sorted(entries)],cwd=stage,capture_output=True,env=lha_environment())
             if result.returncode:
                 raise ReleaseError('LHA compression failed')
+        lha_portable_paths(path)
         return
     with path.open('wb') as stream:
         for name, data in sorted(entries.items()):
-            encoded = name.replace('/', '\\').encode('ascii')
+            encoded = name.encode('ascii')
+            if '\\' in name or not name or name.startswith('/') or '..' in name.split('/'):
+                raise ReleaseError('Invalid LHA member path')
             if len(encoded) > 233 or len(data) > 0xffffffff:
                 raise ReleaseError('LHA member exceeds level-0 limits')
             # Current local DOS timestamp. Attribute 0x20 is a regular file.
-            body = b'-lh0-' + struct.pack('<III', len(data), len(data), dos_time)
+            packed = lh5_compress(data)
+            method = b'-lh5-' if data and len(packed) < len(data) else b'-lh0-'
+            if method == b'-lh0-':
+                packed = data
+            elif lh5_decompress(packed, len(data)) != data:
+                raise ReleaseError('LHA compression self-check failed: ' + name)
+            body = method + struct.pack('<III', len(packed), len(data), dos_time)
             body += bytes((0x20, 0, len(encoded))) + encoded + struct.pack('<H', crc16(data))
-            stream.write(bytes((len(body), sum(body) & 255)) + body + data)
+            stream.write(bytes((len(body), sum(body) & 255)) + body + packed)
         stream.write(b'\0')
 
-def verify_lha(path, expected, tool=None):
+def verify_lha(path, expected, tool=None, canonical_paths=False):
     """Check headers, CRCs, complete names and exact bytes, including EOF."""
     found = set()
     compressed = False
@@ -183,7 +220,10 @@ def verify_lha(path, expected, tool=None):
             n = body[19]
             if body[:5] not in (b'-lh0-',b'-lh5-') or body[18] != 0 or len(body) != 22 + n or packed>64*1024*1024:
                 raise ReleaseError('Unexpected LHA format')
-            name = body[20:20+n].replace(b'\xff',b'/').decode('ascii').replace('\\', '/')
+            raw_name=body[20:20+n]
+            if canonical_paths and (b'\xff' in raw_name or b'\\' in raw_name):
+                raise ReleaseError('Non-portable LHA directory separator')
+            name = raw_name.replace(b'\xff',b'/').decode('ascii').replace('\\', '/')
             if name in found or name not in expected or unpacked != len(expected[name]):
                 raise ReleaseError('Unexpected LHA member: ' + name)
             data = stream.read(packed)
@@ -192,6 +232,13 @@ def verify_lha(path, expected, tool=None):
             if body[:5]==b'-lh0-':
                 if data!=expected[name]:
                     raise ReleaseError('Changed stored LHA member')
+            elif not tool:
+                # The built-in -lh5- reader checks the bytes without an archiver.
+                try:
+                    if lh5_decompress(data, unpacked) != expected[name]:
+                        raise ReleaseError('Changed compressed LHA member: ' + name)
+                except (ValueError, IndexError):
+                    raise ReleaseError('Damaged compressed LHA member: ' + name)
             else:
                 compressed=True
             found.add(name)

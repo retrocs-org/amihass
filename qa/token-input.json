@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 native token input and import population",
+  "name": "AmiHASS 0.3 native token input and import population",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "TOKEN-INPUT"

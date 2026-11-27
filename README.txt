@@ -1,4 +1,4 @@
-# AmiHASS 0.2
+# AmiHASS 0.3
 
 A shared Home Assistant bridge for Classic AmigaOS 3.x and 68000 or better.
 AmiHASSService runs the bridge, AmiHASSPrefs manages its settings and status,
@@ -232,18 +232,18 @@ Dashboard Controls supports light brightness, RGB color and single-target heater
 
 Server tokens are hidden by default with Show/Hide. Dashboard closing protects unsaved layouts with Save, Discard and Keep Editing.
 
-Selected-entity push updates were investigated; [findings and measurements](docs/SELECTED_UPDATES.md) describe the required native worker. Version 0.2 retains selected-entity REST polling.
+Selected-entity push updates were investigated; [findings and measurements](docs/SELECTED_UPDATES.md) describe the required native worker. Version 0.3 retains selected-entity REST polling.
 
 ## Release packaging
 
 See [RELEASING.md](RELEASING.md) for the build, verification, preparation and
-publication workflow. The main download is `AmiHASS-0.2.lha`; the client SDK
-is a separate `AmiHASS-0.2-sdk.zip`. Both include SHA-256 checksum files.
+publication workflow. The main download is `AmiHASS-0.3.lha`; the client SDK
+is a separate `AmiHASS-0.3-sdk.zip`. Both include SHA-256 checksum files.
 
 The native SDK also exposes fan speed and cover position/open/close/stop when
 the selected entity advertises those features. NovaDock uses these structured
 bridge controls. They also work with the shared offline sample fan and cover.
-The service remains version 0.2 and its Exec message ABI remains version 1.
+The service remains version 0.3 and its Exec message ABI remains version 1.
 
 ## Shared polling and action feedback
 
@@ -261,6 +261,10 @@ Diagnostics cycles through Totals, Clients and RAM. RAM shows system-wide free
 Fast memory, observed HTTP lows, memory after a request, idle reclamation and
 largest free block. These are sampled observations; other programs affect them.
 Diagnostic exports include the numeric memory counters, without credentials.
+
+Media-player clients can read track/artist information and use advertised
+Play, Pause, Previous, Next and volume controls through the same C SDK.
+The shared sample player supports device-free control/readback tests.
 
 ## Locks and doors
 
@@ -280,3 +284,78 @@ latch-open and door-open actions ask for confirmation with the device name
 and entity ID. Cancel, Escape and closing the dialog send nothing. Sample
 controls do not need confirmation. Door contacts display Open/Closed; lock
 states remain separate. SDK and ARexx clients manage their own confirmation UI.
+
+Offline tile edits retain a saved action when capabilities are unavailable.
+Choose Keep saved action to retain it, or Read only explicitly to clear it. After a real unlock/open confirmation,
+the Dashboard checks the same server, fresh state and current capabilities;
+changes, cancellation or failed checks send no action. HTTP 401/403 pauses
+automatic retries. Correct and save Server Settings, restart the service, or
+request AMIHASS_RECONNECT to retry.
+
+Preferences includes local dependency checks. Diagnostics shows HTTP costs and RAM. Dashboard slows background polling and supports directional tile moves.
+
+Controls coalesce rapid value changes. Per-entity backoff keeps healthy devices responsive, and interrupted saves recover validated backups.
+
+General Settings offers polling profiles and a background request budget. Dashboard includes sample-tested media controls and a remembered device picker. Recovered backups are explicitly marked unsaved.
+
+### Live updates, labels and gauges
+
+Enable **Live updates** in General Settings for selected-entity WebSocket updates.
+REST is the default and fallback; Low memory mode uses REST. All clients share
+one central cache. See [Selected updates](docs/SELECTED_UPDATES.md).
+
+Use **Label** in the Device Browser or Dashboard picker alongside room, type and
+search filters. Leave it empty for all labels. Sample labels: `amiga`, `lighting`,
+`climate` and `media`. Labels filter discovery, not access to saved entity IDs.
+
+For numeric sensors, choose **Gauge** under a tile’s Main reading and enter its
+minimum and maximum. Stale, offline or unavailable readings have no filled bar.
+Names use Amiga-compatible Latin-1 characters and readable punctuation fallbacks;
+unsupported glyphs display as `?`. Transport identifiers retain their UTF-8 bytes.
+
+### Camera snapshots
+
+Choose a **Camera** in the Dashboard picker and set its click action to
+**Snapshot**, or use **Snapshot** in the Device Browser’s camera details.
+The viewer defaults to manual refresh. Optional intervals are 30 seconds,
+one minute and five minutes; automatic refresh pauses while the window is
+inactive and stops when it closes. Failed refreshes leave the displayed image
+in place with a failure message. A snapshot is a still image, not live video.
+
+The central service retrieves an authenticated image from Home Assistant and
+shares a bounded cache between clients. No camera URL or token is passed to the
+viewer. Downloads allow at most 256 KiB and images up to 640×480. The request asks
+Home Assistant for 320×200; integrations that cannot return a small enough image
+are rejected. Camera or image failures do not disconnect healthy devices.
+
+JPEG and PNG need matching Amiga picture datatypes. Sample data supplies an ILBM
+image and works offline. The viewer releases its image and temporary RAM files
+on close; the service drops an unused snapshot cache after 30 seconds.
+
+### Buttons, labels and camera previews
+
+Use the Button or Input button category and choose **Press**. The Dashboard
+reports **Delivered to Home Assistant** after that client’s request succeeds;
+it does not invent an on/off state or claim that an automation finished.
+Unavailable buttons cannot be pressed. Sample buttons are included offline.
+
+**Choose label** opens a paged list with All labels, Previous, Next and Refresh.
+Selection uses stable IDs even when names match. Labels work with room, type and
+search filters. Changing data source clears the previous label selection.
+
+For a selected camera tile, **Refresh photo** loads a small preview directly into
+the tile. Clicking its Snapshot action opens the full viewer. Previews show image
+age, use a compact 16-colour bitmap and refresh only on request. Up to four
+previews are kept, or one in Low memory mode; full image decoding resources and
+RAM files are released after each preview. Closing a page or viewer releases its
+snapshot lease. Abandoned queued requests are cancelled; an already-running
+bounded download may finish, but its abandoned image is discarded. Low memory
+mode frees the encoded image immediately when its last client leaves.
+
+Diagnostics has Transport and Cameras categories. Check the transport, watched
+entities, connection attempts, updates, last error, image traffic, cache size and
+reported decoder memory pressure. The decoder metric is an observed whole-system
+Fast RAM drop, not an exact allocation measurement for one process.
+
+Preferences includes retry timing, Reconnect now and a local installation Health Check.
+Dashboard tiles show confirmed/cached age and can swap positions across pages.

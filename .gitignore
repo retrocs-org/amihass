@@ -34,3 +34,6 @@ __pycache__/
 *.asm
 *.uaem
 .DS_Store
+
+# Native downloader helper.
+/AmiHASSFetch

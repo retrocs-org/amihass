@@ -39,6 +39,8 @@ static const char *event_text(enum AHLogEvent event,long code)
 {
  switch(event){
  case AH_LOG_MEMORY_RECLAIM:return code==0 ? "Low memory mode: unused libraries reclaimed.":"Low memory mode: memory reclamation failed.";
+ case AH_LOG_ACTION_BLOCKED:return "Door or cover action refused: confirm it in Dashboard or allow script control in General Settings.";
+ case AH_LOG_SELECTION_FULL:return "Entity limit reached: close a Dashboard page or Browser details to free slots.";
  case AH_LOG_SERVICE_STARTED:return "Service started.";
  case AH_LOG_SERVICE_STOPPING:return "Service stop requested.";
  case AH_LOG_SERVICE_STOPPED:return "Service stopped.";
@@ -55,6 +57,7 @@ static const char *event_text(enum AHLogEvent event,long code)
  case AH_LOG_TEST_PREPARE:return "Connection test failed: could not prepare or launch the downloader.";
  case AH_LOG_TEST_CANCELLED:return "Connection test cancelled.";
  case AH_LOG_TEST_FAILED:case AH_LOG_DOWNLOAD_FAILED:
+  if(code==3)return "Request could not be prepared locally; check the AmiHASS installation.";
   return ah_connection_text(ah_connection_result(code>=1000 ? 22:(int)code,code>=1000 ? (int)(code-1000):0,0));
  case AH_LOG_STATE_FAILED:return "Service could not refresh an entity state.";
  case AH_LOG_CATALOG_FAILED:return "Service could not refresh the entity catalogue.";

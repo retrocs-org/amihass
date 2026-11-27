@@ -1,0 +1,65 @@
+# Literal text in window code that is deliberately not translated (QA output,
+# sample data, identifiers, paths). tests/test_catalogs.py fails when new
+# window text is neither here nor in texts.tsv.
+sensor.
+input_number.
+number.
+AmiHASSBrowser
+stale 
+camera.
+.amihass_sample_
+Workbench
+LIVE-SELFTEST
+AmiHASSBrowser [SELFTEST|LIVE-SELFTEST]
+no-such-fixture
+Study
+Sample desk
+=http
+=https
+AmiHASSPrefs
+%s PROBE %s
+NIL:
+AmiHASSDashboard
+Dashboard.Confirm
+Dashboard.Editor
+media_player.
+light.
+Color #%06lx
+Dashboard choice controls QA
+Brightness 40
+Color #123456
+Temperature 22.5
+AmiHASS native control sliders QA
+SDK.ControlQA
+Brightness 20
+Color #ff0000
+Sample player
+Living Room
+Sunset
+Dashboard color presets QA
+Living room
+Brightness 80
+Sample front door
+sample://amihass
+Undo test
+CHOICE-SELFTEST
+AmiHASSDashboard [SELFTEST]
+.txt
+AutoRun:diagnostics.txt
+SetupStartup
+AmiHASSService
+AmiSSL:Certs
+AmiHASS 0.3
+NovaDock contributors
+GitHub
+ctrl alt h
+AmiHASS
+ctrl alt s
+alarm_control_panel.
+Arm 
+AmiHASS/Dock.position
+%ld %ld
+AmiHASS server: <profile>
+
+# SDK request owner, not visible window text.
+Dashboard.Room

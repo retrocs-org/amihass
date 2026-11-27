@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 unified cfg and native install/update/uninstall",
+  "name": "AmiHASS 0.3 unified cfg and native install/update/uninstall",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "INSTALLER"

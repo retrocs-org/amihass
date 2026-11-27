@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 genuine website screenshots in sample mode",
+  "name": "AmiHASS 0.3 genuine website screenshots in sample mode",
   "application": "QATests:AmiHASSWebsiteCapture",
   "timeoutSeconds": 180,
   "expectedReturnCode": 0

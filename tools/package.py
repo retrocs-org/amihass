@@ -4,7 +4,7 @@ import argparse,hashlib,shutil,stat,subprocess,sys,tempfile,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 def package(output,web=None):
  values=dict(line.split('=',1) for line in (ROOT/'VERSION').read_text().splitlines() if '=' in line)
- version=values['VERSION'];assert version=='0.2','Version changes require maintainer approval'
+ version=values['VERSION'];assert version=='0.3','Version changes require maintainer approval'
  name='AmiHASS-'+version;output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
  from release_support import archive_timestamp
  _,stamp=archive_timestamp()
@@ -26,7 +26,7 @@ def package(output,web=None):
   with zipfile.ZipFile(fresh,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9,allowZip64=False) as z:
    for p in sorted(staging.rglob('*')):
     member=p.relative_to(staging).as_posix();info=zipfile.ZipInfo(member+('/' if p.is_dir() else ''),stamp);info.create_system=3
-    execute=p.is_dir() or p.name in ('AmiHASSPrefs','AmiHASSService','AmiHASSBrowser','AmiHASSDashboard','AmiHASSExample','StartInstaller','SetupStartup')
+    execute=p.is_dir() or p.name in ('AmiHASSPrefs','AmiHASSService','AmiHASSFetch','AmiHASSBrowser','AmiHASSDashboard','AmiHASSExample','StartInstaller','SetupStartup')
     info.external_attr=((stat.S_IFDIR if p.is_dir() else stat.S_IFREG)|(0o755 if execute else 0o644))<<16
     if p.is_dir():info.external_attr|=0x10
     info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,b'' if p.is_dir() else p.read_bytes())

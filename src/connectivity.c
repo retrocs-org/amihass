@@ -9,6 +9,7 @@
 #include <proto/dos.h>
 #include <stdio.h>
 #include <string.h>
+#include "ah_locale.h"
 #include "connectivity.h"
 #include "ah_log.h"
 #include "nd_panel.h"
@@ -41,7 +42,7 @@ int amihass_connection_test_start(struct AHConnectionTest *test,const struct Ami
  if(file){ok=fputs(config,file)>=0;if(fclose(file))ok=0;}
  amihass_erase(config,sizeof(config));if(!ok)goto failed;
  if(!nd_quote_path(qtool,sizeof(qtool),tool) || !nd_quote_path(qrequest,sizeof(qrequest),request))goto failed;
- sprintf(test->command,"%s --disable --config %s --silent --fail --connect-timeout 10 --max-time 30 --max-filesize 1024 --proto %s --write-out \"%%{http_code}\" --output ",qtool,qrequest,c.allow_http ? "=http":"=https");
+ sprintf(test->command,ah_txf("%s --disable --config %s --silent --fail --connect-timeout 10 --max-time 30 --max-filesize 1024 --proto %s --write-out \"%%{http_code}\" --output "),qtool,qrequest,c.allow_http ? "=http":"=https");
  sprintf(request,"%s/response",test->directory);if(!nd_quote_path(qrequest,sizeof(qrequest),request) || strlen(test->command)+strlen(qrequest)>=sizeof(test->command))goto failed;strcat(test->command,qrequest);
  test->port=CreateMsgPort();if(!test->port)goto failed;
  sprintf(test->name,"AmiHASS.Test.%s",test->directory+sizeof(FETCH_PREFIX)-1);
@@ -87,12 +88,14 @@ int amihass_connection_test_poll(struct AHConnectionTest *test)
  if(!amihass_network_running()){ah_log_event(AH_LOG_TEST_NO_NETWORK,0);close_named_test(test,0);return AH_TEST_NO_NETWORK;}
  while((message=(struct FetchMessage *)GetMsg(test->port))!=NULL){
   if(message->magic!=FETCH_MAGIC || message->msg.mn_Length!=sizeof(*message)){
-   if(message->msg.mn_ReplyPort)ReplyMsg((struct Message *)message);continue;
+   if(message->msg.mn_ReplyPort)nd_reply_finish((struct Message *)message);continue;
   }
   if(message->kind==1){
+   int handed=0;
    if(test->transferred)message->kind=-1;
-   else{strcpy(message->command,test->command);strcpy(message->directory,test->directory);test->transferred=1;}
-   ReplyMsg((struct Message *)message);
+   else{strcpy(message->command,test->command);strcpy(message->directory,test->directory);test->transferred=handed=1;}
+   /* The probe worker gave up waiting: the packet is reclaimed, the test failed. */
+   if(nd_reply_finish((struct Message *)message)&&handed){test->transferred=0;ah_log_event(AH_LOG_TEST_FAILED,28);close_named_test(test,1);return AH_TEST_TIMEOUT;}
   }else if(message->kind==2){
    result=ah_connection_result((int)message->result,response_status(test),message->result==0&&valid_response(test));
    ah_log_event(result==AH_TEST_OK ? AH_LOG_TEST_OK:AH_LOG_TEST_FAILED,response_status(test)>=300 ? 1000L+response_status(test):(long)message->result);
@@ -110,9 +113,9 @@ int amihass_connection_test_dialog(const struct AmiHASSConnection *connection,co
  nd_panel_enable(panel,114,0);nd_panel_show_secret(panel,0);
  nd_panel_title(panel,"Testing server connection...");result=amihass_connection_test_start(&test,connection,token);
  while(result==AH_TEST_PENDING){
-  elapsed=(weather_ticks()-test.started)/50UL;if(elapsed!=last){last=elapsed;sprintf(progress,"Testing connection... %lu s (Close cancels)",elapsed);nd_panel_set(panel,3,progress);}
+  elapsed=(weather_ticks()-test.started)/50UL;if(elapsed!=last){last=elapsed;sprintf(progress,ah_txf("Testing connection... %lu s (Close cancels)"),elapsed);nd_panel_set(panel,3,progress);}
   action=nd_panel_event(panel);if(action==-1 || action==cancel){ah_log_event(AH_LOG_TEST_CANCELLED,0);close_named_test(&test,0);result=AH_TEST_CANCELLED;break;}
-  result=amihass_connection_test_poll(&test);Delay(5);
+  result=amihass_connection_test_poll(&test);nd_panel_wait(panel,0,5);
  }
  for(i=1;i<=12;++i)nd_panel_enable(panel,i,1);
  for(i=100;i<=106;++i)nd_panel_enable(panel,i,1);nd_panel_enable(panel,114,1);

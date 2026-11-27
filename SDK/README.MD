@@ -1,4 +1,4 @@
-# AmiHASS SDK 0.2
+# AmiHASS SDK 0.3
 
 A small C client for the central AmiHASSService on AmigaOS 3.x. Applications use
 local Exec messages, never a Home Assistant token or their own HTTP connection.
@@ -128,7 +128,7 @@ interface locally. This additive operation preserves ABI 1 and message size.
 
 STATUS includes optional `feature.areas`, `feature.catalogue_filters` and
 `feature.subscriptions` entries in items[], each with state `1` when supported.
-Missing entries mean unverified support, even when the app version is 0.2.
+Missing entries mean unverified support, even when the app version is 0.3.
 Check these keys before offering room/type-scoped discovery or subscriptions.
 Unknown keys can be ignored. Older clients keep reading the original status
 and reconnect fields. The ABI and packet size remain unchanged.
@@ -157,3 +157,21 @@ states remain separate. SDK and ARexx clients manage their own confirmation UI.
 
 SDK state values stay unchanged (for example off, locked, unlocked).
 `amihass_display_state` supplies human-readable UI labels without changing them.
+
+STATUS may report `auth_rejected` with connected=0 after HTTP 401/403.
+Automatic polls and retries stay paused until settings reload or an explicit
+AMIHASS_RECONNECT request. The message layout and ABI remain unchanged.
+
+The service can limit background scheduler attempts per minute. Explicit fresh
+queries, queued actions and action confirmations bypass that budget. Normal
+queries still return cached state. The cost diagnostic domain adds numeric
+background.limit, background.used and background.wait_seconds items. ABI 1 and
+the message size are unchanged.
+
+Version 0.3 adds Press delivery tickets, paged AMIHASS_LABELS, shared camera
+snapshot chunks and Transport/Camera diagnostic views. See REFERENCE.md.
+
+AMIHASS_RECONNECT retries the saved connection without clearing active client
+selections or reloading configuration. AMIHASS_RELOAD applies saved settings.
+STATUS retry.remaining reports seconds until an automatic retry; zero also
+covers disabled retries and authentication rejection. Check the server state.

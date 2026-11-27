@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 real Novice maintenance choice",
+  "name": "AmiHASS 0.3 real Novice maintenance choice",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "MAINTENANCE"

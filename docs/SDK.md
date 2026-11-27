@@ -26,7 +26,8 @@ Client and service must use the same NDK alignment conventions.
   device registry ID to scope discovery to that device. Domain/filter still apply.
   Device and entity scopes have separate cache keys; the packet layout and ABI
   remain unchanged. Older services do not support DEVICES.
-- ACTION: owner, entity and action request Toggle, Turn on, Turn off or Activate.
+- ACTION: owner, entity and action request Toggle, Turn on, Turn off, Activate or
+  another action of the device type (see USAGE.md).
   Unsupported/stale/unavailable entities are rejected. Accepted actions return
   WAIT, not proof of completion; QUERY until the reported state confirms it.
 - STATUS: returns configured server origin, uptime, recent server contact,
@@ -48,7 +49,10 @@ AmiHASSPrefs CONFIG window; only fixed app names and arguments are accepted.
 
 Results: OK, WAIT, UNCONFIGURED, FAILED, STALE, BUSY, UNSUPPORTED, UNAVAILABLE.
 An on/open state is confirmed server data, not a guessed state after a command.
-UI clients can use normal Exec signals from client.port. Query before acting,
+UI clients can use normal Exec signals from client.port;
+`amihass_client_signal(&client)` returns that signal mask (0 before the first
+request) so an event loop can `Wait()` for input and the reply together
+instead of polling with Delay(). Query before acting,
 respect backoff/error states and keep confirmation in your application's flow.
 The example only reads status; it never switches a device.
 
@@ -80,7 +84,8 @@ zero at startup, on network/request failure, after a configuration change and
 while reconnecting. It becomes one only after a validated authenticated API
 check or valid server data. REST health checks run when idle (60 seconds), so
 status does not depend on any app having selected an entity. This represents
-recent authenticated REST reachability, not a persistent WebSocket connection.
+recent authenticated reachability. Optional live-update heartbeats maintain it
+while the selected WebSocket subscription is healthy.
 
 The existing ABI 1 packet layout is unchanged. STATUS additionally returns:
 
@@ -172,6 +177,51 @@ DIAGNOSTICS with domain memory exposes numeric system-wide Fast RAM observations
 and the current lease count. Ordinary diagnostics totals retain their old indices.
 The service is not an allocator profiler; readings include other Amiga programs.
 
+## Multi-entity queries, attributes and history (ABI 1)
+
+Check STATUS for `feature.query_many`, `feature.attributes` and
+`feature.history`. All three keep the message size and ABI.
+
+- `AMIHASS_QUERY_MANY` (16) / `AMIHASS_SUBSCRIBE_MANY` (17): put up to 16 entity
+  IDs in `items[i].id` with `count`, or call `amihass_query_many()`. The reply
+  has each reading in `items[i]` and its own result in
+  `AMIHASS_ITEM_RESULT(m,i)`; `m->result` is OK once the request was processed
+  and `total` counts the entities that were OK. Refresh flags are as for QUERY;
+  SUBSCRIBE_MANY also takes a lease on each entity.
+- `AMIHASS_ATTRIBUTES` (18), `amihass_attributes(c,owner,entity,offset,fresh)`:
+  every attribute of one entity, 16 per page, at most 64. `items[i].id` is the
+  key, `.name` the value as text (lists and objects as compact JSON, cut at 63
+  characters) and `.device_class` the type: string, number, boolean, list,
+  object or null. Answers are kept for 10 seconds; `fresh` skips that.
+- `AMIHASS_HISTORY` (19), `amihass_history(c,owner,entity,hours,offset)`:
+  states over the last 1-48 hours (0 means 24), thinned to at most 64
+  points spread across the window, oldest first, 16 per page. `items[i].state`
+  is the value and `.updated` the server time; a non-numeric state
+  (unavailable, unknown) is a gap with an empty `state`.
+  The window start comes from the server's clock, never the Amiga's. Answers
+  are kept for 60 seconds. A window too large for one 256 KB response is read in 4
+  or 12 pieces (each thinned to its share of the 64 points).
+
+ATTRIBUTES and HISTORY reply WAIT while the service fetches. Ask again about
+once a second with the same arguments; a different entity while one is being
+fetched gets BUSY. Missing entities reply UNAVAILABLE. The service keeps one
+answer of each kind and frees it after a minute without requests.
+
+## Persistent notifications (ABI 1)
+
+`AMIHASS_NOTIFICATIONS` (20), `amihass_notifications(c,owner,id,offset)`.
+With no ID it lists up to 8 Home Assistant persistent notifications:
+`items[i].id` the notification ID, `.name` the title, `.state` the start of
+the message and `.updated` the creation time. With an ID, `item` holds the
+ID, title and time and the message (up to 255 characters) comes in
+63-character pieces in `items[i].name`; `total` is its length. `m->age` is a
+serial that changes with every update, so a client can tell when to read
+again. Notifications reach the Amiga over the live-update connection only:
+when live updates are off the reply is UNSUPPORTED with `item.state`
+`live_updates_off`; the first request answers WAIT while the connection
+starts (it is kept open for two minutes after the last request, also when no
+entity is selected). Older services do not know this kind.
+
 ## Room catalogue
 
 `AMIHASS_AREAS` (kind 12) lists Home Assistant rooms through the bridge. Use
@@ -187,7 +237,7 @@ interface locally. This additive operation preserves ABI 1 and message size.
 
 STATUS includes optional `feature.areas`, `feature.catalogue_filters` and
 `feature.subscriptions` entries in items[], each with state `1` when supported.
-Missing entries mean unverified support, even when the app version is 0.2.
+Missing entries mean unverified support, even when the app version is 0.3.
 Check these keys before offering room/type-scoped discovery or subscriptions.
 Unknown keys can be ignored. Older clients keep reading the original status
 and reconnect fields. The ABI and packet size remain unchanged.
@@ -228,3 +278,132 @@ states remain separate. SDK and ARexx clients manage their own confirmation UI.
 
 SDK state values stay unchanged (for example off, locked, unlocked).
 `amihass_display_state` supplies human-readable UI labels without changing them.
+
+STATUS may report `auth_rejected` with connected=0 after HTTP 401/403.
+Automatic polls and retries stay paused until settings reload or an explicit
+AMIHASS_RECONNECT request. The message layout and ABI remain unchanged.
+
+The DIAGNOSTICS domain `cost` provides `http.request_bytes`,
+`http.last_seconds`, `http.max_seconds`, `http.total_seconds`,
+`http.body_bytes` and `memory.request.peak`. Durations have one-second
+resolution; bytes exclude TLS overhead. RAM is sampled system-wide Fast free
+memory, not per-process allocations. A lease without renewal slows after
+90 seconds and expires after 120 seconds; shared leases retain the fastest
+active client interval. Message size and ABI remain unchanged.
+
+STATUS now includes additive `poll.seconds` metadata for the configured default.
+State polling backs off unavailable/missing entities independently; explicit
+QUERY_FRESH bypasses that delay. Confirmation reads precede queued actions, then
+explicit reads precede catalogue work. An in-flight HTTP request is not cancelled.
+
+Budget diagnostics: `background.limit`, `background.used` and
+`background.wait_seconds` follow the previous six `cost` items. A zero limit
+means unlimited. The optional eighth numeric field in AmiHASS.cfg stores the
+limit; older files remain readable. `AmiHASSConfig.recovered` is transient and
+never written. Dashboard load_status helpers expose validated backup recovery
+without changing saved layout structures.
+
+### Label scopes (ABI 1)
+
+`amihass_send_scope(client, kind, owner, device, offset, refresh, domain, filter,
+area, label)` adds a label to LIST/DEVICES discovery. Use an empty label for all.
+The label is limited to 63 bytes and is carried in request `item.name`; the room
+remains in request `item.id`. Reply fields retain their existing meaning. The
+message size and ABI are unchanged; older SDK calls leave the label empty.
+
+STATUS adds `transport.mode` (`REST`, `REST fallback` or `WebSocket`),
+`push.updates` and `push.failures`. Client subscription leases determine live
+selections. One-shot discovery does not create an unfiltered live subscription.
+
+### Camera snapshots (ABI 1)
+
+Check STATUS for `feature.camera_snapshots=1`. `AMIHASS_SNAPSHOT` (13) is a
+read-only image request; it never calls a Home Assistant service action.
+
+Use `amihass_snapshot(client, owner, camera_id, offset, version, fresh)`:
+
+- Begin with offset 0, version NULL and fresh 1. Poll WAIT with fresh 0.
+- On OK, `amihass_snapshot_data(reply, &size)` validates and exposes the bytes.
+- `reply->total` is the complete encoded image length (maximum 262144 bytes).
+- `reply->refresh` is the chunk length, at most `AMIHASS_SNAPSHOT_BYTES` (2048).
+- Binary bytes occupy `reply->items`; `reply->count` is zero. Do not parse them
+  as entity records. `item.state` identifies JPEG, PNG or ILBM.
+- Save `item.updated` as the opaque version. For subsequent offsets, pass it
+  as version. Check total/version on every chunk; STALE requires a new read.
+- `reply->age` is the cache age, not proof of when the camera captured a frame.
+
+Message size remains unchanged. Keep replies alive until their bytes have been
+copied, then FreeVec them normally. Closing a client releases its pending reply
+ownership. The service holds one image cache; another camera may return BUSY.
+Fresh requests for the same camera are limited to one per five seconds. No
+background snapshots are fetched without a client request. Do not send arbitrary
+URLs, filenames or camera access tokens. The central configured bearer token is
+used only for the fixed `/api/camera_proxy/<entity_id>?width=320&height=200` path.
+
+### Stateless presses and additional catalogues
+
+`button.*` and `input_button.*` accept `Press`; Toggle and on/off are rejected.
+ACTION replies return WAIT and a delivery ticket in `age`. Keep the same client
+port open and query the same entity: `control.press=yes` advertises support and
+`control.delivery` equals that ticket only after successful delivery. Match the
+exact ticket, not another client’s receipt. Do not treat an ordinary state change
+as proof of delivery. An unavailable entity, failed HTTP request or expired client
+must not be reported as delivered. Keep one outstanding press per client/entity.
+Receipts are bounded and expire after 120 seconds; close releases them.
+
+`AMIHASS_LABELS` (14) uses normal paged catalogue replies: `items[].id` is a
+stable label ID, `name` is its display name. IDs are limited to 63 bytes to fit the
+existing ABI 1 label scope. STATUS advertises `feature.labels=1`.
+
+DIAGNOSTICS domains `transport` and `camera` return bounded read-only metrics.
+Optional `AMIHASS_CAMERA_STATS` (15) reports client decoder pressure: offset is
+encoded bytes (0..262144), refresh is an observed Fast RAM drop (0..64 MiB).
+Neither URLs nor credentials are accepted. SDK close also releases camera leases,
+cancels abandoned queued image jobs and discards abandoned in-flight results.
+
+Manual reconnect preserves subscriptions and configuration generation. It clears
+the previous transport error, authentication pause and retry delay; the next
+scheduler pass attempts the saved connection. STATUS retry.remaining is a
+nonnegative number of seconds; use it together with the server state.
+
+### Parsing notes (ABI 1, unchanged layout)
+
+- Numbers are hundredths. Values with more than two decimals (for example a
+  `volume_level` of 0.4000000059604645) are rounded half-up instead of rejected;
+  exponent notation is accepted.
+- Long states, names and units are truncated on whole characters instead of
+  failing the entity: `state` holds at most 39 bytes.
+- `struct AHControls` gained a trailing `step_default` field: set when the
+  server sent no `target_temp_step`, in which case the step is 0.5 for C and
+  1 for F, matching Home Assistant's frontend. Rebuild clients that allocate
+  AHControls themselves; the IPC message layout is unchanged.
+- Server URLs may carry a reverse-proxy path prefix
+  (`https://host/homeassistant`); `amihass_url_clean()` trims blanks and
+  trailing slashes from user input before `amihass_url()` validates it.
+
+### Refusal markers
+
+- An ACTION that unlocks or opens a lock, or opens or positions a cover, from
+  any owner other than `AmiHASS.Dashboard` returns AMIHASS_UNSUPPORTED with
+  `item.state` = `AMIHASS_STATE_CONFIRMATION`, unless the user enabled General
+  Settings > Script doors. Confirm with the user before sending such actions.
+- When all selected-entity slots are in use (48 to 128, sized from free
+  memory at each settings reload), QUERY/SUBSCRIBE/ACTION return
+  AMIHASS_BUSY with `item.state` = `AMIHASS_STATE_SELECTION_FULL`; release
+  selections (UNSUBSCRIBE) before retrying.
+- `amihass_snapshot_size(..., small)` requests a 96x60 thumbnail.
+- `amihass_action_sensitive(entity, action)` reports whether an action is one
+  of these.
+
+AMIHASS_DISCONNECT (21) pauses server transport and automatic retries while
+keeping the broker alive. STATUS returns server state `paused`. Queued actions
+are discarded; in-flight replies from the prior generation are ignored.
+AMIHASS_RECONNECT resumes transport; saved policy is unchanged. Sample mode
+rejects DISCONNECT because its shared data provider is already offline.
+
+The DIAGNOSTICS domain `overview` returns six bounded items: discovery.state,
+cache.entities, cache.pages, memory.tracked (bytes), requests.pending and
+memory.low. Discovery describes the last catalogue request independently of
+server connectivity. Tracked memory includes the broker, entity/lease buffers
+and encoded camera cache, excluding transport/TLS worker allocations. STATUS
+last_contact plus reply age identifies the most recent successful response.

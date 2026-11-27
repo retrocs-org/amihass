@@ -28,6 +28,7 @@ def stage(destination):
             path=source/name;path.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(ROOT/original,path)
         mod.copy_files(source,dest,sorted(inventory))
     mod.remove_legacy_installer(dest)
+    mod.remove_retired_apps(dest)
     outer=Path(str(dest)+'.info')
     if outer.is_symlink():raise ValueError('Linked drawer icon')
     if not outer.exists():

@@ -55,6 +55,20 @@ def remove_legacy_installer(target):
         if path.exists():path.unlink()
 
 
+def remove_retired_apps(target, backup=None):
+    """Remove only the retired AmiHASS helper; preserve NovaDock and other files."""
+    for name in ('AmiHASSDock','AmiHASSDock.info','AmiHASSDock.uaem','AmiHASSDock.info.uaem'):
+        path=target/name
+        if path.is_symlink() or (path.exists() and not path.is_file()):
+            raise ValueError('Invalid retired application path: '+name)
+    for name in ('AmiHASSDock','AmiHASSDock.info','AmiHASSDock.uaem','AmiHASSDock.info.uaem'):
+        path=target/name
+        if path.is_file():
+            if backup is not None:
+                backup.mkdir(parents=True,exist_ok=True);shutil.copy2(path,backup/name)
+            path.unlink()
+
+
 def ensure_drawer_icon(source, destination):
     """Restore the outer drawer icon without overwriting user customizations."""
     icon=destination/'AmiHASS.info'
@@ -82,7 +96,7 @@ def main():
     entries=runtime_entries(ROOT)
     if not args.destination.is_dir() or args.destination.is_symlink():
         parser.error('Destination must be an existing real builds directory')
-    verify_lha(args.output/archive,entries,args.lha)
+    verify_lha(args.output/archive,entries,args.lha,canonical_paths=True)
     checksum=args.output/(archive+'.sha256')
     if checksum.read_text()!=sha(args.output/archive)+'  '+archive+'\n':
         parser.error('Archive checksum differs')
@@ -104,6 +118,7 @@ def main():
                 name=member[len('AmiHASS/'):];path=stage/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data);names.append(name)
         copy_files(stage,target,names)
     remove_legacy_installer(target)
+    remove_retired_apps(target,backup/"AmiHASS")
     copy_files(args.output,args.destination,[archive,archive+'.sha256'])
     print('Verified installer: '+str(target))
     print('Existing Workbench drawer locks and unrelated files retained.')

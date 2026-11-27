@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 https-memory stability",
+  "name": "AmiHASS 0.3 https-memory stability",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "HTTPS-MEMORY"

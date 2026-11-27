@@ -88,6 +88,8 @@ class ReleaseTests(unittest.TestCase):
         for output in ('../outside','outputs/release','outputs/release/private'):
             with self.assertRaises(support.ReleaseError):release.Release(self.root,self.config,output=output)
         (self.root/'VERSION').write_text('VERSION=0.3\n')
+        self.assertEqual(support.version(self.root),'0.3')
+        (self.root/'VERSION').write_text('VERSION=0.4\n')
         with self.assertRaises(support.ReleaseError):support.version(self.root)
 
     @patch("release_support.time.time", return_value=1795163518)
@@ -113,6 +115,42 @@ class ReleaseTests(unittest.TestCase):
         with zipfile.ZipFile(z) as archive:
             self.assertTrue(all(i.date_time == stamp[:5]+(stamp[5]//2*2,) for i in archive.infolist()))
         with self.assertRaises(support.ReleaseError):support.verify_zip(z,{'other':b''})
+
+    def test_lha_paths_are_portable_for_amiga_extractors(self):
+        import struct
+        from types import SimpleNamespace
+        entries={'AmiHASS/Docs/empty':b'', 'AmiHASS/SDK/nested/example.c':b'payload\xff\\bytes'}
+        path=self.root/'paths.lha'
+        def member_names(raw):
+            at=0;names=[]
+            while raw[at]:
+                size=raw[at];body=raw[at+2:at+2+size]
+                self.assertEqual(sum(body)&255,raw[at+1]);names.append(bytes(body[20:20+body[19]]))
+                at+=2+size+struct.unpack_from('<I',body,5)[0]
+            self.assertEqual(at+1,len(raw));return names
+        support.lha_write(path,entries)
+        self.assertEqual(member_names(path.read_bytes()),[n.encode() for n in sorted(entries)])
+        support.verify_lha(path,entries,canonical_paths=True)
+        def fake_compressor(*args,**kwargs):
+            support.lha_write(path,entries)
+            raw=bytearray(path.read_bytes());at=0
+            while raw[at]:
+                size=raw[at];body=bytearray(raw[at+2:at+2+size]);n=body[19]
+                body[20:20+n]=body[20:20+n].replace(b'/',separator)
+                raw[at+2:at+2+size]=body;raw[at+1]=sum(body)&255
+                at+=2+size+struct.unpack_from('<I',body,5)[0]
+            path.write_bytes(raw)
+            with self.assertRaises(support.ReleaseError):support.verify_lha(path,entries,canonical_paths=True)
+            return SimpleNamespace(returncode=0)
+        for separator in (b'\xff',b'\\'):
+            with patch.object(support.subprocess,'run',side_effect=fake_compressor):
+                support.lha_write(path,entries,'fixture-compressor')
+            self.assertEqual(member_names(path.read_bytes()),[n.encode() for n in sorted(entries)])
+            support.verify_lha(path,entries,canonical_paths=True)
+            before=path.read_bytes();support.lha_portable_paths(path);self.assertEqual(before,path.read_bytes())
+        invalid=path.read_bytes()[:-1];path.write_bytes(invalid)
+        with self.assertRaises(support.ReleaseError):support.lha_portable_paths(path)
+        self.assertEqual(path.read_bytes(),invalid)
 
     def test_api_redirects_keep_credentials_on_the_same_read_origin(self):
         import urllib.request
@@ -232,6 +270,33 @@ class ReleaseTests(unittest.TestCase):
         path=self.root/'config.json';path.write_text(json.dumps({'env':{'GITHUB_TOKEN':'fixture'}}))
         with self.assertRaises(support.ReleaseError):release.config_read(self.root,path)
         path.write_text(json.dumps({'github':'https://example.invalid/repo'}))
+        with self.assertRaises(support.ReleaseError):release.config_read(self.root,path)
+
+    def test_github_app_mints_fresh_scoped_tokens_without_secret_output(self):
+        import subprocess
+        from types import SimpleNamespace
+        helper=self.root/'create-repo-token.sh';helper.write_text('#!/bin/sh\nexit 99\n');helper.chmod(0o700)
+        path=self.root/'app-config.json'
+        spec={'provider':'github_app','helper':str(helper),'vault':'Fixture','item':'github.com'}
+        path.write_text(json.dumps({'credentials':{'github':spec}}));config=release.config_read(self.root,path)
+        responses=[SimpleNamespace(returncode=0,stdout='ghs_fixture_one\n',stderr='private helper output'),SimpleNamespace(returncode=0,stdout='ghs_fixture_two\n',stderr='')]
+        with patch.object(release.subprocess,'run',side_effect=responses) as run:
+            self.assertEqual(release.credential('github',config),'ghs_fixture_one')
+            self.assertEqual(release.credential('github',config),'ghs_fixture_two')
+        self.assertEqual(run.call_count,2)
+        for call in run.call_args_list:
+            self.assertEqual(call.args[0],[str(helper),'github','https://github.com','retrocs-org/amihass','rw'])
+            self.assertEqual(call.kwargs['env']['GITHUB_OP_SAVE'],'0')
+            self.assertEqual(call.kwargs['env']['GITHUB_WORKFLOWS'],'none')
+            self.assertTrue(call.kwargs['capture_output'])
+            self.assertEqual(call.kwargs['timeout'],180)
+        for result in (SimpleNamespace(returncode=1,stdout='private-token',stderr='private-key'),SimpleNamespace(returncode=0,stdout='bad\nprivate-token',stderr='')):
+            with patch.object(release.subprocess,'run',return_value=result):
+                with self.assertRaises(support.ReleaseError) as error:release.credential('github',config)
+            self.assertNotIn('private-token',str(error.exception));self.assertNotIn('private-key',str(error.exception))
+        with patch.object(release.subprocess,'run',side_effect=subprocess.TimeoutExpired('helper',180)):
+            with self.assertRaises(support.ReleaseError):release.credential('github',config)
+        path.write_text(json.dumps({'credentials':{'gitlab':spec}}))
         with self.assertRaises(support.ReleaseError):release.config_read(self.root,path)
 
     def test_publish_requires_confirmation_before_network(self):

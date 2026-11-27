@@ -145,4 +145,47 @@ retained in `outputs/novadock-0.5-pairing/qa/`.
 No live device actions or publication occurred. These local development-package
 results do not replace source-bound readiness after freezing a clean release.
 Physical-device tests and interactive Installer prompt inspection remain separate
-checks. The application version remains 0.2.
+checks. The application version remains 0.3.
+
+## Extended sample-only stability
+
+After `make qa`, run `qa/sample-stability.json` with Amiga Workbench.app's
+isolated workflow. It performs 300 cycles of room/type browsing, entity paging,
+Dashboard page-model switching, pending-detail cancellation, two-client lease
+closure and explicit reconnect. It checks idle work/lease invariants, records
+Fast RAM every 50 cycles, allows at most 128 KiB retained after warm-up and
+verifies zero action/poll/catalogue HTTP traffic. The fixture has no real server
+or token. This is an emulator regression check, not a real-hardware guarantee.
+
+Camera QA: `qa/camera-sample.json` validates two-client chunks and native ILBM
+rendering. `qa/camera-fixture.json` uses a disposable local HTTPS PNG endpoint
+mounted as TLSFixture, with a fake token. No real cameras or actions are used.
+
+`qa/six-reliability.json` covers sample press receipts, label selection, 100 native
+thumbnail decode/draw/close cycles, ten viewer cycles and 30 source changes.
+`qa/push-reconnect.json` uses the disposable TLS fixture to check selected-only
+reconnect and healthy-connection cleanup. No real devices are used.
+
+## Recovery and performance fixture suite
+
+After `make qa`, run `python3 tools/run-fixture-qa.py --output build/qa-results/recovery-<unique-name>`.
+The runner waits for existing emulator sessions and retries launcher contention.
+It uses only disposable local TLS credentials, a generated PNG and Sample data.
+It requires two selected WebSocket subscriptions after disconnect/recovery,
+at least four camera HTTPS fetches, no device actions, repeated preview/viewer
+cleanup, Dashboard checks and the native Health Check. Results retain JUnit,
+launch logs and fixture request counts. Do not reuse an existing output path.
+
+Native performance lines report free Fast RAM before/during/after requests,
+observed request peaks and thumbnail retention. The sample test also compares
+Exec's five-second idle counters before/after starting the service. Its busy
+percentage is a calibrated system-wide emulator estimate, not per-process CPU
+time; host scheduling and other guest tasks affect it. Compare identical guest
+profiles. Never describe whole-system free-memory changes as exact allocations.
+
+The fixture runner also accepts `--network nat` or `--network bridged`,
+`--workbench <bundled-version>` and `--checks push,camera,sample,dashboard,diagnostics,installer`.
+Use NAT if the bridged LAN does not provide a DHCP address to the guest.
+`--bridge-test` checks the helper; AutoRun/network.txt and fixture request counts
+verify actual guest networking. A network_down result with zero fixture requests
+is not evidence of a TLS or server failure.

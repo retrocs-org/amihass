@@ -21,7 +21,7 @@ def main():
     if mod.code_hash(ROOT)!=before:raise ReleaseError('Native inputs changed during build')
     result=subprocess.run([command[0],'-version'],env=env,capture_output=True,text=True)
     output=(result.stdout+result.stderr).strip().splitlines()
-    mod.record(ROOT,command[0],output[0] if output else 'unreported',shlex.join(flags),config.hexdigest());print('Recorded all seven m68000 native executables.')
+    mod.record(ROOT,command[0],output[0] if output else 'unreported',shlex.join(flags),config.hexdigest());print('Recorded %d m68000 native executables.' % len(mod.BINARIES))
 if __name__=='__main__':
     try:main()
     except (ReleaseError,subprocess.CalledProcessError) as error:raise SystemExit(str(error))

@@ -36,7 +36,7 @@ void ah_browser_live_cancel_details(struct AHBrowserLive *p)
 {drop_request(p);p->wanted=0;p->detail_loading=0;p->next=p->ticks;p->dirty=1;}
 static int send_kind(struct AHBrowserLive *p,int kind)
 {
- if(kind==AMIHASS_LIST||kind==AMIHASS_DEVICES){if(!amihass_send_area(&p->client,kind,"AmiHASS.Browser",kind==AMIHASS_LIST ? p->device:NULL,p->offset+p->count,p->refresh,p->domain,p->filter,p->area))return 0;}
+ if(kind==AMIHASS_LIST||kind==AMIHASS_DEVICES){if(!amihass_send_scope(&p->client,kind,"AmiHASS.Browser",kind==AMIHASS_LIST ? p->device:NULL,p->offset+p->count,p->refresh,p->domain,p->filter,p->area,p->label))return 0;}
  else if(!amihass_send(&p->client,kind,"AmiHASS.Browser",kind==AMIHASS_QUERY ? p->entity:kind==AMIHASS_LIST ? p->device:NULL,NULL,(kind==AMIHASS_LIST || kind==AMIHASS_DEVICES) ? p->offset+p->count:p->offset,(kind==AMIHASS_LIST || kind==AMIHASS_DEVICES) ? p->refresh:kind==AMIHASS_QUERY ? AMIHASS_QUERY_ONCE:0,p->domain,p->filter))return 0;
  p->sent_kind=kind;if(kind==AMIHASS_LIST || kind==AMIHASS_DEVICES)p->refresh=0;return 1;
 }
@@ -53,12 +53,13 @@ void ah_browser_live_step(struct AHBrowserLive *p)
   kind=p->sent_kind;p->sent_kind=0;
   if(m->kind!=kind){FreeVec(m);p->next=p->ticks+10;changed_text(p->error,"Unexpected bridge reply",&p->dirty);return;}
   if(kind==AMIHASS_STATUS){
+   strncpy(p->server,m->status.server,sizeof(p->server)-1);p->server[sizeof(p->server)-1]=0;
    p->running=1;if(p->connected!=(m->status.connected!=0)){p->connected=m->status.connected!=0;p->dirty=1;}
    m->item.state[39]=0;
-   if(p->sample_mode!=(!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE))){p->sample_mode=!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE);if(p->server_state[0]){p->count=p->total=p->offset=0;p->device[0]=p->domain[0]=p->filter[0]=0;p->devices=1;p->wanted=AMIHASS_DEVICES;p->loading=1;p->detail_loading=0;p->detail_result=AMIHASS_FAILED;p->dirty=1;}}
+   if(p->sample_mode!=(!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE))){p->sample_mode=!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE);if(p->server_state[0]){p->count=p->total=p->offset=0;p->label[0]=p->device[0]=p->domain[0]=p->filter[0]=0;p->devices=1;p->wanted=AMIHASS_DEVICES;p->loading=1;p->detail_loading=0;p->detail_result=AMIHASS_FAILED;p->dirty=1;}}
    changed_text(p->server_state,m->item.state,&p->dirty);
    if(!p->connected){
-    p->terminal_error=0;changed_text(p->error,!strcmp(p->server_state,AMIHASS_SERVER_UNCONFIGURED)||!m->status.server[0] ? "Configure the server in Preferences":!strcmp(p->server_state,AMIHASS_SERVER_NETWORK_DOWN) ? "TCP/IP network is not running":!strcmp(p->server_state,AMIHASS_SERVER_CONNECTING) ? "Connecting to Home Assistant...":!strcmp(p->server_state,AMIHASS_SERVER_RETRY_WAIT) ? "Home Assistant disconnected - waiting for retry":"Home Assistant is not connected",&p->dirty);
+    p->terminal_error=0;changed_text(p->error,!strcmp(p->server_state,AMIHASS_SERVER_UNCONFIGURED)||!m->status.server[0] ? "Configure the server in Preferences":!strcmp(p->server_state,AMIHASS_SERVER_NETWORK_DOWN) ? "TCP/IP network is not running":!strcmp(p->server_state,AMIHASS_SERVER_AUTH_REJECTED) ? "Token rejected - update Server Settings or retry":!strcmp(p->server_state,AMIHASS_SERVER_CONNECTING) ? "Connecting to Home Assistant...":!strcmp(p->server_state,AMIHASS_SERVER_RETRY_WAIT) ? "Home Assistant disconnected - waiting for retry":"Home Assistant is not connected",&p->dirty);
     p->next=p->ticks+10;FreeVec(m);return;
    }
    if(!p->terminal_error)changed_text(p->error,"",&p->dirty);FreeVec(m);
@@ -73,7 +74,7 @@ void ah_browser_live_step(struct AHBrowserLive *p)
     if(take && p->count<limit && p->offset+p->count<p->total){p->refresh=p->page_refresh;p->next=p->ticks;}
     else{p->wanted=0;p->loading=0;p->next=p->ticks+50;}p->dirty=1;
    }else if(m->result==AMIHASS_WAIT)p->next=p->ticks+5;
-   else{p->wanted=0;p->terminal_error=1;p->loading=0;p->next=p->ticks+10;changed_text(p->error,amihass_problem(m->result),&p->dirty);}
+   else{p->wanted=0;p->terminal_error=1;p->loading=0;p->next=p->ticks+10;m->item.name[63]=0;changed_text(p->error,m->result==AMIHASS_FAILED&&m->item.name[0] ? m->item.name:amihass_problem(m->result),&p->dirty);}
   }else if(kind==AMIHASS_QUERY){
    if(m->result==AMIHASS_OK || m->result==AMIHASS_UNAVAILABLE || m->result==AMIHASS_STALE){
     amihass_controls_items(m->items,m->count,&p->controls);p->detail=m->item;clean_entity(&p->detail);p->age=m->age;p->detail_result=m->result;p->detail_loading=0;p->wanted=0;p->next=p->ticks+50;p->dirty=1;

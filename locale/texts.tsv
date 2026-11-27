@@ -1,0 +1,670 @@
+# English<TAB>svenska<TAB>deutsch - window text looked up by its English form.
+# Append new lines at the end (IDs follow the line order); run tools/make_catalogs.py.
+AmiHASS - %.100s	AmiHASS - %.100s	AmiHASS - %.100s
+All rooms	Alla rum	Alle Räume
+Choose room...	Välj rum...	Raum wählen...
+Previous	Föregående	Zurück
+Next	Nästa	Weiter
+Refresh	Uppdatera	Aktualisieren
+Select	Välj	Auswählen
+Close	Stäng	Schließen
+Loading rooms from the bridge...	Hämtar rum från bryggan...	Räume werden von der Bridge geladen...
+Room	Rum	Raum
+Status	Status	Status
+AmiHASS - Select room	AmiHASS - Välj rum	AmiHASS - Raum wählen
+Unexpected room reply - Refresh to retry	Oväntat svar om rum - uppdatera för att försöka igen	Unerwartete Raumantwort - zum Wiederholen aktualisieren
+Rooms %d-%d of %d	Rum %d-%d av %d	Räume %d-%d von %d
+No rooms configured - use All rooms	Inga rum inställda - använd Alla rum	Keine Räume eingerichtet - Alle Räume verwenden
+Update the bridge to browse rooms	Uppdatera bryggan för att bläddra bland rum	Bridge aktualisieren, um Räume zu durchsuchen
+Room request timed out - Refresh to retry	Rumsförfrågan tog för lång tid - uppdatera för att försöka igen	Raumabfrage abgelaufen - zum Wiederholen aktualisieren
+Start the bridge in Preferences; All rooms is available	Starta bryggan i Inställningar; Alla rum finns	Bridge in den Einstellungen starten; Alle Räume ist verfügbar
+Entity ID	Entitets-ID	Entitäts-ID
+Name	Namn	Name
+Type	Typ	Typ
+State	Tillstånd	Zustand
+Source	Källa	Quelle
+Sample data (read-only)	Exempeldata (skrivskyddat)	Beispieldaten (schreibgeschützt)
+Attributes	Attribut	Attribute
+AmiHASS Browser - Sample entity	AmiHASS-bläddrare - Exempelentitet	AmiHASS-Browser - Beispielentität
+Choose label...	Välj etikett...	Label wählen...
+All	Alla	Alle
+%u sample entities - read-only	%u exempelentiteter - skrivskyddade	%u Beispielentitäten - schreibgeschützt
+Sample data - offline	Exempeldata - frånkopplad	Beispieldaten - offline
+Sample bridge - simulated data	Exempelbrygga - simulerade data	Beispiel-Bridge - simulierte Daten
+Device: %.24s	Enhet: %.24s	Gerät: %.24s
+Devices - catalogue only	Enheter - endast katalog	Geräte - nur Katalog
+All entities - catalogue only	Alla entiteter - endast katalog	Alle Entitäten - nur Katalog
+Live bridge - not connected	Direktbrygga - inte ansluten	Live-Bridge - nicht verbunden
+Loading entities from Home Assistant...	Hämtar entiteter från Home Assistant...	Entitäten werden von Home Assistant geladen...
+%d-%d of %d %s - page %d	%d-%d av %d %s - sida %d	%d-%d von %d %s - Seite %d
+No matching entities	Inga matchande entiteter	Keine passenden Entitäten
+Use an entity type such as sensor, or All	Använd en entitetstyp som sensor, eller Alla	Einen Entitätstyp wie sensor oder Alle verwenden
+Snapshot	Ögonblicksbild	Schnappschuss
+Unit	Enhet	Einheit
+Controls	Kontroller	Steuerung
+Checking supported controls...	Kontrollerar möjliga kontroller...	Unterstützte Steuerungen werden geprüft...
+Updated	Uppdaterad	Aktualisiert
+Refreshing live state...	Uppdaterar aktuellt tillstånd...	Live-Zustand wird aktualisiert...
+AmiHASS Browser - Live entity	AmiHASS-bläddrare - Direktentitet	AmiHASS-Browser - Live-Entität
+Sample simulation; age %lu s	Exempelsimulering; ålder %lu s	Beispielsimulation; Alter %lu s
+Live %sreading; age %lu s	Direkt %savläsning; ålder %lu s	Live-%sWert; Alter %lu s
+Back	Tillbaka	Zurück
+Devices	Enheter	Geräte
+All entities	Alla entiteter	Alle Entitäten
+Search	Sök	Suchen
+Open	Öppna	Öffnen
+AmiHASS Browser 0.3 - Sample data	AmiHASS-bläddrare 0.3 - Exempeldata	AmiHASS-Browser 0.3 - Beispieldaten
+AmiHASS Browser 0.3 - Devices	AmiHASS-bläddrare 0.3 - Enheter	AmiHASS-Browser 0.3 - Geräte
+Cannot open AmiHASS Browser (400x240 screen required).	Kan inte öppna AmiHASS-bläddraren (skärm på 400x240 krävs).	AmiHASS-Browser kann nicht geöffnet werden (400x240-Bildschirm nötig).
+AmiHASS Browser 0.3 - Entities	AmiHASS-bläddrare 0.3 - Entiteter	AmiHASS-Browser 0.3 - Entitäten
+All labels	Alla etiketter	Alle Labels
+Manual	Manuell	Manuell
+30 seconds	30 sekunder	30 Sekunden
+1 minute	1 minut	1 Minute
+5 minutes	5 minuter	5 Minuten
+Requesting snapshot...	Begär ögonblicksbild...	Schnappschuss wird angefordert...
+AmiHASS - Camera snapshot	AmiHASS - Kamerabild	AmiHASS - Kamerabild
+Snapshot timed out; last image is unchanged.	Bilden tog för lång tid; senaste bilden är oförändrad.	Schnappschuss abgelaufen; letztes Bild unverändert.
+Unexpected bridge reply.	Oväntat svar från bryggan.	Unerwartete Antwort der Bridge.
+Waiting for camera snapshot...	Väntar på kamerabild...	Warte auf Kamerabild...
+Image unsupported/too large (max 640x480, 256 KiB).	Bilden stöds inte/är för stor (max 640x480, 256 KiB).	Bild nicht unterstützt/zu groß (max. 640x480, 256 KiB).
+Image changed; press Refresh. Last snapshot kept.	Bilden har ändrats; tryck Uppdatera. Senaste bilden behålls.	Bild geändert; Aktualisieren drücken. Letztes Bild bleibt.
+Check bridge data source and server settings.	Kontrollera bryggans datakälla och serverinställningar.	Datenquelle der Bridge und Servereinstellungen prüfen.
+Camera image unavailable. Last snapshot kept; check logs.	Kamerabilden är inte tillgänglig. Senaste bilden behålls; se loggarna.	Kamerabild nicht verfügbar. Letztes Bild bleibt; Protokolle prüfen.
+Snapshot changed or invalid; press Refresh.	Bilden ändrad eller ogiltig; tryck Uppdatera.	Schnappschuss geändert oder ungültig; Aktualisieren drücken.
+Not enough memory for snapshot.	Inte tillräckligt med minne för bilden.	Nicht genug Speicher für den Schnappschuss.
+Snapshot %lu / %lu bytes	Bild %lu / %lu byte	Schnappschuss %lu / %lu Bytes
+Unsupported, oversized or invalid image.	Bilden stöds inte, är för stor eller ogiltig.	Bild nicht unterstützt, zu groß oder ungültig.
+Cannot decode image; install its picture datatype.	Kan inte avkoda bilden; installera dess bilddatatyp.	Bild kann nicht dekodiert werden; Bild-Datatype installieren.
+%s: %u x %u, %lu bytes - snapshot	%s: %u x %u, %lu byte - ögonblicksbild	%s: %u x %u, %lu Bytes - Schnappschuss
+Sample data	Exempeldata	Beispieldaten
+Server data	Serverdata	Serverdaten
+Bridge request timed out; press Refresh.	Förfrågan till bryggan tog för lång tid; tryck Uppdatera.	Bridge-Anfrage abgelaufen; Aktualisieren drücken.
+Bridge unavailable. Start the service in Preferences.	Bryggan är inte tillgänglig. Starta tjänsten i Inställningar.	Bridge nicht verfügbar. Dienst in den Einstellungen starten.
+Fetching camera preview...	Hämtar kameraförhandsvisning...	Kameravorschau wird geladen...
+Camera preview timed out	Kameraförhandsvisningen tog för lång tid	Kameravorschau abgelaufen
+Bridge timed out	Bryggan svarade inte i tid	Bridge-Zeitüberschreitung
+Camera preview unavailable; Refresh to retry	Kameraförhandsvisning saknas; uppdatera för att försöka igen	Kameravorschau nicht verfügbar; zum Wiederholen aktualisieren
+Not enough memory for preview	Inte tillräckligt med minne för förhandsvisning	Nicht genug Speicher für die Vorschau
+Camera preview updated	Kameraförhandsvisning uppdaterad	Kameravorschau aktualisiert
+Camera preview could not decode; check picture datatypes	Förhandsvisningen kunde inte avkodas; kontrollera bilddatatyper	Vorschau nicht dekodierbar; Bild-Datatypes prüfen
+Start the bridge to refresh camera preview	Starta bryggan för att uppdatera kameraförhandsvisningen	Bridge starten, um die Kameravorschau zu aktualisieren
+Picture datatypes unavailable	Bilddatatyper saknas	Bild-Datatypes nicht verfügbar
+Testing server connection...	Testar serveranslutningen...	Serververbindung wird getestet...
+Testing connection... %lu s (Close cancels)	Testar anslutningen... %lu s (Stäng avbryter)	Verbindung wird getestet... %lu s (Schließen bricht ab)
+Not Configured	Inte inställd	Nicht eingerichtet
+Not Connected	Inte ansluten	Nicht verbunden
+Connected	Ansluten	Verbunden
+Connection Failure	Anslutningsfel	Verbindungsfehler
+Add device	Lägg till enhet	Gerät hinzufügen
+Click to add	Klicka för att lägga till	Zum Hinzufügen klicken
+Updating...	Uppdaterar...	Wird aktualisiert...
+Unavailable	Inte tillgänglig	Nicht verfügbar
+Bridge busy	Bryggan är upptagen	Bridge beschäftigt
+Not connected	Inte ansluten	Nicht verbunden
+Cached %lum %lus ago | %s	Sparad för %lum %lus sedan | %s	Zwischengespeichert vor %lum %lus | %s
+Stale	Inaktuell	Veraltet
+Offline	Frånkopplad	Offline
+Confirmed %H:%M:%S	Bekräftad %H:%M:%S	Bestätigt %H:%M:%S
+Timestamp unavailable	Tidsstämpel saknas	Zeitstempel nicht verfügbar
+Edit / move	Redigera / flytta	Bearbeiten / verschieben
+Read-only mode	Skrivskyddat läge	Nur-Lesen-Modus
+Controls unavailable	Kontroller inte tillgängliga	Steuerung nicht verfügbar
+Read only	Endast läsning	Nur lesen
+Confirmed %lus ago | %s	Bekräftad för %lus sedan | %s	Bestätigt vor %lus | %s
+Image age %lus; Refresh photo	Bildens ålder %lus; Uppdatera foto	Bildalter %lus; Foto aktualisieren
+Select camera; Refresh photo	Välj kamera; Uppdatera foto	Kamera wählen; Foto aktualisieren
+Refresh photo	Uppdatera foto	Foto aktualisieren
+Details	Detaljer	Details
+Done	Klar	Fertig
+Edit Mode	Redigeringsläge	Bearbeitungsmodus
+%u ent ~%lu.%lu polls/min	%u ent ~%lu.%lu avläsn./min	%u Ent. ~%lu.%lu Abfr./min
+AmiHASS Dashboard 0.3 - READ ONLY - unsaved	AmiHASS-instrumentpanel 0.3 - SKRIVSKYDDAD - osparad	AmiHASS-Dashboard 0.3 - NUR LESEN - ungespeichert
+AmiHASS Dashboard 0.3 - READ ONLY	AmiHASS-instrumentpanel 0.3 - SKRIVSKYDDAD	AmiHASS-Dashboard 0.3 - NUR LESEN
+AmiHASS Dashboard 0.3 - unsaved layout	AmiHASS-instrumentpanel 0.3 - osparad layout	AmiHASS-Dashboard 0.3 - ungespeichertes Layout
+AmiHASS Dashboard 0.3	AmiHASS-instrumentpanel 0.3	AmiHASS-Dashboard 0.3
+Previous rows	Föregående rader	Vorherige Zeilen
+Next rows	Nästa rader	Nächste Zeilen
+Edit Tile	Redigera ruta	Kachel bearbeiten
+Layout	Layout	Layout
+Save	Spara	Speichern
+Undo	Ångra	Rückgängig
+Pages	Sidor	Seiten
+Cancel	Avbryt	Abbrechen
+Confirm	Bekräfta	Bestätigen
+Device	Enhet	Gerät
+Entity	Entitet	Entität
+Action	Åtgärd	Aktion
+Confirm real door action	Bekräfta verklig dörråtgärd	Echte Türaktion bestätigen
+Checking	Kontrollerar	Prüfung
+Connection and fresh device state	Anslutning och aktuellt enhetstillstånd	Verbindung und aktueller Gerätezustand
+Rechecking confirmed action	Kontrollerar bekräftad åtgärd igen	Bestätigte Aktion wird erneut geprüft
+Action cancelled - connection, state or capabilities changed	Åtgärden avbröts - anslutning, tillstånd eller funktioner ändrades	Aktion abgebrochen - Verbindung, Zustand oder Fähigkeiten geändert
+Bridge timeout - retrying	Bryggan svarar inte - försöker igen	Bridge-Zeitüberschreitung - neuer Versuch
+Sample data - simulated	Exempeldata - simulerade	Beispieldaten - simuliert
+Server data - connected	Serverdata - ansluten	Serverdaten - verbunden
+Token rejected - update Server Settings	Token avvisad - uppdatera Serverinställningar	Token abgelehnt - Servereinstellungen aktualisieren
+Server data - disconnected	Serverdata - frånkopplad	Serverdaten - getrennt
+Entity limit reached - close Browser details	Gränsen för entiteter nådd - stäng detaljer i bläddraren	Entitätsgrenze erreicht - Browser-Details schließen
+Press	Tryck	Drücken
+Action: %.100s	Åtgärd: %.100s	Aktion: %.100s
+Bridge stopped - start it in AmiHASSPrefs	Bryggan stoppad - starta den i AmiHASSPrefs	Bridge gestoppt - in AmiHASSPrefs starten
+Dashboard	Instrumentpanel	Dashboard
+Export	Exportera	Exportieren
+Import	Importera	Importieren
+Export uses .ahdash; Import accepts valid dashboard files.	Export använder .ahdash; Import tar emot giltiga panelfiler.	Export verwendet .ahdash; Import akzeptiert gültige Dashboard-Dateien.
+File	Fil	Datei
+Includes	Innehåller	Enthält
+All pages, tiles and colors. No server settings or token.	Alla sidor, rutor och färger. Inga serverinställningar eller token.	Alle Seiten, Kacheln und Farben. Keine Servereinstellungen oder Token.
+AmiHASS - dashboard backup	AmiHASS - säkerhetskopia av panel	AmiHASS - Dashboard-Sicherung
+Replace dashboard backup?	Ersätta säkerhetskopian?	Dashboard-Sicherung ersetzen?
+The selected file already exists.	Den valda filen finns redan.	Die gewählte Datei existiert bereits.
+Replace	Ersätt	Ersetzen
+Backup exported; server credentials are not included.	Säkerhetskopia exporterad; serveruppgifter ingår inte.	Sicherung exportiert; Serverzugangsdaten sind nicht enthalten.
+Could not export. Use a writable path ending in .ahdash.	Kunde inte exportera. Använd en skrivbar sökväg som slutar på .ahdash.	Export fehlgeschlagen. Beschreibbaren Pfad mit .ahdash verwenden.
+Invalid or missing dashboard file; current layout kept.	Ogiltig eller saknad panelfil; nuvarande layout behålls.	Ungültige oder fehlende Dashboard-Datei; aktuelles Layout bleibt.
+Replace with %u pages, %u presets; %s?	Ersätta med %u sidor, %u förval; %s?	Durch %u Seiten, %u Vorgaben ersetzen; %s?
+READ ONLY	SKRIVSKYDDAD	NUR LESEN
+controls enabled	kontroller aktiverade	Steuerung aktiviert
+Import dashboard backup?	Importera säkerhetskopia av panel?	Dashboard-Sicherung importieren?
+Imported into the draft. Save dashboard to keep it.	Importerad till utkastet. Spara panelen för att behålla den.	In den Entwurf importiert. Dashboard speichern, um es zu behalten.
+Left	Vänster	Links
+Right	Höger	Rechts
+Up	Upp	Hoch
+Down	Ner	Runter
+Move	Flytta	Verschieben
+Duplicate	Duplicera	Duplizieren
+Shift	Förskjut	Versetzen
+Swap	Byt plats	Tauschen
+Preview label	Förhandsgranska etikett	Label-Vorschau
+Click action	Klickåtgärd	Klickaktion
+To page	Till sida	Auf Seite
+Row	Rad	Zeile
+Column	Kolumn	Spalte
+Placement	Placering	Platzierung
+Move to empty cells; Swap exchanges both tiles, including settings.	Flytta till tomma celler; Byt plats byter båda rutorna, med inställningar.	In leere Zellen verschieben; Tauschen tauscht beide Kacheln samt Einstellungen.
+Shift direction	Förskjutningsriktning	Versatzrichtung
+AmiHASS - move / duplicate / swap	AmiHASS - flytta / duplicera / byt plats	AmiHASS - verschieben / duplizieren / tauschen
+Already at the grid edge	Redan vid rutnätets kant	Bereits am Rasterrand
+Choose a valid destination	Välj ett giltigt mål	Gültiges Ziel wählen
+Move needs an empty tile; use Swap for occupied cells	Flytta kräver en tom ruta; använd Byt plats för upptagna celler	Verschieben braucht eine leere Kachel; für belegte Zellen Tauschen verwenden
+Lighting	Belysning	Beleuchtung
+Climate	Klimat	Klima
+Overview	Översikt	Übersicht
+Preview	Förhandsgranska	Vorschau
+Use Layout	Använd layout	Layout verwenden
+Template	Mall	Vorlage
+Sample devices only; replaces this page after confirmation.	Endast exempelenheter; ersätter sidan efter bekräftelse.	Nur Beispielgeräte; ersetzt diese Seite nach Bestätigung.
+Preview only. Choose Sample data in Preferences to use.	Endast förhandsgranskning. Välj Exempeldata i Inställningar för att använda.	Nur Vorschau. Zum Verwenden Beispieldaten in den Einstellungen wählen.
+Press Preview to inspect the layout.	Tryck Förhandsgranska för att se layouten.	Vorschau drücken, um das Layout anzusehen.
+Tile	Ruta	Kachel
+AmiHASS - starter layouts	AmiHASS - startlayouter	AmiHASS - Startlayouts
+Replace this page with the %s sample layout?	Ersätta sidan med exempellayouten %s?	Diese Seite durch das Beispiellayout %s ersetzen?
+Use starter layout?	Använda startlayout?	Startlayout verwenden?
+Apply	Verkställ	Anwenden
+Templates	Mallar	Vorlagen
+Backup	Säkerhetskopia	Sicherung
+1 column	1 kolumn	1 Spalte
+2 columns	2 kolumner	2 Spalten
+3 columns	3 kolumner	3 Spalten
+4 columns	4 kolumner	4 Spalten
+1 row	1 rad	1 Zeile
+2 rows	2 rader	2 Zeilen
+3 rows	3 rader	3 Zeilen
+4 rows	4 rader	4 Zeilen
+5 rows	5 rader	5 Zeilen
+6 rows	6 rader	6 Zeilen
+Columns	Kolumner	Spalten
+Rows	Rader	Zeilen
+Resize	Ändra storlek	Größe ändern
+Move or clear occupied cells before shrinking.	Flytta eller töm upptagna celler innan du förminskar.	Belegte Zellen vor dem Verkleinern verschieben oder leeren.
+Dashboard - layout	Instrumentpanel - layout	Dashboard - Layout
+Enter a layout name	Ange ett layoutnamn	Layoutnamen eingeben
+Move or clear tiles outside the new grid first	Flytta eller töm rutor utanför det nya rutnätet först	Kacheln außerhalb des neuen Rasters zuerst verschieben oder leeren
+Checking supported actions	Kontrollerar möjliga åtgärder	Unterstützte Aktionen werden geprüft
+Minimum	Minimum	Minimum
+Maximum	Maximum	Maximum
+Dashboard - gauge range	Instrumentpanel - mätarintervall	Dashboard - Anzeigebereich
+Enter an increasing range from -1000000 to 1000000	Ange ett stigande intervall från -1000000 till 1000000	Aufsteigenden Bereich von -1000000 bis 1000000 eingeben
+Service default	Tjänstens standard	Dienst-Standard
+5 seconds	5 sekunder	5 Sekunden
+10 seconds	10 sekunder	10 Sekunden
+15 minutes	15 minuter	15 Minuten
+Automatic	Automatisk	Automatisch
+Brightness	Ljusstyrka	Helligkeit
+Target temperature	Måltemperatur	Zieltemperatur
+Gauge	Mätare	Anzeige
+History graph	Historikgraf	Verlaufsgrafik
+Change Device	Byt enhet	Gerät ändern
+Clear	Töm	Leeren
+Move / more	Flytta / mer	Verschieben / mehr
+Keep saved action	Behåll sparad åtgärd	Gespeicherte Aktion behalten
+Tile label	Rutans etikett	Kachel-Label
+Main reading	Huvudvärde	Hauptwert
+Show timestamp	Visa tidsstämpel	Zeitstempel zeigen
+Dashboard - tile settings	Instrumentpanel - rutinställningar	Dashboard - Kacheleinstellungen
+Dashboard - unverified actions kept; Read only clears	Instrumentpanel - ej verifierade åtgärder behålls; Endast läsning rensar	Dashboard - ungeprüfte Aktionen bleiben; Nur lesen entfernt sie
+Other data source - Apply again to keep, or change device	Annan datakälla - Verkställ igen för att behålla, eller byt enhet	Andere Datenquelle - zum Behalten erneut anwenden oder Gerät ändern
+Choose a label, action and valid position	Välj etikett, åtgärd och giltig position	Label, Aktion und gültige Position wählen
+Choose a label and click action first	Välj först etikett och klickåtgärd	Zuerst Label und Klickaktion wählen
+Rename	Byt namn	Umbenennen
+Add Page	Lägg till sida	Seite hinzufügen
+Remove Page	Ta bort sida	Seite entfernen
+Set timing	Spara tider	Zeiten setzen
+Never	Aldrig	Nie
+Page	Sida	Seite
+Remove	Ta bort	Entfernen
+Only empty pages can be removed; clear their tiles first.	Bara tomma sidor kan tas bort; töm deras rutor först.	Nur leere Seiten können entfernt werden; zuerst Kacheln leeren.
+AmiHASS - dashboard pages	AmiHASS - panelsidor	AmiHASS - Dashboard-Seiten
+Enter a page name	Ange ett sidnamn	Seitennamen eingeben
+Use a unique name; maximum eight pages	Använd ett unikt namn; högst åtta sidor	Eindeutigen Namen verwenden; höchstens acht Seiten
+Keep at least one page; clear occupied tiles first	Behåll minst en sida; töm upptagna rutor först	Mindestens eine Seite behalten; belegte Kacheln zuerst leeren
+RGB color	RGB-färg	RGB-Farbe
+Target	Mål	Ziel
+Mode	Läge	Modus
+AmiHASS - read-only details	AmiHASS - skrivskyddade detaljer	AmiHASS - schreibgeschützte Details
+Run action	Kör åtgärd	Aktion ausführen
+Supported	Stöds	Unterstützt
+Choose an action; real unlock/open requires confirmation.	Välj en åtgärd; verklig upplåsning/öppning kräver bekräftelse.	Aktion wählen; echtes Entriegeln/Öffnen erfordert Bestätigung.
+AmiHASS - device controls	AmiHASS - enhetskontroller	AmiHASS - Gerätesteuerung
+Capabilities changed; choose an action again.	Funktionerna ändrades; välj en åtgärd igen.	Fähigkeiten geändert; Aktion erneut wählen.
+Connection lost; device actions disabled.	Anslutningen bröts; enhetsåtgärder avaktiverade.	Verbindung verloren; Geräteaktionen deaktiviert.
+State unavailable or stale; waiting for a fresh value.	Tillstånd saknas eller är inaktuellt; väntar på nytt värde.	Zustand fehlt oder veraltet; warte auf neuen Wert.
+Action queued; waiting for state confirmation.	Åtgärden köad; väntar på bekräftat tillstånd.	Aktion eingereiht; warte auf Zustandsbestätigung.
+Not sent: cancelled, stale or control no longer supported.	Inte skickad: avbruten, inaktuell eller kontrollen stöds inte längre.	Nicht gesendet: abgebrochen, veraltet oder Steuerung nicht mehr unterstützt.
+Play	Spela	Abspielen
+Pause	Paus	Pause
+Track	Spår	Titel
+Artist	Artist	Interpret
+Volume draft %	Volymutkast %	Lautstärke-Entwurf %
+Only supported controls are enabled.	Endast kontroller som stöds är aktiverade.	Nur unterstützte Steuerungen sind aktiv.
+AmiHASS - media controls	AmiHASS - mediakontroller	AmiHASS - Mediensteuerung
+Track unavailable	Spår saknas	Titel nicht verfügbar
+Artist unavailable	Artist saknas	Interpret nicht verfügbar
+Control no longer supported.	Kontrollen stöds inte längre.	Steuerung nicht mehr unterstützt.
+Sending; waiting for confirmed state.	Skickar; väntar på bekräftat tillstånd.	Wird gesendet; warte auf bestätigten Zustand.
+Not sent: unavailable, busy or unsupported.	Inte skickad: saknas, upptagen eller stöds inte.	Nicht gesendet: nicht verfügbar, beschäftigt oder nicht unterstützt.
+Connection lost; controls disabled.	Anslutningen bröts; kontroller avaktiverade.	Verbindung verloren; Steuerung deaktiviert.
+Set Color	Ange färg	Farbe setzen
+Save Preset	Spara förval	Vorgabe speichern
+Toggle	Växla	Umschalten
+Set Temperature	Ange temperatur	Temperatur setzen
+Select an available tile with supported light or temperature controls	Välj en tillgänglig ruta med ljus- eller temperaturkontroller	Verfügbare Kachel mit Licht- oder Temperatursteuerung wählen
+Red	Röd	Rot
+Green	Grön	Grün
+Blue	Blå	Blau
+Color	Färg	Farbe
+Color draft	Färgutkast	Farbentwurf
+%s to %s; step %s (%s)	%s till %s; steg %s (%s)	%s bis %s; Schritt %s (%s)
+unit unavailable	enhet saknas	Einheit nicht verfügbar
+Limits	Gränser	Grenzen
+Preset	Förval	Vorgabe
+Preset name	Förvalets namn	Vorgabename
+My color	Min färg	Meine Farbe
+Set target; server mode is unchanged.	Ange mål; serverns läge ändras inte.	Ziel setzen; Servermodus bleibt unverändert.
+Release brightness to apply; Set Color applies RGB.	Släpp ljusstyrkan för att verkställa; Ange färg verkställer RGB.	Helligkeit loslassen zum Anwenden; Farbe setzen wendet RGB an.
+AmiHASS - climate controls	AmiHASS - klimatkontroller	AmiHASS - Klimasteuerung
+AmiHASS - light controls	AmiHASS - ljuskontroller	AmiHASS - Lichtsteuerung
+Current color	Nuvarande färg	Aktuelle Farbe
+Refreshing state before enabling controls...	Uppdaterar tillstånd innan kontrollerna aktiveras...	Zustand wird vor dem Aktivieren aktualisiert...
+Current state received; controls ready.	Aktuellt tillstånd mottaget; kontrollerna är klara.	Aktueller Zustand empfangen; Steuerung bereit.
+Latest brightness queued; release to settle.	Senaste ljusstyrka köad; släpp för att fastställa.	Letzte Helligkeit eingereiht; zum Übernehmen loslassen.
+Waiting for confirmation	Väntar på bekräftelse	Warte auf Bestätigung
+Connection lost; no state confirmation.	Anslutningen bröts; ingen bekräftelse av tillstånd.	Verbindung verloren; keine Zustandsbestätigung.
+Timed out: requested value was not confirmed.	Tidsgräns: begärt värde bekräftades inte.	Zeitüberschreitung: angeforderter Wert nicht bestätigt.
+Turn on	Slå på	Einschalten
+Turn off	Stäng av	Ausschalten
+State received; server did not report current RGB.	Tillstånd mottaget; servern rapporterade ingen aktuell RGB.	Zustand empfangen; Server meldete kein aktuelles RGB.
+State received; current brightness is unknown.	Tillstånd mottaget; aktuell ljusstyrka okänd.	Zustand empfangen; aktuelle Helligkeit unbekannt.
+Confirmed state received from the bridge.	Bekräftat tillstånd mottaget från bryggan.	Bestätigter Zustand von der Bridge empfangen.
+Control failed; no confirmed state.	Kontrollen misslyckades; inget bekräftat tillstånd.	Steuerung fehlgeschlagen; kein bestätigter Zustand.
+Waiting for the requested value...	Väntar på det begärda värdet...	Warte auf den angeforderten Wert...
+Preset added; Save dashboard to keep it.	Förval tillagt; spara panelen för att behålla det.	Vorgabe hinzugefügt; Dashboard speichern, um sie zu behalten.
+Enter a name; eight presets maximum. Reuse a name to replace.	Ange ett namn; högst åtta förval. Återanvänd ett namn för att ersätta.	Namen eingeben; höchstens acht Vorgaben. Namen wiederverwenden zum Ersetzen.
+Controls unavailable: disconnected or stale state.	Kontroller inte tillgängliga: frånkopplad eller inaktuellt tillstånd.	Steuerung nicht verfügbar: getrennt oder veralteter Zustand.
+Capabilities changed; unsupported controls disabled.	Funktionerna ändrades; kontroller som inte stöds avaktiverade.	Fähigkeiten geändert; nicht unterstützte Steuerungen deaktiviert.
+Enter a numeric target in the displayed C/F unit.	Ange ett numeriskt mål i den visade enheten C/F.	Numerisches Ziel in der angezeigten Einheit C/F eingeben.
+Outside the supported range or step.	Utanför tillåtet intervall eller steg.	Außerhalb des unterstützten Bereichs oder Schritts.
+Sending	Skickar	Wird gesendet
+Bridge busy; try again after the next update.	Bryggan är upptagen; försök igen efter nästa uppdatering.	Bridge beschäftigt; nach der nächsten Aktualisierung erneut versuchen.
+Could not save dashboard layout	Kunde inte spara panellayouten	Dashboard-Layout konnte nicht gespeichert werden
+Dashboard layout saved	Panellayouten sparad	Dashboard-Layout gespeichert
+Discard	Släng	Verwerfen
+Keep Editing	Fortsätt redigera	Weiter bearbeiten
+Your dashboard has unsaved changes.	Din panel har osparade ändringar.	Ihr Dashboard hat ungespeicherte Änderungen.
+AmiHASS - unsaved dashboard	AmiHASS - osparad panel	AmiHASS - ungespeichertes Dashboard
+Could not save - choose another option or retry	Kunde inte spara - välj ett annat alternativ eller försök igen	Speichern fehlgeschlagen - andere Option wählen oder erneut versuchen
+Default	Standard	Standard
+Timestamp	Tidsstämpel	Zeitstempel
+Heating	Värme	Heizen
+Last dashboard edit undone; device actions are unchanged.	Senaste panelredigering ångrad; enhetsåtgärder är oförändrade.	Letzte Dashboard-Änderung rückgängig; Geräteaktionen unverändert.
+Not enough memory to keep an undo snapshot; edit cancelled.	Inte tillräckligt med minne för ångra; redigeringen avbröts.	Nicht genug Speicher für Rückgängig; Bearbeitung abgebrochen.
+Closed	Stängd	Geschlossen
+Unlock	Lås upp	Entriegeln
+Layout unreadable - edit a new layout	Layouten går inte att läsa - redigera en ny layout	Layout unlesbar - neues Layout bearbeiten
+Dashboard layout	Panellayout	Dashboard-Layout
+Recovered layout - Save to keep it	Återställd layout - spara för att behålla den	Wiederhergestelltes Layout - zum Behalten speichern
+Connecting to the shared bridge...	Ansluter till den delade bryggan...	Verbindung zur gemeinsamen Bridge...
+Light	Lampa	Licht
+Switch	Brytare	Schalter
+Sensor	Sensor	Sensor
+Binary sensor	Binär sensor	Binärsensor
+Fan	Fläkt	Ventilator
+Media player	Mediaspelare	Mediaplayer
+Door / cover	Dörr / skydd	Tür / Abdeckung
+Lock	Lås	Schloss
+Scene	Scen	Szene
+Script	Skript	Skript
+Input boolean	Boolesk indata	Boolesche Eingabe
+Number	Tal	Zahl
+Weather	Väder	Wetter
+Camera	Kamera	Kamera
+All types	Alla typer	Alle Typen
+Button	Knapp	Taste
+Input button	Indataknapp	Eingabetaste
+Loading %s...	Hämtar %s...	%s wird geladen...
+matching entities	matchande entiteter	passende Entitäten
+devices for this type	enheter av denna typ	Geräte dieses Typs
+%d-%d of %d %s%s	%d-%d av %d %s%s	%d-%d von %d %s%s
+ - sample data	 - exempeldata	 - Beispieldaten
+Dashboard - select an entity	Instrumentpanel - välj en entitet	Dashboard - Entität wählen
+Dashboard - choose type, then device	Instrumentpanel - välj typ, sedan enhet	Dashboard - Typ, dann Gerät wählen
+Dashboard - device capabilities	Instrumentpanel - enhetens funktioner	Dashboard - Gerätefähigkeiten
+Unavailable - capabilities could not be verified	Inte tillgänglig - funktionerna kunde inte verifieras	Nicht verfügbar - Fähigkeiten nicht überprüfbar
+All / Back	Alla / Tillbaka	Alle / Zurück
+Filter	Filter	Filter
+Area	Område	Bereich
+Label	Etikett	Label
+Info	Info	Info
+No data available.	Inga data tillgängliga.	Keine Daten verfügbar.
+%d recent log lines - AmiHASS service and connections	%d senaste loggrader - AmiHASS-tjänst och anslutningar	%d letzte Protokollzeilen - AmiHASS-Dienst und Verbindungen
+No logs yet. Start the service or test a connection.	Inga loggar ännu. Starta tjänsten eller testa en anslutning.	Noch keine Protokolle. Dienst starten oder Verbindung testen.
+AmiHASS local logs - no events recorded yet	AmiHASS lokala loggar - inga händelser ännu	AmiHASS lokale Protokolle - noch keine Ereignisse
+Service stopped or unavailable. Start it to collect diagnostics.	Tjänsten stoppad eller inte tillgänglig. Starta den för att samla diagnostik.	Dienst gestoppt oder nicht verfügbar. Zum Sammeln der Diagnose starten.
+No live service - counters are not available	Ingen aktiv tjänst - räknare saknas	Kein laufender Dienst - Zähler nicht verfügbar
+Reading bridge diagnostics...	Läser bryggans diagnostik...	Bridge-Diagnose wird gelesen...
+Fresh counters and states; no token, URL or response body.	Färska räknare och tillstånd; ingen token, URL eller svarsdata.	Aktuelle Zähler und Zustände; kein Token, keine URL, keine Antwortdaten.
+Version, network, error codes and bridge counters.	Version, nätverk, felkoder och bryggans räknare.	Version, Netzwerk, Fehlercodes und Bridge-Zähler.
+AmiHASS - export diagnostics	AmiHASS - exportera diagnostik	AmiHASS - Diagnose exportieren
+File exists. Export again to replace; Close cancels.	Filen finns. Exportera igen för att ersätta; Stäng avbryter.	Datei existiert. Erneut exportieren zum Ersetzen; Schließen bricht ab.
+Collecting read-only snapshot; Close cancels.	Samlar skrivskyddad ögonblicksbild; Stäng avbryter.	Schreibgeschützte Momentaufnahme wird gesammelt; Schließen bricht ab.
+Report saved. No credentials or response bodies included.	Rapporten sparad. Inga inloggningsuppgifter eller svarsdata ingår.	Bericht gespeichert. Keine Zugangsdaten oder Antwortdaten enthalten.
+Export failed/cancelled. Use writable .txt path and live service.	Exporten misslyckades/avbröts. Använd skrivbar .txt-sökväg och aktiv tjänst.	Export fehlgeschlagen/abgebrochen. Beschreibbaren .txt-Pfad und laufenden Dienst verwenden.
+Totals	Totalt	Summen
+Clients	Klienter	Clients
+Transport	Transport	Transport
+Cameras	Kameror	Kameras
+Reading AmiHASS service logs...	Läser AmiHASS-tjänstens loggar...	AmiHASS-Dienstprotokolle werden gelesen...
+AmiHASS - Diagnostics	AmiHASS - Diagnostik	AmiHASS - Diagnose
+AmiHASS - Server logs	AmiHASS - Serverloggar	AmiHASS - Serverprotokolle
+Diagnostics unavailable. Update AmiHASSService to the current build.	Diagnostik saknas. Uppdatera AmiHASSService till aktuell version.	Diagnose nicht verfügbar. AmiHASSService auf den aktuellen Stand bringen.
+Service does not provide diagnostic counters	Tjänsten har inga diagnostikräknare	Dienst liefert keine Diagnosezähler
+%.19s: requests %.39s; queries %.15s; lists %.39s; actions %.23s	%.19s: förfrågningar %.39s; avläsningar %.15s; listor %.39s; åtgärder %.23s	%.19s: Anfragen %.39s; Abfragen %.15s; Listen %.39s; Aktionen %.23s
+Partial snapshot - service unavailable	Ofullständig ögonblicksbild - tjänsten saknas	Unvollständige Momentaufnahme - Dienst nicht verfügbar
+Recent 120s; 16 clients/64 selections max. Counts since tracking; last 128 lines.	Senaste 120 s; max 16 klienter/64 val. Antal sedan spårning; senaste 128 rader.	Letzte 120 s; max. 16 Clients/64 Auswahlen. Zählung seit Erfassung; letzte 128 Zeilen.
+System-wide Fast bytes; observed HTTP drop, not process allocation. Refresh to update.	Fast-minne för hela systemet; observerad HTTP-minskning, inte processens allokering. Uppdatera för att förnya.	Systemweiter Fast-Speicher; beobachteter HTTP-Rückgang, keine Prozessbelegung. Zum Erneuern aktualisieren.
+Whole seconds; request/config and response-body bytes exclude TLS overhead.	Hela sekunder; byte för förfrågan/inställning och svar exkluderar TLS-overhead.	Ganze Sekunden; Anfrage-/Konfigurations- und Antwortbytes ohne TLS-Overhead.
+Selected live updates and fallback status; Refresh to update.	Valda direktuppdateringar och reservstatus; uppdatera för att förnya.	Ausgewählte Live-Aktualisierungen und Ausweichstatus; zum Erneuern aktualisieren.
+Images and reported whole-system decoder RAM drop; Refresh to update.	Bilder och rapporterad RAM-minskning i avkodare; uppdatera för att förnya.	Bilder und gemeldeter Decoder-RAM-Rückgang im System; zum Erneuern aktualisieren.
+Since service start; includes observer traffic. Refresh to update.	Sedan tjänsten startade; inkluderar observatörstrafik. Uppdatera för att förnya.	Seit Dienststart; inklusive Beobachterverkehr. Zum Erneuern aktualisieren.
+Service did not reply. Refresh to retry.	Tjänsten svarade inte. Uppdatera för att försöka igen.	Dienst hat nicht geantwortet. Zum Wiederholen aktualisieren.
+Diagnostic request timed out	Diagnostikförfrågan tog för lång tid	Diagnoseanfrage abgelaufen
+About AmiHASS	Om AmiHASS	Über AmiHASS
+Token hidden - Show to edit	Token dold - Visa för att redigera	Token verborgen - zum Bearbeiten anzeigen
+Show	Visa	Zeigen
+10 minutes	10 minuter	10 Minuten
+30 minutes	30 minuter	30 Minuten
+Automatic reconnect	Automatisk återanslutning	Automatisch neu verbinden
+Retry every	Försök igen var	Wiederholen alle
+Data source	Datakälla	Datenquelle
+Start at system boot	Starta vid systemstart	Beim Systemstart starten
+Show server logs	Visa serverloggar	Serverprotokolle zeigen
+Diagnostics	Diagnostik	Diagnose
+About	Om	Über
+Device Browser	Enhetsbläddrare	Geräte-Browser
+Reconnect now	Återanslut nu	Jetzt neu verbinden
+Health Check	Hälsokontroll	Systemprüfung
+Start	Starta	Starten
+Stop	Stoppa	Stoppen
+Server Settings	Serverinställningar	Servereinstellungen
+General Settings	Allmänna inställningar	Allgemeine Einstellungen
+AmiHASS Preferences	AmiHASS-inställningar	AmiHASS-Einstellungen
+Import token	Importera token	Token importieren
+Forget token	Glöm token	Token vergessen
+Test connection	Testa anslutning	Verbindung testen
+Profiles	Profiler	Profile
+AmiHASS - Server Settings	AmiHASS - Serverinställningar	AmiHASS - Servereinstellungen
+Hide	Dölj	Verbergen
+Bridge settings	Bryggans inställningar	Bridge-Einstellungen
+Checking service...	Kontrollerar tjänsten...	Dienst wird geprüft...
+Waiting for service status	Väntar på tjänstens status	Warte auf Dienststatus
+Service	Tjänst	Dienst
+Network	Nätverk	Netzwerk
+Checking TCP/IP stack...	Kontrollerar TCP/IP-stacken...	TCP/IP-Stack wird geprüft...
+Server	Server	Server
+Activity	Aktivitet	Aktivität
+AmiHASS Preferences - unsaved changes	AmiHASS-inställningar - osparade ändringar	AmiHASS-Einstellungen - ungespeicherte Änderungen
+TCP/IP stack running	TCP/IP-stacken körs	TCP/IP-Stack läuft
+TCP/IP stack not running	TCP/IP-stacken körs inte	TCP/IP-Stack läuft nicht
+Sample data (simulated)	Exempeldata (simulerade)	Beispieldaten (simuliert)
+Token rejected - check Server Settings	Token avvisad - kontrollera Serverinställningar	Token abgelehnt - Servereinstellungen prüfen
+Connecting	Ansluter	Verbinde
+Not Connected (retry)	Inte ansluten (försöker igen)	Nicht verbunden (neuer Versuch)
+Retry in %lum %lus	Nytt försök om %lum %lus	Neuer Versuch in %lum %lus
+Running	Körs	Läuft
+%ld entities; %ld queued	%ld entiteter; %ld i kö	%ld Entitäten; %ld eingereiht
+Stopped	Stoppad	Gestoppt
+No service running	Ingen tjänst körs	Kein Dienst aktiv
+Could not start service; check installation	Kunde inte starta tjänsten; kontrollera installationen	Dienst konnte nicht starten; Installation prüfen
+Service is stopped	Tjänsten är stoppad	Dienst ist gestoppt
+Reconnecting...	Återansluter...	Verbinde neu...
+Could not request reconnect	Kunde inte begära återanslutning	Neuverbindung konnte nicht angefordert werden
+Could not open AmiHASS Browser; check installation	Kunde inte öppna AmiHASS-bläddraren; kontrollera installationen	AmiHASS-Browser konnte nicht geöffnet werden; Installation prüfen
+Save failed; check settings and startup files	Sparandet misslyckades; kontrollera inställningar och startfiler	Speichern fehlgeschlagen; Einstellungen und Startdateien prüfen
+Import Home Assistant token text file	Importera textfil med Home Assistant-token	Home-Assistant-Token-Textdatei importieren
+Server URL	Server-URL	Server-URL
+Token	Token	Token
+From the URL scheme	Enligt URL-schemat	Aus dem URL-Schema
+Connection	Anslutning	Verbindung
+HTTPS (encrypted)	HTTPS (krypterad)	HTTPS (verschlüsselt)
+HTTP (unencrypted)	HTTP (okrypterad)	HTTP (unverschlüsselt)
+Could not import token text file	Kunde inte importera textfilen med token	Token-Textdatei konnte nicht importiert werden
+Failed - TCP/IP network not running	Misslyckades - TCP/IP-nätverket körs inte	Fehlgeschlagen - TCP/IP-Netzwerk läuft nicht
+Failed - server URL: use http(s)://host[:port]	Misslyckades - server-URL: använd http(s)://värd[:port]	Fehlgeschlagen - Server-URL: http(s)://Host[:Port] verwenden
+Failed - token: paste the long-lived access token	Misslyckades - token: klistra in den långlivade åtkomsttoken	Fehlgeschlagen - Token: langlebigen Zugriffstoken einfügen
+Testing connection...	Testar anslutningen...	Verbindung wird getestet...
+Check again	Kontrollera igen	Erneut prüfen
+Missing C:curl - install a Classic m68k curl build	C:curl saknas - installera en Classic m68k-version av curl	C:curl fehlt - Classic-m68k-curl installieren
+AmiSSL	AmiSSL	AmiSSL
+Master library opens; curl must support this version	Huvudbiblioteket öppnas; curl måste stödja denna version	Master-Bibliothek öffnet sich; curl muss diese Version unterstützen
+Master library unavailable; required by AmiSSL curl builds	Huvudbiblioteket saknas; krävs av curl-versioner med AmiSSL	Master-Bibliothek fehlt; von AmiSSL-curl benötigt
+Certificates	Certifikat	Zertifikate
+Configured CA path found; trust verified by Test connection	Inställd CA-sökväg hittad; förtroendet verifieras med Testa anslutning	Eingestellter CA-Pfad gefunden; Vertrauen prüft Verbindung testen
+AmiSSL:Certs found; curl CA setup still needs verification	AmiSSL:Certs hittad; curls CA-inställning behöver fortfarande verifieras	AmiSSL:Certs gefunden; CA-Einrichtung von curl noch zu prüfen
+No CA path found; install certificates for your curl build	Ingen CA-sökväg hittad; installera certifikat för din curl	Kein CA-Pfad gefunden; Zertifikate für curl installieren
+Clock appears old - correct the Amiga date/time	Klockan verkar gammal - rätta Amigans datum/tid	Uhr scheint alt - Datum/Uhrzeit des Amiga korrigieren
+Check Amiga date/time against your current local clock	Jämför Amigans datum/tid med din lokala klocka	Datum/Uhrzeit des Amiga mit der Ortszeit vergleichen
+Clock	Klocka	Uhr
+Help	Hjälp	Hilfe
+See REQUIREMENTS.txt for downloads and installation.	Se REQUIREMENTS.txt för nedladdning och installation.	Downloads und Installation siehe REQUIREMENTS.txt.
+Validation	Kontroll	Prüfung
+Availability only. Test connection verifies HTTPS and trust.	Endast tillgänglighet. Testa anslutning verifierar HTTPS och förtroende.	Nur Verfügbarkeit. Verbindung testen prüft HTTPS und Vertrauen.
+AmiHASS - dependencies	AmiHASS - beroenden	AmiHASS - Abhängigkeiten
+Service directory not configured	Tjänstens katalog är inte inställd	Dienstverzeichnis nicht eingerichtet
+Unreadable / invalid	Oläsbar / ogiltig	Unlesbar / ungültig
+Present	Finns	Vorhanden
+Defaults (file absent)	Standardvärden (fil saknas)	Standardwerte (Datei fehlt)
+ - recovered backup; save to repair	 - återställd säkerhetskopia; spara för att laga	 - wiederhergestellte Sicherung; zum Reparieren speichern
+Config path	Inställningssökväg	Konfigurationspfad
+Config	Inställningar	Konfiguration
+Missing C:curl; see REQUIREMENTS.txt	C:curl saknas; se REQUIREMENTS.txt	C:curl fehlt; siehe REQUIREMENTS.txt
+Master library opens	Huvudbiblioteket öppnas	Master-Bibliothek öffnet sich
+Master library unavailable	Huvudbiblioteket saknas	Master-Bibliothek fehlt
+Configured CA path found	Inställd CA-sökväg hittad	Eingestellter CA-Pfad gefunden
+Certificate drawer found; verify trust with Test connection	Certifikatlåda hittad; verifiera förtroendet med Testa anslutning	Zertifikatschublade gefunden; Vertrauen mit Verbindung testen prüfen
+No CA path found; install curl certificates	Ingen CA-sökväg hittad; installera certifikat för curl	Kein CA-Pfad gefunden; curl-Zertifikate installieren
+TCP/IP interface has an assigned address	TCP/IP-gränssnittet har en tilldelad adress	TCP/IP-Schnittstelle hat eine Adresse
+No ready TCP/IP interface	Inget klart TCP/IP-gränssnitt	Keine bereite TCP/IP-Schnittstelle
+Sample data selected	Exempeldata valt	Beispieldaten gewählt
+Configured; use Test connection to verify	Inställd; använd Testa anslutning för att verifiera	Eingerichtet; zum Prüfen Verbindung testen
+Not configured; open Server Settings	Inte inställd; öppna Serverinställningar	Nicht eingerichtet; Servereinstellungen öffnen
+Executable	Programfil	Programmdatei
+Service executable not found	Tjänstens programfil hittades inte	Dienstprogramm nicht gefunden
+Service executable found	Tjänstens programfil hittad	Dienstprogramm gefunden
+Checks	Kontroller	Prüfungen
+Local availability only; no device actions or network requests.	Endast lokal tillgänglighet; inga enhetsåtgärder eller nätverksförfrågningar.	Nur lokale Verfügbarkeit; keine Geräteaktionen oder Netzwerkanfragen.
+AmiHASS - installation health	AmiHASS - installationens hälsa	AmiHASS - Installationszustand
+Continue	Fortsätt	Weiter
+Recovered	Återställd	Wiederhergestellt
+Loaded a complete backup. Save to keep it; Close leaves it unsaved.	Laddade en fullständig säkerhetskopia. Spara för att behålla; Stäng lämnar den osparad.	Vollständige Sicherung geladen. Zum Behalten speichern; Schließen lässt sie ungespeichert.
+AmiHASS - recovered configuration	AmiHASS - återställda inställningar	AmiHASS - wiederhergestellte Konfiguration
+Dependencies	Beroenden	Abhängigkeiten
+Poll seconds	Avläsningsintervall (s)	Abfrage-Sekunden
+Range	Intervall	Bereich
+10-3600 seconds; budget 0 = unlimited	10-3600 sekunder; budget 0 = obegränsat	10-3600 Sekunden; Budget 0 = unbegrenzt
+Low memory mode	Lågminnesläge	Wenig-Speicher-Modus
+Memory	Minne	Speicher
+Reclaim unused libraries after 30 s idle.	Frigör oanvända bibliotek efter 30 s utan aktivitet.	Unbenutzte Bibliotheken nach 30 s Leerlauf freigeben.
+Polling preset	Avläsningsförval	Abfragevorgabe
+Background/min	Bakgrund/min	Hintergrund/Min.
+Live updates	Direktuppdateringar	Live-Aktualisierungen
+Selected entities only; Low memory uses REST.	Endast valda entiteter; Lågminnesläge använder REST.	Nur gewählte Entitäten; Wenig Speicher nutzt REST.
+Script doors	Dörrar via skript	Türen per Skript
+Security	Säkerhet	Sicherheit
+Off: only Dashboard opens locks and covers.	Av: endast instrumentpanelen öppnar lås och skydd.	Aus: nur das Dashboard öffnet Schlösser und Abdeckungen.
+AmiHASS - General Settings	AmiHASS - Allmänna inställningar	AmiHASS - Allgemeine Einstellungen
+Economy (60s)	Sparsam (60s)	Sparsam (60s)
+Balanced (30s)	Balanserad (30s)	Ausgewogen (30s)
+Responsive (10s)	Snabb (10s)	Reaktionsschnell (10s)
+Custom	Anpassad	Benutzerdefiniert
+Use a poll interval from 10 to 3600 seconds	Använd ett avläsningsintervall på 10 till 3600 sekunder	Abfrageintervall von 10 bis 3600 Sekunden verwenden
+Background budget: 0 unlimited, or 1 to 120 per minute	Bakgrundsbudget: 0 obegränsat, eller 1 till 120 per minut	Hintergrundbudget: 0 unbegrenzt oder 1 bis 120 pro Minute
+%ld entities; page %d. Select a row, then Choose.	%ld entiteter; sida %d. Välj en rad och sedan Välj.	%ld Entitäten; Seite %d. Zeile markieren, dann Auswählen.
+Loading entities...	Hämtar entiteter...	Entitäten werden geladen...
+AmiHASS - choose entity / scene / group	AmiHASS - välj entitet / scen / grupp	AmiHASS - Entität / Szene / Gruppe wählen
+Start the AmiHASS service before browsing	Starta AmiHASS-tjänsten innan du bläddrar	Vor dem Durchsuchen den AmiHASS-Dienst starten
+Loading labels from the bridge...	Hämtar etiketter från bryggan...	Labels werden von der Bridge geladen...
+AmiHASS - Select label	AmiHASS - Välj etikett	AmiHASS - Label wählen
+Labels %d-%d of %d	Etiketter %d-%d av %d	Labels %d-%d von %d
+No labels configured - use All labels	Inga etiketter inställda - använd Alla etiketter	Keine Labels eingerichtet - Alle Labels verwenden
+App	Program	Programm
+Purpose	Syfte	Zweck
+Home Assistant bridge for Amiga apps.	Home Assistant-brygga för Amiga-program.	Home-Assistant-Bridge für Amiga-Programme.
+Author	Upphovsman	Autor
+Website	Webbplats	Webseite
+Service stopped - start it in Preferences	Tjänsten stoppad - starta den i Inställningar	Dienst gestoppt - in den Einstellungen starten
+Bridge request timed out - retrying	Förfrågan till bryggan tog för lång tid - försöker igen	Bridge-Anfrage abgelaufen - neuer Versuch
+Unexpected bridge reply	Oväntat svar från bryggan	Unerwartete Bridge-Antwort
+Configure the server in Preferences	Ställ in servern i Inställningar	Server in den Einstellungen einrichten
+TCP/IP network is not running	TCP/IP-nätverket körs inte	TCP/IP-Netzwerk läuft nicht
+Token rejected - update Server Settings or retry	Token avvisad - uppdatera Serverinställningar eller försök igen	Token abgelehnt - Servereinstellungen aktualisieren oder erneut versuchen
+Connecting to Home Assistant...	Ansluter till Home Assistant...	Verbindung zu Home Assistant...
+Home Assistant disconnected - waiting for retry	Home Assistant frånkopplad - väntar på nytt försök	Home Assistant getrennt - warte auf neuen Versuch
+Home Assistant is not connected	Home Assistant är inte ansluten	Home Assistant ist nicht verbunden
+Catalogue page changed - refresh	Katalogsidan ändrades - uppdatera	Katalogseite geändert - aktualisieren
+Action is not supported for this entity	Åtgärden stöds inte för denna entitet	Aktion wird für diese Entität nicht unterstützt
+Busy; try again shortly	Upptagen; försök igen strax	Beschäftigt; gleich erneut versuchen
+Connection/authentication failed; check server, token and curl	Anslutning/inloggning misslyckades; kontrollera server, token och curl	Verbindung/Anmeldung fehlgeschlagen; Server, Token und curl prüfen
+Entity unavailable; no action sent	Entiteten saknas; ingen åtgärd skickad	Entität nicht verfügbar; keine Aktion gesendet
+Install/start AmiHASS service	Installera/starta AmiHASS-tjänsten	AmiHASS-Dienst installieren/starten
+Latch open	Spärr öppen	Riegel offen
+Locked	Låst	Verriegelt
+Ready	Klar	Bereit
+Set up Home Assistant connection	Ställ in anslutningen till Home Assistant	Home-Assistant-Verbindung einrichten
+Stale; last reading is not current	Inaktuell; senaste värdet är inte aktuellt	Veraltet; letzter Wert ist nicht aktuell
+Unknown	Okänd	Unbekannt
+Unlocked	Olåst	Entriegelt
+History graph (6 h)	Historikgraf (6 h)	Verlaufsgrafik (6 h)
+History graph (1 h)	Historikgraf (1 h)	Verlaufsgrafik (1 h)
+AmiHASS - Server Settings - %.32s	AmiHASS - Serverinställningar - %.32s	AmiHASS - Servereinstellungen - %.32s
+Alarm code	Larmkod	Alarmcode
+OK	OK	OK
+Disarm	Avlarma	Unscharf schalten
+Drop on another tile to move it, or on an occupied one to swap	Släpp på en annan ruta för att flytta, eller på en upptagen för att byta plats	Auf eine andere Kachel ziehen zum Verschieben, auf eine belegte zum Tauschen
+Tile moved; Save to keep the layout	Rutan flyttad; spara för att behålla layouten	Kachel verschoben; zum Behalten speichern
+Help needs AmiHASS.guide and MultiView	Hjälpen kräver AmiHASS.guide och MultiView	Die Hilfe braucht AmiHASS.guide und MultiView
+Certificates found; use Test connection	Certifikat finns; testa anslutningen	Zertifikate da; Verbindung testen
+Configured; use Test connection	Inställt; testa anslutningen	Konfiguriert; Verbindung testen
+Local checks; server access is not tested.	Lokala tester; servern testas inte.	Lokale Tests; Serverzugriff nicht geprüft.
+Discovery failed - Refresh or see server logs	Sökningen misslyckades - uppdatera eller se loggen	Suche fehlgeschlagen - aktualisieren oder Log lesen
+
+Connections	Anslutningar	Verbindungen
+New	Ny	Neu
+Delete	Ta bort	Löschen
+Auto reconnect	Återanslut automatiskt	Automatisch verbinden
+Retry	Försök igen	Wiederholen
+Connect	Anslut	Verbinden
+Disconnect	Koppla från	Trennen
+Health	Kontroll	Prüfung
+Disconnected	Frånkopplad	Getrennt
+Connection request failed; check service version	Anslutningsbegäran misslyckades; kontrollera tjänstens version	Verbindungsanfrage fehlgeschlagen; Dienstversion prüfen
+Could not change connection state	Kunde inte ändra anslutningen	Verbindung konnte nicht geändert werden
+Connection %u	Anslutning %u	Verbindung %u
+Test or Save the selected connection	Testa eller spara vald anslutning	Gewählte Verbindung testen oder speichern
+Press Delete again to remove connection	Tryck Ta bort igen för att radera anslutningen	Zum Entfernen erneut Löschen drücken
+Could not delete saved connection	Kunde inte ta bort sparad anslutning	Gespeicherte Verbindung nicht entfernt
+Failed - server URL is invalid	Misslyckades - serveradressen är ogiltig	Fehler - Serveradresse ungültig
+Failed - token is invalid or too short	Misslyckades - token är ogiltig eller för kort	Fehler - Token ungültig oder zu kurz
+Connection name already exists	Anslutningsnamnet finns redan	Verbindungsname bereits vorhanden
+Enter a connection name, URL and token	Ange anslutningsnamn, adress och token	Verbindungsname, Adresse und Token eingeben
+Connection saved; could not activate it	Anslutning sparad; kunde inte aktivera den	Verbindung gespeichert; Aktivierung fehlgeschlagen
+Certificate drawer found; test HTTPS trust	Certifikat hittade; testa HTTPS	Zertifikate gefunden; HTTPS testen
+Local checks only; no device actions.	Endast lokal kontroll; inga enhetsåtgärder.	Nur lokale Prüfung; keine Geräteaktionen.
+Wait for service status	Vänta på tjänstens status	Auf Dienststatus warten
+Could not read favourites; file preserved	Kunde inte läsa favoriter; filen bevarad	Favoriten nicht lesbar; Datei behalten
+Choose an entity to add a favourite	Välj en entitet som favorit	Entität als Favorit wählen
+Favourite saved	Favorit sparad	Favorit gespeichert
+Could not save favourite; list may be full	Kunde inte spara; listan kan vara full	Speichern fehlgeschlagen; Liste evtl. voll
+No favourites for this data source	Inga favoriter för denna datakälla	Keine Favoriten für diese Datenquelle
+Dashboard favourites	Panelens favoriter	Dashboard-Favoriten
+Could not remove favourite; file preserved	Kunde inte ta bort; filen bevarad	Entfernen fehlgeschlagen; Datei behalten
+Favourites	Favoriter	Favoriten
+Add fav.	Favorit +	Favorit +
+No successful contact	Ingen lyckad kontakt	Noch kein erfolgreicher Kontakt
+Waiting for service	Väntar på tjänsten	Warten auf Dienst
+Contact	Kontakt	Kontakt
+Resources	Resurser	Ressourcen
+Discovery failed	Sökningen misslyckades	Erkennung fehlgeschlagen
+Discovery failed; Refresh to retry	Sökfel; försök med Refresh	Erkennungsfehler; Refresh zum Wiederholen
+%s cached; %s pending; %lukB%s	%s cachade; %s väntar; %lukB%s	%s Cache; %s offen; %lukB%s
+ Low	 Låg	 Niedrig
+Sample data - local	Exempeldata - lokalt	Beispieldaten - lokal
+%.14s: %lus ago	%.14s: %lus sedan	%.14s: vor %lus
+%.14s: never	%.14s: aldrig	%.14s: nie
+No service contact	Ingen tjänstekontakt	Kein Dienstkontakt
+Service stopped	Tjänsten stoppad	Dienst angehalten
+Discovery failed; use Refresh	Sökfel; använd Refresh	Erkennungsfehler; Refresh nutzen
+%s cached; %s req; %lukB%s	%s cache; %s req; %lukB%s	%s Cache; %s Anf.; %lukB%s
+Available	Tillgänglig	Verfügbar
+Cached	Cachad	Gespeichert
+Updating	Uppdaterar	Aktualisierung
+No value	Inget värde	Kein Wert
+%s | last value %lus ago	%s | värde för %lus sedan	%s | letzter Wert vor %lus
+Preview %lus old | %s	Bild %lus gammal | %s	Vorschau %lus alt | %s
+Auto refresh	Autouppdatering	Automatisch
+Manual refresh	Manuell uppdatering	Manuell
+Scope	Omfattning	Umfang
+Visible cameras; paused when inactive or editing.	Synliga kameror; paus vid inaktivitet och redigering.	Sichtbare Kameras; Pause bei Inaktivität/Bearbeitung.
+Dashboard - camera refresh	Panel - kamerauppdatering	Dashboard - Kamerabilder
+Could not save camera settings; try again	Kunde inte spara kameraval; försök igen	Kameraeinstellungen nicht gespeichert; erneut versuchen
+AmiHASS - export / import layouts	AmiHASS - exportera / importera paneler	AmiHASS - Layouts exportieren / importieren
+Checking the active bridge connection...	Kontrollerar aktiv brygganslutning...	Aktive Verbindung wird geprüft...
+Dashboard - verify data source	Panel - kontrollera datakälla	Dashboard - Datenquelle prüfen
+Use Page	Använd sida	Seite nutzen
+Choose room	Välj rum	Raum wählen
+Lights	Lampor	Lichter
+Switches	Brytare	Schalter
+Sensors	Sensorer	Sensoren
+Preview up to 24 entities in this room.	Förhandsvisa högst 24 entiteter i rummet.	Bis zu 24 Entitäten dieses Raums anzeigen.
+Preview page	Förhandsvisa	Vorschauseite
+Dashboard - room layout	Panel - rumslayout	Dashboard - Raumlayout
+No matching entities in this room	Inga matchande entiteter i rummet	Keine passenden Entitäten in diesem Raum
+%.20s: %u/%d entities; read-only	%.20s: %u/%d entiteter; läsläge	%.20s: %u/%d Entitäten; nur lesen
+Loading room %.32s...	Läser rum %.32s...	Raum %.32s wird geladen...
+%.32s selected; press Preview	%.32s valt; välj Preview	%.32s gewählt; Vorschau starten
+Replace this page with %u tiles from %.32s?	Ersätt sidan med %u rutor från %.32s?	Seite durch %u Kacheln aus %.32s ersetzen?
+Use room layout?	Använd rumslayout?	Raumlayout nutzen?
+Source changed or offline; preview the room again.	Datakällan ändrad/offline; förhandsvisa igen.	Quelle geändert/offline; Vorschau erneut laden.
+From room	Från rum	Aus Raum
+Export/Import	Export/import	Export/Import
+%.20s: %u/%d; no click actions	%.20s: %u/%d; inga klickåtgärder	%.20s: %u/%d; ohne Klickaktionen

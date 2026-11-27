@@ -1,0 +1,1 @@
+{"name":"AmiHASS 0.3 sample Diagnostics and installation health","application":"QATests:AmiHASSReliabilityCheck","arguments":["HEALTH"],"timeoutSeconds":90,"expectedReturnCode":0}

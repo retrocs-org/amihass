@@ -35,10 +35,10 @@ class Scenario:
   self.open_prefs=open_prefs
   self.env={'@icon':'Bin:Package/Install','@user-level':level,'@copyfiles-help':'Help'}
   self.files={};self.stopped=False;self.action=action;self.remove=remove;self.running=running;self.stop_fail=stop_fail;self.restart_fail=restart_fail;self.messages=[];self.message_levels=[];self.opened=False;self.restarted=False;self.copied_files=[];self.questions=[];self.result=''
-  self.paths={'Service':'WORK:Apps/AmiHASS' if installed else 'SYS:Utilities/AmiHASS','Prefs':'WORK:Prefs' if installed else 'SYS:Prefs','Startup':'WORK:Startup' if installed else 'SYS:WBStartup','Boot':'1'}
+  self.paths={'Service':'WORK:Apps/AmiHASS' if installed else 'SYS:AmiHASS','Prefs':'WORK:Prefs' if installed else 'SYS:Prefs','Startup':'WORK:Startup' if installed else 'SYS:WBStartup','Boot':'1'}
   if installed:
    d=self.paths['Service'];p=self.paths['Prefs'];b=self.paths['Startup']
-   self.files.update({'SYS:Utilities/AmiHASSDashboard':'dashboard','SYS:Utilities/AmiHASSDashboard.info':'icon','SYS:Utilities/AmiHASSBrowser':'browser','SYS:Utilities/AmiHASSBrowser.info':'icon',d+'/AmiHASSBrowser':'browser',d+'/AmiHASSBrowser.info':'browser icon',d+'/AmiHASS':'legacy',d+'/unrelated':'keep',p+'/AmiHASSPrefs':'old prefs',p+'/AmiHASSPrefs.info':'old icon',b+'/AmiHASS':'startup',b+'/AmiHASS.info':'icon','ENVARC:AmiHASS/AmiHASS.cfg':'all settings','ENVARC:AmiHASS/Private/Save-recovery/old':'token','ENV:AmiHASS':'live'})
+   self.files.update({'LOCALE:Catalogs/svenska/amihass.catalog':'catalog','SYS:Utilities/AmiHASSDock':'dock','SYS:Utilities/AmiHASSDock.info':'icon',b+'/AmiHASSDock':'dock',b+'/AmiHASSDock.info':'icon','SYS:Utilities/AmiHASSDashboard':'dashboard','SYS:Utilities/AmiHASSDashboard.info':'icon','SYS:Utilities/AmiHASSBrowser':'browser','SYS:Utilities/AmiHASSBrowser.info':'icon',d+'/AmiHASSBrowser':'browser',d+'/AmiHASSBrowser.info':'browser icon',d+'/AmiHASS':'legacy',d+'/unrelated':'keep',p+'/AmiHASSPrefs':'old prefs',p+'/AmiHASSPrefs.info':'old icon',b+'/AmiHASS':'startup',b+'/AmiHASS.info':'icon','ENVARC:AmiHASS/CameraRefresh.cfg':'camera policy','ENVARC:AmiHASS/Favourites.cfg':'favourites','ENVARC:AmiHASS/AmiHASS.cfg':'all settings','ENVARC:AmiHASS/AmiHASS.cfg.old':'recovery settings','ENVARC:AmiHASS/Private/Save-recovery/old':'token','ENV:AmiHASS':'live','SYS:Utilities/NovaDock':'preserve NovaDock','WORK:Startup/NovaDock':'preserve NovaDock'})
    if not partial:self.files[d+'/AmiHASSService']='old service'
  def has(self,p):return 1 if p in self.files else (2 if any(x.startswith(p.rstrip('/')+'/') for x in self.files) else 0)
  def eval(self,n):
@@ -65,8 +65,11 @@ class Scenario:
   if h=='and':return int(all(self.eval(x) for x in v))
   if h=='or':return int(any(self.eval(x) for x in v))
   if h=='cat':return ''.join(str(self.eval(x)) for x in v)
-  if h=='tackon':return self.eval(v[0]).rstrip('/')+'/'+self.eval(v[1])
-  if h=='pathonly':return self.eval(v[0]).rsplit('/',1)[0]
+  if h=='tackon':
+   parent=self.eval(v[0]).rstrip('/');return parent+('' if parent.endswith(':') else '/')+self.eval(v[1])
+  if h=='pathonly':
+   value=self.eval(v[0]);return value.rsplit('/',1)[0] if '/' in value else value.split(':',1)[0]+':'
+  if h=='fileonly':return self.eval(v[0]).rsplit('/',1)[-1].rsplit(':',1)[-1]
   if h=='expandpath':return self.eval(v[0]).rstrip('/')
   if h=='exists':return self.has(self.eval(v[0]))
   if h=='getenv':return self.paths[self.eval(v[0]).split('Installer')[1]]
@@ -80,7 +83,7 @@ class Scenario:
    if self.env['@user-level']==0:return self.eval(tags['default'][0])
    if prompt=='Open AmiHASS Preferences now?':return int(self.open_prefs)
    if h=='askchoice':return self.remove if prompt.startswith('Keep or remove') else self.action
-   if h=='askdir':return {'Choose the service/application drawer':'DATA:Apps/AmiHASS','Choose the Preferences drawer':'DATA:Preferences','Choose the Workbench startup drawer':'DATA:Boot'}[prompt]
+   if h=='askdir':return {'Choose a parent drawer for shared data':'DATA:Shared','Choose the Preferences drawer':'DATA:Preferences','Choose the Workbench startup drawer':'DATA:Boot'}[prompt]
    if 'Remove AmiHASS' in prompt:return 1
    if 'Remove saved' in prompt:return self.remove
    return 1
@@ -106,8 +109,8 @@ class Scenario:
   if h=='copyfiles':
    assert self.stopped
    dest=self.eval(tags['dest'][0]);source=self.eval(tags['source'][0]);file=source.removeprefix('Bin:Package/')
-   assert '/' not in file and (file in ('AmiHASSPrefs','AmiHASSService','AmiHASSBrowser','AmiHASSDashboard','StartInstaller','SetupStartup') or (ROOT/file).is_file()),source
-   self.files[dest+'/'+file]='installed';self.copied_files.append(file);return 0
+   assert ('/' not in file or (file.startswith('Catalogs/') and file.endswith('/amihass.catalog'))) and (file in ('AmiHASSPrefs','AmiHASSService','AmiHASSFetch','AmiHASSBrowser','AmiHASSDashboard','StartInstaller','SetupStartup') or file=='AmiHASS.guide' or (ROOT/file).is_file()),source
+   self.files[dest+'/'+file.rsplit('/',1)[-1]]='installed';self.copied_files.append(file);return 0
   if h=='delete':
    assert self.stopped
    path=self.eval(v[0]);assert path!='ENV:AmiHASS';self.files.pop(path,None);return 0
@@ -121,7 +124,7 @@ for level in range(3):
  fresh=Scenario(level=level).run();assert fresh.result=='exit' and not fresh.opened
  assert fresh.files[fresh.env['#prefs']+'/AmiHASSPrefs.info']=='installed'
  assert fresh.files[fresh.env['#dest']+'/AmiHASSService']=='installed'
- assert fresh.files['SYS:Utilities/AmiHASSDashboard']=='installed' and fresh.files['SYS:Utilities/AmiHASSDashboard.info']=='installed'
+ assert fresh.files['SYS:Utilities/AmiHASSDashboard']=='installed' and fresh.files['SYS:Utilities/AmiHASSDashboard.info']=='installed' and not fresh.has('SYS:Utilities/AmiHASSDock') and not fresh.has('SYS:Utilities/AmiHASSDock.info') and fresh.files['LOCALE:Catalogs/svenska/amihass.catalog']=='installed' and fresh.files['LOCALE:Catalogs/deutsch/amihass.catalog']=='installed'
  assert fresh.files['SYS:Utilities/AmiHASSBrowser']=='installed' and fresh.files['SYS:Utilities/AmiHASSBrowser.info']=='installed'
  assert fresh.env['#startup']==1 and 'configure Server Settings and start' in fresh.messages[-1]
  assert fresh.message_levels[-1]>=1 and 'Open Preferences manually' in fresh.messages[-1]
@@ -138,18 +141,26 @@ for level in range(3):
   assert not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser')
   assert 'Choose update or uninstall' in s.questions[0] and s.files['WORK:Apps/AmiHASS/unrelated']=='keep'
   assert s.files[s.env['#prefs']+'/AmiHASSPrefs.info']=='installed' and 'ENVARC:AmiHASS/AmiHASS.cfg' in s.files
-  if level:assert not s.has('WORK:Prefs/AmiHASSPrefs') and not s.has('WORK:Startup/AmiHASS') and not s.has('WORK:Apps/AmiHASS/AmiHASSService')
+  assert s.files['SYS:Utilities/NovaDock']=='preserve NovaDock' and s.files['WORK:Startup/NovaDock']=='preserve NovaDock'
+  assert not s.has('SYS:Utilities/AmiHASSDock') and not s.has('WORK:Startup/AmiHASSDock')
+  if level:assert not s.has('WORK:Prefs/AmiHASSPrefs') and not s.has('WORK:Startup/AmiHASS')
+  if level==2:assert not s.has('WORK:Apps/AmiHASS/AmiHASSService')
  for remove in (False,True):
   s=Scenario(installed=True,level=level,action=1,remove=remove,running=True).run()
   assert s.result=='exit' and s.stopped and not s.running and not s.has('WORK:Prefs/AmiHASSPrefs') and not s.has('WORK:Apps/AmiHASS/AmiHASSService')
   assert s.files['WORK:Apps/AmiHASS/unrelated']=='keep' and s.files['ENV:AmiHASS']=='live'
   assert not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser') and not s.has('WORK:Apps/AmiHASS/AmiHASSBrowser.info')
   assert not s.has('SYS:Utilities/AmiHASSDashboard') and not s.has('SYS:Utilities/AmiHASSDashboard.info')
+  assert s.files['SYS:Utilities/NovaDock']=='preserve NovaDock' and s.files['WORK:Startup/NovaDock']=='preserve NovaDock'
+  assert not s.has('SYS:Utilities/AmiHASSDock') and not s.has('WORK:Startup/AmiHASSDock') and not s.has('LOCALE:Catalogs/svenska/amihass.catalog')
   assert not s.has('SYS:Utilities/AmiHASSBrowser') and not s.has('SYS:Utilities/AmiHASSBrowser.info')
   assert len(s.questions)==2 and s.questions[1].startswith('Keep or remove')
   assert ('Settings were removed' if remove else 'Settings were kept') in s.messages[-1]
+  assert ('ENVARC:AmiHASS/CameraRefresh.cfg' in s.files)==(not remove)
+  assert ('ENVARC:AmiHASS/Favourites.cfg' in s.files)==(not remove)
   assert ('ENVARC:AmiHASS/AmiHASS.cfg' in s.files)==(not remove)
   assert ('ENVARC:AmiHASS/Private/Save-recovery/old' in s.files)==(not remove)
+  assert ('ENVARC:AmiHASS/AmiHASS.cfg.old' in s.files)==(not remove)
 s=Scenario(installed=True,partial=True).run();assert 'Choose update or uninstall' in s.questions[0]
 s=Scenario(installed=True,running=True,restart_fail=True).run();assert 'could not be restarted' in s.messages[-1] and not s.running
 s=Scenario(installed=True,stop_fail=True).run();assert s.result=='abort' and not s.copied_files and s.files['WORK:Prefs/AmiHASSPrefs']=='old prefs'
@@ -175,3 +186,19 @@ for level in (0,1,2):
  assert s.questions[-1]=='Open AmiHASS Preferences now?'
  s=Scenario(installed=True,level=level,open_prefs=True).run()
  assert not s.opened and 'Open AmiHASS Preferences now?' not in s.questions
+
+# Shared components are separate; only Expert chooses their parent.
+for mode in (0,1,2):
+ s=Scenario(level=mode).run()
+ assert s.env['#dest']==('DATA:Shared/AmiHASS' if mode==2 else 'SYS:AmiHASS')
+ assert s.files[s.env['#dest']+'/AmiHASSService']=='installed'
+ assert any(q=='Choose a parent drawer for shared data' for q in s.questions)==(mode==2)
+legacy=Scenario(installed=True)
+legacy.paths['Service']='SYS:Utilities/AmiHASS'
+legacy.files['SYS:Utilities/AmiHASS/AmiHASSService']='legacy service'
+legacy.files['SYS:Utilities/AmiHASS/unrelated']='keep'
+legacy.run()
+assert legacy.env['#dest']=='SYS:AmiHASS'
+assert not legacy.has('SYS:Utilities/AmiHASS/AmiHASSService')
+assert legacy.files['SYS:Utilities/AmiHASS/unrelated']=='keep'
+print('Shared components: dedicated default, Expert-only parent, legacy migration and unrelated files preserved.')

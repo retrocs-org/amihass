@@ -13,12 +13,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <devices/inputevent.h>
+#include "ah_locale.h"
 #include "nd_panel.h"
+#include "wait.h"
 #include "amihass_logo.h"
 struct IntuitionBase *IntuitionBase=NULL;
 struct Library *GadToolsBase=NULL;
 struct GfxBase *GfxBase=NULL;
-struct NDPanel {unsigned int save_id;unsigned long choices,sliders;unsigned int choice_index[12];int source_index,secret_field,secret_shown;char secret[1025];struct Gadget *secret_button;
+static unsigned int panel_users;
+struct NDPanel {struct Gadget *servers;struct List server_labels;struct Node server_nodes[8];char server_names[8][33];unsigned int server_count,server_selected;unsigned int save_id;unsigned long choices,sliders;unsigned int choice_index[12];int source_index,secret_field,secret_shown;char secret[1025];struct Gadget *secret_button;
     struct Screen *screen;struct Window *window;
     struct Gadget *gadgets,*fields[12],*boot,*reconnect,*retry,*source;APTR visual;
     UWORD background;int group_top;
@@ -26,6 +29,7 @@ struct NDPanel {unsigned int save_id;unsigned long choices,sliders;unsigned int 
 };
 void nd_panel_close(struct NDPanel *p)
 {
+    if(!p)return;
     if(p){
         if(p->window)CloseWindow(p->window);
         if(p->gadgets){unsigned int i;for(i=0;i<p->count;++i)if(p->limits[i] && p->fields[i] && p->fields[i]->SpecialInfo){
@@ -39,6 +43,7 @@ void nd_panel_close(struct NDPanel *p)
         {volatile unsigned char *bytes=(volatile unsigned char *)p->secret;unsigned int n=sizeof(p->secret);while(n--)*bytes++=0;}
         FreeVec(p);
     }
+    if(panel_users && --panel_users)return;
     if(GadToolsBase){CloseLibrary(GadToolsBase);GadToolsBase=NULL;}
     if(GfxBase){CloseLibrary((struct Library *)GfxBase);GfxBase=NULL;}
     if(IntuitionBase){CloseLibrary((struct Library *)IntuitionBase);IntuitionBase=NULL;}
@@ -59,34 +64,36 @@ static struct NDPanel *panel_open(const char *title,const struct NDPanelField *f
     struct NDPanel *p;struct Gadget *last;
     struct NewGadget ng;struct TextAttr font={(STRPTR)"topaz.font",8,0,0};
     unsigned int i;int w,top,bw,label_width=76,n,right,controls_y,height;int trace=!strcmp(title,"Dashboard choice controls QA");
-    if(!count || count>12 || buttons_count>(prefs ? 6:5) || !buttons_count)return NULL;
+    if(!count || count>12 || buttons_count>((prefs || server) ? 6:5) || !buttons_count)return NULL;
     p=(struct NDPanel *)AllocVec(sizeof(*p),MEMF_PUBLIC|MEMF_CLEAR);if(!p)return NULL;
+    if(!panel_users++){
     IntuitionBase=(struct IntuitionBase *)OpenLibrary("intuition.library",39);
     GadToolsBase=OpenLibrary("gadtools.library",39);
     GfxBase=(struct GfxBase *)OpenLibrary("graphics.library",39);
+    }
     if(!IntuitionBase || !GadToolsBase || !GfxBase)goto fail;if(trace){puts("QA: panel libraries open");fflush(stdout);}
     p->screen=LockPubScreen("Workbench");if(!p->screen)goto fail;
     {struct DrawInfo *info=GetScreenDrawInfo(p->screen);
      if(info){p->background=info->dri_Pens[BACKGROUNDPEN];FreeScreenDrawInfo(p->screen,info);}}
-    w=p->screen->Width-24;if(w>(prefs || buttons_count==5 ? 620:560))w=prefs || buttons_count==5 ? 620:560;if(w<280)goto fail;
+    w=p->screen->Width-24;if(w>(prefs || server || buttons_count==5 ? 620:560))w=prefs || server || buttons_count==5 ? 620:560;if(w<280)goto fail;
     p->visual=GetVisualInfo(p->screen,TAG_DONE);if(!p->visual)goto fail;
-    for(i=0;i<count;++i){n=(int)strlen(fields[i].label)*8+16;if(n>label_width)label_width=n;}
+    for(i=0;i<count;++i){n=(int)strlen(ah_tx(fields[i].label))*8+16;if(n>label_width)label_width=n;}
     if(label_width>w/2)label_width=w/2;
     for(i=0;i<buttons_count;++i)if(!strcmp(buttons[i],"Save"))p->save_id=100+i;
     if(server&&count>1){p->secret_field=2;strncpy(p->secret,fields[1].value,sizeof(p->secret)-1);}
-    p->count=count;strncpy(p->title,title,sizeof(p->title)-1);
+    p->count=count;strncpy(p->title,ah_tx(title),sizeof(p->title)-1);
     last=CreateContext(&p->gadgets);if(!last)goto fail;
     memset(&ng,0,sizeof(ng));ng.ng_VisualInfo=p->visual;ng.ng_TextAttr=&font;
     top=p->screen->WBorTop+p->screen->Font->ta_YSize+10;
     if(!strcmp(title,"About AmiHASS"))top+=54;
     if(top+(int)count*20+40>p->screen->Height-p->screen->BarHeight-10)goto fail;
     for(i=0;i<count;++i){
-        ng.ng_LeftEdge=label_width;ng.ng_TopEdge=top+(int)i*20;ng.ng_Width=(prefs && w>=600 ? w-276:w)-label_width-16;ng.ng_Height=16;
-        strncpy(p->labels[i],fields[i].label,sizeof(p->labels[i])-1);
-        ng.ng_GadgetText=p->labels[i];ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=i+1;
+        ng.ng_LeftEdge=(server==2 ? 172:0)+label_width;ng.ng_TopEdge=top+(server==2 ? (i==4 ? 0:(int)i+1):(int)i)*(prefs ? 14:20);ng.ng_Width=(prefs && w>=600 ? w-276:w)-(server==2 ? 172:0)-label_width-16;ng.ng_Height=16;
+        strncpy(p->labels[i],ah_tx(fields[i].label),sizeof(p->labels[i])-1);
+        ng.ng_GadgetText=(STRPTR)ah_tx((const char *)(p->labels[i]));ng.ng_Flags=PLACETEXT_LEFT;ng.ng_GadgetID=i+1;
         p->limits[i]=fields[i].limit;if(p->secret_field==(int)i+1)ng.ng_Width-=66;
         if(fields[i].limit==ND_PANEL_PERCENT||fields[i].limit==ND_PANEL_BYTE){unsigned int maximum=fields[i].limit==ND_PANEL_BYTE ? 255:100,level=(unsigned int)atoi(fields[i].value);if(level>maximum)level=maximum;p->limits[i]=0;p->sliders|=1UL<<i;p->choice_index[i]=level;ng.ng_Width-=40;last=CreateGadget(SLIDER_KIND,last,&ng,GTSL_Min,0,GTSL_Max,maximum,GTSL_Level,level,GTSL_LevelFormat,(ULONG)"%ld",GTSL_MaxLevelLen,3,GTSL_LevelPlace,PLACETEXT_RIGHT,TAG_DONE);
-        }else if(fields[i].limit==ND_PANEL_CHOICE){ng.ng_Height=20;static STRPTR initial[]={"Read only",NULL};p->limits[i]=0;p->choices|=1UL<<i;last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)initial,GTCY_Active,0,TAG_DONE);
+        }else if(fields[i].limit==ND_PANEL_CHOICE){ng.ng_Height=20;static STRPTR initial[]={"Read only",NULL};p->limits[i]=0;p->choices|=1UL<<i;last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(initial)),GTCY_Active,0,TAG_DONE);
         }else if(fields[i].limit==ND_PANEL_CHECKBOX){
             p->limits[i]=0;ng.ng_Width=26;
             last=CreateGadget(CHECKBOX_KIND,last,&ng,GTCB_Checked,fields[i].value[0]=='1',TAG_DONE);
@@ -95,62 +102,87 @@ static struct NDPanel *panel_open(const char *title,const struct NDPanelField *f
                              GTST_MaxChars,fields[i].limit-1,TAG_DONE);
         else {
             strncpy(p->text[i],fields[i].value,sizeof(p->text[i])-1);
-            last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)p->text[i],TAG_DONE);
+            last=CreateGadget(TEXT_KIND,last,&ng,GTTX_Text,(ULONG)ah_tx((const char *)(p->text[i])),TAG_DONE);
         }
         if(trace){printf("QA: panel field %u created\n",i);fflush(stdout);}if(!last)goto fail;p->fields[i]=last;
     }
-    if(server){
-        ng.ng_LeftEdge=w-76;ng.ng_TopEdge=top+20;ng.ng_Width=60;ng.ng_Height=16;ng.ng_GadgetID=114;ng.ng_GadgetText="Show";ng.ng_Flags=PLACETEXT_IN;
+    if(server==2){
+        int area=w-188,third=area/3,half=area/2;
+        NewList(&p->server_labels);
+        ng.ng_LeftEdge=12;ng.ng_TopEdge=top+12;ng.ng_Width=144;ng.ng_Height=112;
+        ng.ng_GadgetID=118;ng.ng_GadgetText=(STRPTR)ah_tx("Connections");ng.ng_Flags=PLACETEXT_ABOVE;
+        p->servers=last=CreateGadget(LISTVIEW_KIND,last,&ng,GTLV_Labels,(ULONG)&p->server_labels,GTLV_ShowSelected,0,TAG_DONE);if(!last)goto fail;
+        ng.ng_TopEdge=top+132;ng.ng_Width=68;ng.ng_Height=22;ng.ng_GadgetID=105;ng.ng_GadgetText=(STRPTR)ah_tx("New");ng.ng_Flags=PLACETEXT_IN;
+        last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
+        ng.ng_LeftEdge=88;ng.ng_GadgetID=117;ng.ng_GadgetText=(STRPTR)ah_tx("Delete");last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
+        ng.ng_LeftEdge=w-76;ng.ng_TopEdge=top+40;ng.ng_Width=60;ng.ng_Height=16;ng.ng_GadgetID=114;ng.ng_GadgetText=(STRPTR)ah_tx("Show");
+        p->secret_button=last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
+        ng.ng_LeftEdge=172;ng.ng_TopEdge=top+104;ng.ng_Width=26;ng.ng_Height=18;ng.ng_GadgetID=111;ng.ng_GadgetText=(STRPTR)ah_tx("Auto reconnect");ng.ng_Flags=PLACETEXT_RIGHT;
+        p->reconnect=last=CreateGadget(CHECKBOX_KIND,last,&ng,GTCB_Checked,boot,TAG_DONE);if(!last)goto fail;
+        {static STRPTR intervals[]={"1 minute","10 minutes","15 minutes","30 minutes",NULL};
+        ng.ng_LeftEdge=w-126;ng.ng_TopEdge=top+102;ng.ng_Width=110;ng.ng_Height=22;ng.ng_GadgetID=112;ng.ng_GadgetText=(STRPTR)ah_tx("Retry");ng.ng_Flags=PLACETEXT_LEFT;
+        p->retry=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)intervals),GTCY_Active,0,GA_Disabled,!boot,TAG_DONE);if(!last)goto fail;}
+        for(i=0;i<5;++i){int slot=i<2 ? (int)i:(int)i-2;
+            ng.ng_LeftEdge=172+slot*(i<2 ? half:third);ng.ng_TopEdge=top+(i<2 ? 132:162);ng.ng_Width=(i<2 ? half:third)-6;ng.ng_Height=22;ng.ng_GadgetID=100+i;
+            ng.ng_GadgetText=(STRPTR)ah_tx(buttons[i]);ng.ng_Flags=PLACETEXT_IN;last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;}
+        height=top+196;
+    }else if(server){
+        ng.ng_LeftEdge=w-76;ng.ng_TopEdge=top+20;ng.ng_Width=60;ng.ng_Height=16;ng.ng_GadgetID=114;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Show"));ng.ng_Flags=PLACETEXT_IN;
         p->secret_button=last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         static STRPTR intervals[]={"1 minute","10 minutes","15 minutes","30 minutes",NULL};
         ng.ng_LeftEdge=12;ng.ng_TopEdge=top+(int)count*20+4;ng.ng_Width=26;ng.ng_Height=18;
-        ng.ng_GadgetID=111;ng.ng_GadgetText="Automatic reconnect";ng.ng_Flags=PLACETEXT_RIGHT;
+        ng.ng_GadgetID=111;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Automatic reconnect"));ng.ng_Flags=PLACETEXT_RIGHT;
         p->reconnect=last=CreateGadget(CHECKBOX_KIND,last,&ng,GTCB_Checked,boot,TAG_DONE);if(!last)goto fail;
-        ng.ng_LeftEdge=w-166;ng.ng_Width=154;ng.ng_Height=22;ng.ng_GadgetID=112;ng.ng_GadgetText="Retry every";ng.ng_Flags=PLACETEXT_LEFT;
-        p->retry=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)intervals,GTCY_Active,0,GA_Disabled,!boot,TAG_DONE);if(!last)goto fail;
+        ng.ng_LeftEdge=w-166;ng.ng_Width=154;ng.ng_Height=22;ng.ng_GadgetID=112;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Retry every"));ng.ng_Flags=PLACETEXT_LEFT;
+        p->retry=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(intervals)),GTCY_Active,0,GA_Disabled,!boot,TAG_DONE);if(!last)goto fail;
         top+=30;
         p->group_top=top+(int)count*20+38;
-        for(i=0;i<5;++i){
-            ng.ng_Height=22;ng.ng_GadgetID=100+i;ng.ng_GadgetText=(STRPTR)buttons[i];ng.ng_Flags=PLACETEXT_IN;
+        for(i=0;i<buttons_count;++i){
+            ng.ng_Height=22;ng.ng_GadgetID=100+i;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)((STRPTR)buttons[i]));ng.ng_Flags=PLACETEXT_IN;
             ng.ng_TopEdge=top+(int)count*20+8;
-            if(i<2){ng.ng_LeftEdge=12+(int)i*136;ng.ng_Width=128;}
+            if(i<2 || i==5){int slot=i==5 ? 2:(int)i;ng.ng_LeftEdge=12+slot*(w-24)/3;ng.ng_Width=(w-24)/3-8;}
             else{ng.ng_TopEdge+=36;ng.ng_LeftEdge=i==2 ? 20:w-220+(int)(i-3)*108;ng.ng_Width=i==2 ? 152:100;}
             last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         }
-        height=ng.ng_TopEdge+ng.ng_Height+12;
+        height=top+(int)count*20+78;
     }else if(prefs){
         right=w>=600 ? w-256:12;
         controls_y=top+(w>=600 ? 0:(int)count*20+40);
         {static STRPTR sources[]={"Server data","Sample data",NULL};
         ng.ng_LeftEdge=104;ng.ng_TopEdge=top+(w>=600 ? 104:(int)count*20+8);ng.ng_Width=w>=600 ? w-396:w-120;ng.ng_Height=22;
-        ng.ng_GadgetID=113;ng.ng_GadgetText="Data source";ng.ng_Flags=PLACETEXT_LEFT;
-        p->source=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)sources,GTCY_Active,0,TAG_DONE);if(!last)goto fail;}
+        ng.ng_GadgetID=113;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Data source"));ng.ng_Flags=PLACETEXT_LEFT;
+        p->source=last=CreateGadget(CYCLE_KIND,last,&ng,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(sources)),GTCY_Active,0,TAG_DONE);if(!last)goto fail;}
 
         for(i=0;i<2;++i){
             ng.ng_LeftEdge=right+(int)i*116;ng.ng_TopEdge=controls_y;
             ng.ng_Width=108;ng.ng_Height=22;ng.ng_GadgetID=100+i;
-            ng.ng_GadgetText=(STRPTR)buttons[i];ng.ng_Flags=PLACETEXT_IN;
+            ng.ng_GadgetText=(STRPTR)ah_tx((const char *)((STRPTR)buttons[i]));ng.ng_Flags=PLACETEXT_IN;
             last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         }
         ng.ng_LeftEdge=right;ng.ng_TopEdge=controls_y+34;ng.ng_Width=26;ng.ng_Height=18;
-        ng.ng_GadgetID=106;ng.ng_GadgetText="Start at system boot";ng.ng_Flags=PLACETEXT_RIGHT;
+        ng.ng_GadgetID=106;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Start at system boot"));ng.ng_Flags=PLACETEXT_RIGHT;
         p->boot=last=CreateGadget(CHECKBOX_KIND,last,&ng,GTCB_Checked,boot,TAG_DONE);if(!last)goto fail;
         ng.ng_LeftEdge=right;ng.ng_TopEdge=controls_y+62;ng.ng_Width=224;ng.ng_Height=22;
-        ng.ng_GadgetID=107;ng.ng_GadgetText="Show server logs";ng.ng_Flags=PLACETEXT_IN;
+        ng.ng_GadgetID=107;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Show server logs"));ng.ng_Flags=PLACETEXT_IN;
         last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         for(i=0;i<2;++i){
             ng.ng_LeftEdge=right+(int)i*116;ng.ng_TopEdge=controls_y+88;ng.ng_Width=108;ng.ng_Height=20;
-            ng.ng_GadgetID=108+i;ng.ng_GadgetText=i ? "Diagnostics":"About";
+            ng.ng_GadgetID=108+i;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)(i ? "Diagnostics":"About"));
             last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         }
         ng.ng_LeftEdge=right;ng.ng_TopEdge=controls_y+114;ng.ng_Width=224;ng.ng_Height=22;
-        ng.ng_GadgetID=110;ng.ng_GadgetText="Device Browser";
+        ng.ng_GadgetID=110;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Device Browser"));
         last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
-        controls_y=w>=600 ? top+(int)count*20+64:controls_y+154;
+        ng.ng_LeftEdge=right;ng.ng_TopEdge=controls_y+140;ng.ng_Width=108;ng.ng_Height=22;
+        ng.ng_GadgetID=115;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Connect"));
+        last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
+        ng.ng_LeftEdge=right+116;ng.ng_GadgetID=116;ng.ng_GadgetText=(STRPTR)ah_tx((const char *)("Health"));
+        last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
+        controls_y=w>=600 ? top+170:controls_y+180;
         for(i=2;i<6;++i){
             ng.ng_LeftEdge=12+(int)(i-2)*(w-24)/4;ng.ng_TopEdge=controls_y;
             ng.ng_Width=(w-24)/4-6;ng.ng_Height=22;ng.ng_GadgetID=100+i;
-            ng.ng_GadgetText=(STRPTR)buttons[i];ng.ng_Flags=PLACETEXT_IN;
+            ng.ng_GadgetText=(STRPTR)ah_tx((const char *)((STRPTR)buttons[i]));ng.ng_Flags=PLACETEXT_IN;
             last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
         }
         height=controls_y+34;
@@ -159,22 +191,22 @@ static struct NDPanel *panel_open(const char *title,const struct NDPanelField *f
     for(i=0;i<buttons_count;++i){
         ng.ng_LeftEdge=12+(int)i*bw;ng.ng_TopEdge=top+(int)count*20+6;
         ng.ng_Width=bw-6;ng.ng_Height=20;ng.ng_GadgetID=100+i;
-        ng.ng_GadgetText=(STRPTR)buttons[i];ng.ng_Flags=PLACETEXT_IN;
+        ng.ng_GadgetText=(STRPTR)ah_tx((const char *)((STRPTR)buttons[i]));ng.ng_Flags=PLACETEXT_IN;
         last=CreateGadget(BUTTON_KIND,last,&ng,TAG_DONE);if(!last)goto fail;
     }
     height=ng.ng_TopEdge+ng.ng_Height+12;
     }
     if(height>p->screen->Height-p->screen->BarHeight-10)goto fail;
     if(trace){puts("QA: opening choice window");fflush(stdout);}
-    p->window=OpenWindowTags(NULL,WA_Title,(ULONG)p->title,WA_PubScreen,(ULONG)p->screen,
+    p->window=OpenWindowTags(NULL,WA_Title,(ULONG)ah_tx((const char *)(p->title)),WA_PubScreen,(ULONG)p->screen,
         WA_Left,(p->screen->Width-w)/2,WA_Top,p->screen->BarHeight+10,WA_Width,w,
         WA_Height,height,
         WA_Flags,WFLG_CLOSEGADGET|WFLG_DRAGBAR|WFLG_DEPTHGADGET|WFLG_ACTIVATE|WFLG_SIMPLE_REFRESH,
-        WA_IDCMP,IDCMP_CLOSEWINDOW|IDCMP_GADGETUP|IDCMP_REFRESHWINDOW|IDCMP_RAWKEY|CYCLEIDCMP,
+        WA_IDCMP,IDCMP_CLOSEWINDOW|IDCMP_GADGETUP|IDCMP_REFRESHWINDOW|IDCMP_RAWKEY|CYCLEIDCMP|LISTVIEWIDCMP,
         WA_Gadgets,(ULONG)p->gadgets,TAG_DONE);
     if(!p->window)goto fail;if(trace){puts("QA: rendering choice window");fflush(stdout);}GT_RefreshWindow(p->window,NULL);panel_logo(p);
-    if(server)DrawBevelBox(p->window->RPort,12,p->group_top,168,34,GT_VisualInfo,(ULONG)p->visual,TAG_DONE);
-    if(p->limits[0])ActivateGadget(p->fields[0],p->window,NULL);return p;
+    if(p->group_top)DrawBevelBox(p->window->RPort,12,p->group_top,168,34,GT_VisualInfo,(ULONG)p->visual,TAG_DONE);
+    if(server==2)ActivateGadget(p->fields[4],p->window,NULL);else if(p->limits[0])ActivateGadget(p->fields[0],p->window,NULL);return p;
 fail:nd_panel_close(p);return NULL;
 }
 void nd_panel_raise(struct NDPanel *p)
@@ -191,6 +223,7 @@ int nd_panel_event(struct NDPanel *p)
         if(cls==IDCMP_CLOSEWINDOW || (cls==IDCMP_RAWKEY && code==0x45))return -1;
         if(cls==IDCMP_REFRESHWINDOW){GT_BeginRefresh(p->window);panel_logo(p);if(p->group_top)DrawBevelBox(p->window->RPort,12,p->group_top,168,34,GT_VisualInfo,(ULONG)p->visual,TAG_DONE);GT_EndRefresh(p->window,TRUE);}
         if(id>0&&id<=p->count&&((p->choices|p->sliders)&(1UL<<(id-1))))p->choice_index[id-1]=code;
+        if(id==118&&code<p->server_count){p->server_selected=code;return 118;}
         if(id==114){nd_panel_show_secret(p,!p->secret_shown);return 0;}
         if(id==111)nd_panel_enable(p,112,nd_panel_reconnect(p));
         if(id==112 && code<4)p->retry_index=code;
@@ -205,7 +238,7 @@ const char *nd_panel_get(struct NDPanel *p,unsigned int index)
 void nd_panel_set_label(struct NDPanel *p,unsigned int index,const char *label)
 {
     struct Gadget *g;struct RastPort *rp;UWORD pen,mode;
-    if(!p || index>=p->count || !label || !strcmp(p->labels[index],label))return;
+    if(label)label=ah_tx(label);if(!p || index>=p->count || !label || !strcmp(p->labels[index],label))return;
     strncpy(p->labels[index],label,sizeof(p->labels[index])-1);
     p->labels[index][sizeof(p->labels[index])-1]=0;
     g=p->fields[index];rp=p->window->RPort;pen=rp->FgPen;mode=rp->DrawMode;
@@ -217,22 +250,27 @@ void nd_panel_set_label(struct NDPanel *p,unsigned int index,const char *label)
 void nd_panel_set(struct NDPanel *p,unsigned int index,const char *text)
 {if(p && index<p->count && strcmp(p->text[index],text)){
     strncpy(p->text[index],text,sizeof(p->text[index])-1);p->text[index][sizeof(p->text[index])-1]=0;
-    GT_SetGadgetAttrs(p->fields[index],p->window,NULL,GTTX_Text,(ULONG)p->text[index],TAG_DONE);
+    GT_SetGadgetAttrs(p->fields[index],p->window,NULL,GTTX_Text,(ULONG)ah_tx((const char *)(p->text[index])),TAG_DONE);
 }}
 void nd_panel_title(struct NDPanel *p,const char *title)
-{if(p && strcmp(p->title,title)){strncpy(p->title,title,sizeof(p->title)-1);p->title[sizeof(p->title)-1]=0;SetWindowTitles(p->window,p->title,(STRPTR)-1);}}
+{if(p)title=ah_tx(title);if(p && strcmp(p->title,title)){strncpy(p->title,title,sizeof(p->title)-1);p->title[sizeof(p->title)-1]=0;SetWindowTitles(p->window,p->title,(STRPTR)-1);}}
 void nd_panel_beep(struct NDPanel *p)
 {if(IntuitionBase)DisplayBeep(p ? p->screen:NULL);}
 
 unsigned long nd_panel_signals(const struct NDPanel *p)
 {return p && p->window ? 1UL<<p->window->UserPort->mp_SigBit:0;}
+/* Replaces Delay() polling: returns at once when input is queued, otherwise
+ * sleeps until panel input, an `extra` signal (e.g. a bridge reply port) or
+ * `ticks`/50 s. Loops keep their pacing but react to input immediately. */
+void nd_panel_wait(struct NDPanel *p,unsigned long extra,unsigned long ticks)
+{ah_port_wait(p && p->window ? p->window->UserPort:NULL,extra,ticks);}
 
 struct NDPanel *nd_panel_open(const char *title,const struct NDPanelField *fields,
                               unsigned int count,const char **buttons,unsigned int buttons_count)
 {return panel_open(title,fields,count,buttons,buttons_count,0,0,0);}
 struct NDPanel *nd_panel_preferences(const struct NDPanelField *fields,int boot)
 {static const char *buttons[]={"Start","Stop","Server Settings","General Settings","Save","Close"};
- return panel_open("AmiHASS Preferences",fields,4,buttons,6,1,boot,0);}
+ return panel_open("AmiHASS Preferences",fields,6,buttons,6,1,boot,0);}
 int nd_panel_checked(struct NDPanel *p)
 {return p && p->boot && (p->boot->Flags&GFLG_SELECTED)!=0;}
 
@@ -240,9 +278,9 @@ void nd_panel_enable(struct NDPanel *p,unsigned int id,int enabled)
 {struct Gadget *g;if(!p)return;if(p->secret_field==(int)id&&!p->secret_shown)enabled=0;for(g=p->gadgets;g;g=g->NextGadget)if(g->GadgetID==id){if(((g->Flags&GFLG_DISABLED)==0)==(enabled!=0))break;GT_SetGadgetAttrs(g,p->window,NULL,GA_Disabled,!enabled,TAG_DONE);break;}}
 
 struct NDPanel *nd_panel_server_settings(const struct NDPanelField *fields,int reconnect,unsigned int retry_interval)
-{struct NDPanel *p;unsigned int index=0;static const char *buttons[]={"Import token","Forget token","Test connection","Save","Close"};
+{struct NDPanel *p;unsigned int index=0;static const char *buttons[]={"Import token","Forget token","Test connection","Save","Close","Profiles"};buttons[5]=AH_TR(MSG_SRV_BUTTON);
  if(retry_interval==600)index=1;else if(retry_interval==900)index=2;else if(retry_interval==1800)index=3;
- p=panel_open("AmiHASS - Server Settings",fields,4,buttons,5,0,reconnect,1);
+ p=panel_open("AmiHASS - Server Settings",fields,4,buttons,6,0,reconnect,1);
  if(p){p->retry_index=index;GT_SetGadgetAttrs(p->retry,p->window,NULL,GTCY_Active,index,TAG_DONE);}return p;}
 
 void nd_panel_set_input(struct NDPanel *p,unsigned int index,const char *text)
@@ -253,6 +291,20 @@ void nd_panel_service_state(struct NDPanel *p,int running,int busy)
 int nd_panel_enabled(struct NDPanel *p,unsigned int id)
 {struct Gadget *g;if(!p)return 0;for(g=p->gadgets;g;g=g->NextGadget)if(g->GadgetID==id)return !(g->Flags&GFLG_DISABLED);return 0;}
 
+void nd_panel_servers(struct NDPanel *p,const char **names,unsigned int count,unsigned int selected)
+{unsigned int i;if(!p||!p->servers||count>8)return;
+ GT_SetGadgetAttrs(p->servers,p->window,NULL,GTLV_Labels,~0UL,TAG_DONE);NewList(&p->server_labels);p->server_count=count;p->server_selected=selected<count ? selected:0;
+ for(i=0;i<count;++i){strncpy(p->server_names[i],names[i],32);p->server_names[i][32]=0;p->server_nodes[i].ln_Name=p->server_names[i];AddTail(&p->server_labels,&p->server_nodes[i]);}
+ GT_SetGadgetAttrs(p->servers,p->window,NULL,GTLV_Labels,(ULONG)&p->server_labels,GTLV_Selected,p->server_selected,TAG_DONE);
+ nd_panel_enable(p,105,count<8);
+}
+unsigned int nd_panel_server_selected(struct NDPanel *p){return p ? p->server_selected:0;}
+struct NDPanel *nd_panel_server_editor(const struct NDPanelField *fields,const char **names,unsigned int count,unsigned int selected,int reconnect,unsigned int retry_interval)
+{struct NDPanel *p;static const char *buttons[]={"Import token","Forget token","Test connection","Save","Close","New"};unsigned int i;static const unsigned int intervals[]={60,600,900,1800};
+ p=panel_open("AmiHASS - Server Settings",fields,5,buttons,6,0,reconnect,2);if(!p)return NULL;
+ for(i=0;i<4;++i)if(intervals[i]==retry_interval)p->retry_index=i;
+ GT_SetGadgetAttrs(p->retry,p->window,NULL,GTCY_Active,p->retry_index,TAG_DONE);nd_panel_servers(p,names,count,selected);return p;
+}
 int nd_panel_reconnect(struct NDPanel *p){return p && p->reconnect && (p->reconnect->Flags&GFLG_SELECTED)!=0;}
 unsigned int nd_panel_retry(struct NDPanel *p){static const unsigned int intervals[]={60,600,900,1800};return p && p->retry_index<4 ? intervals[p->retry_index]:60;}
 
@@ -262,7 +314,7 @@ int nd_panel_toggle(struct NDPanel *p,unsigned int index)
 void nd_panel_set_source(struct NDPanel *p,int sample){if(p&&p->source){p->source_index=sample ? 1:0;GT_SetGadgetAttrs(p->source,p->window,NULL,GTCY_Active,p->source_index,TAG_DONE);}}
 int nd_panel_source(struct NDPanel *p){return p ? p->source_index:0;}
 
-void nd_panel_choices(struct NDPanel *p,unsigned int field,const char **labels,unsigned int active){if(p&&field<p->count&&(p->choices&(1UL<<field))){p->choice_index[field]=active;GT_SetGadgetAttrs(p->fields[field],p->window,NULL,GTCY_Labels,(ULONG)labels,GTCY_Active,active,TAG_DONE);}}
+void nd_panel_choices(struct NDPanel *p,unsigned int field,const char **labels,unsigned int active){if(p&&field<p->count&&(p->choices&(1UL<<field))){p->choice_index[field]=active;GT_SetGadgetAttrs(p->fields[field],p->window,NULL,GTCY_Labels,(ULONG)ah_tx_labels((const char **)(labels)),GTCY_Active,active,TAG_DONE);}}
 unsigned int nd_panel_choice(struct NDPanel *p,unsigned int field){return p&&field<p->count ? p->choice_index[field]:0;}
 
 unsigned int nd_panel_level(struct NDPanel *p,unsigned int field)
@@ -278,3 +330,6 @@ void nd_panel_show_secret(struct NDPanel *p,int show)
  if(p->secret_button&&p->secret_button->GadgetText)p->secret_button->GadgetText->IText=(UBYTE *)(show ? "Hide":"Show");if(p->secret_button)RefreshGList(p->secret_button,p->window,NULL,1);
 }
 int nd_panel_secret_shown(struct NDPanel *p){return p&&p->secret_shown;}
+
+void nd_panel_connection_state(struct NDPanel *p,int connected,int enabled)
+{nd_panel_enable(p,115,enabled && !connected);}

@@ -22,6 +22,10 @@ static struct NDPanel ui;static int mode,stage,allocs,requests,force_wait;
 void *AllocVec(size_t n,int flags){void *p=calloc(1,n);if(p)++allocs;return p;}
 void FreeVec(void *p){if(p){--allocs;free(p);}}
 void Delay(int n){(void)n;}
+/* Production loops wait on signals; in tests this is one scripted Delay step. */
+void nd_panel_wait(struct NDPanel *p,unsigned long e,unsigned long t){(void)p;(void)e;(void)t;Delay(5);}
+unsigned long amihass_client_signal(const struct AmiHASSClient *c){(void)c;return 0;}
+
 void GT_SetGadgetAttrs(void *g,void *w,void *r,...){(void)g;(void)w;(void)r;}
 void ah_browser_live_close(struct AHBrowserLive *p){(void)p;}
 const char *amihass_problem(int result){return "Connection failed";}
@@ -67,6 +71,6 @@ int main(void){struct Browser b;int ok;
 with tempfile.TemporaryDirectory() as t:
  p=Path(t);(p/'exec').mkdir();(p/'exec/ports.h').write_text('typedef unsigned long ULONG;typedef long LONG;struct MsgPort;struct Message {unsigned short mn_Length;struct MsgPort *mn_ReplyPort;};\n')
  (p/'test.c').write_text(prefix+code+main)
- command=[os.environ.get('CC','cc'),'-std=c99','-Wno-pointer-to-int-cast','-I'+str(p),'-I'+str(ROOT/'SDK'),'-I'+str(ROOT/'include'),str(p/'test.c'),'-o',str(p/'test')]
+ command=[os.environ.get('CC','cc'),'-std=c99','-Wno-pointer-to-int-cast','-I'+str(p),'-I'+str(ROOT/'SDK'),'-I'+str(ROOT/'include'),str(p/'test.c'),'-DAH_HOST_TEST','-include','ah_locale.h',str(ROOT/'src/ah_locale.c'),'-o',str(p/'test')]
  if os.environ.get('SANITIZE')=='1':command+=['-fsanitize=address,undefined']
  subprocess.run(command,check=True);subprocess.run([str(p/'test')],check=True,timeout=10)

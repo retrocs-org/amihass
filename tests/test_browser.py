@@ -8,7 +8,7 @@ program=r'''
 #include <string.h>
 #include "browser_data.h"
 int main(void){unsigned int ids[AH_BROWSER_MAX],sentinel[2]={999,888},n,i;char domain[96];const struct AHBrowserEntity *e;
- n=ah_browser_filter(NULL,NULL,ids,AH_BROWSER_MAX);assert(n==ah_browser_count()&&n==22);
+ n=ah_browser_filter(NULL,NULL,ids,AH_BROWSER_MAX);assert(n==ah_browser_count()&&n==24);
  assert(!ah_browser_entity(n));assert(!ah_browser_domain(NULL,domain,sizeof(domain)));
  assert(ah_browser_filter("light","",ids,AH_BROWSER_MAX)==2);
  assert(ah_browser_filter("light","DESK",ids,AH_BROWSER_MAX)==1);assert(!strcmp(ah_browser_entity(ids[0])->id,"light.desk"));
@@ -17,8 +17,8 @@ int main(void){unsigned int ids[AH_BROWSER_MAX],sentinel[2]={999,888},n,i;char d
  assert(ah_browser_filter("sensor","no-match",ids,AH_BROWSER_MAX)==0);
  assert(ah_browser_filter("retro_bridge","",ids,AH_BROWSER_MAX)==1);assert(ah_browser_domain(ah_browser_entity(ids[0]),domain,sizeof(domain))&&!strcmp(domain,"retro_bridge"));
  assert(!ah_browser_domain(ah_browser_entity(ids[0]),domain,2));
- assert(ah_browser_filter("","",sentinel,1)==22 && sentinel[0]==0 && sentinel[1]==888);
- assert(ah_browser_filter("","",NULL,0)==22);
+ assert(ah_browser_filter("","",sentinel,1)==24 && sentinel[0]==0 && sentinel[1]==888);
+ assert(ah_browser_filter("","",NULL,0)==24);
  for(i=0;i<n;++i){e=ah_browser_entity(i);assert(e&&strlen(e->attributes)<=350);puts(e->attributes);}
  return 0;}
 '''

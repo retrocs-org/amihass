@@ -56,6 +56,9 @@ static int network=1,launches,curls,ports,allocations,drop_reply;
 static unsigned long clock_ticks=100;
 int amihass_network_running(void){return network;}
 static void Forbid(void){}static void Permit(void){}static void Delay(int n){(void)n;}
+/* Production loops wait on signals; in tests this is one scripted Delay step. */
+void nd_panel_wait(struct NDPanel *p,unsigned long e,unsigned long t){(void)p;(void)e;(void)t;Delay(5);}
+
 static void *FindName(void *list,const char *name){(void)list;assert(!strcmp(name,"bsdsocket.library"));return network ? (void *)1:NULL;}
 static struct MsgPort *FindPort(const char *name){assert(!strcmp(name,FETCH_GUARD));return NULL;}
 static void *FindTask(void *p){(void)p;return (void *)(uintptr_t)42;}
@@ -83,6 +86,8 @@ static void ReplyMsg(struct Message *base){struct FetchMessage *m=(struct FetchM
  ++curls;snprintf(command,sizeof(command),"%s >'%s/fetch.log'",m->command,m->directory);result=system(command);m->result=WIFEXITED(result) ? WEXITSTATUS(result):99;m->kind=2;
  if(drop_reply){FreeVec(m);return;}incoming=m;
 }
+/* Production uses owned reply ports: a live worker receives the reply. */
+static int nd_reply_finish(struct Message *m){ReplyMsg(m);return 0;}
 static void fetch_clean(const char *directory){char path[300];const char *names[]={"request.conf","response","fetch.log"};int i;for(i=0;i<3;++i){snprintf(path,sizeof(path),"%s/%s",directory,names[i]);unlink(path);}rmdir(directory);}
 static void fetch_close_port(struct MsgPort *port){if(incoming){FreeVec(incoming);incoming=NULL;}DeleteMsgPort(port);}
 static int fetch_worker(const char *parent){(void)parent;return 0;}
@@ -116,7 +121,7 @@ with tempfile.TemporaryDirectory() as directory:
     p=Path(directory);(p/'exec').mkdir()
     (p/'exec/ports.h').write_text('#include <stdint.h>\ntypedef unsigned long ULONG;typedef long LONG;struct MsgPort {struct {char *ln_Name;} mp_Node;};struct Message {unsigned short mn_Length;struct MsgPort *mn_ReplyPort;};\n')
     (p/'test.c').write_text(prelude+source+main)
-    command=[os.environ.get('CC','cc'),'-std=c99','-Wno-deprecated-declarations','-I'+str(p),'-I'+str(ROOT/'SDK'),'-I'+str(ROOT/'include'),str(p/'test.c'),str(ROOT/'src/core.c'),str(ROOT/'src/quote.c'),'-o',str(p/'test')]
+    command=[os.environ.get('CC','cc'),'-std=c99','-Wno-deprecated-declarations','-I'+str(p),'-I'+str(ROOT/'SDK'),'-I'+str(ROOT/'include'),str(p/'test.c'),'-DAH_HOST_TEST','-include','ah_locale.h',str(ROOT/'src/ah_locale.c'),str(ROOT/'src/core.c'),str(ROOT/'src/quote.c'),'-o',str(p/'test')]
     if os.environ.get('SANITIZE')=='1':command+=['-fsanitize=address,undefined']
     subprocess.run(command,check=True)
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),API);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()

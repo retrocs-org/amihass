@@ -16,6 +16,9 @@ struct Dash {struct AHDashboardBook book;struct AHDashboardLayout layout;int sel
 struct NDPanel {int value;};static struct NDPanel panel;
 static int events[6],at,alive,opens;static const char *path;
 static void *AllocVec(unsigned long n,int flags){(void)flags;return calloc(1,n);}static void FreeVec(void *p){free(p);}static void Delay(int n){(void)n;}
+/* Production loops wait on signals; in tests this is one scripted Delay step. */
+void nd_panel_wait(struct NDPanel *p,unsigned long e,unsigned long t){(void)p;(void)e;(void)t;Delay(5);}
+
 struct NDPanel *nd_panel_open(const char *title,const struct NDPanelField *f,unsigned int n,const char **buttons,unsigned int count){(void)title;(void)f;(void)n;(void)buttons;(void)count;assert(!alive);alive=1;++opens;return &panel;}
 void nd_panel_close(struct NDPanel *p){assert(p==&panel&&alive);alive=0;}
 int nd_panel_event(struct NDPanel *p){assert(p==&panel&&alive&&at<6);return events[at++];}
@@ -24,4 +27,4 @@ const char *nd_panel_get(struct NDPanel *p,unsigned int field){assert(p==&panel&
 int main(void){struct Dash d;struct AHDashboardBook loaded;FILE *f;int mode;for(mode=0;mode<6;++mode){memset(&d,0,sizeof(d));ah_dashboard_book_defaults(&d.book);strcpy(d.book.pages[0].name,"Before");d.layout=d.book.pages[0];at=alive=opens=0;path=mode==3 ? "bad.ahdash":"backup.ahdash";if(mode==0){events[0]=100;events[1]=102;}else if(mode==1){events[0]=101;events[1]=100;events[2]=102;}else if(mode==2){events[0]=101;events[1]=101;events[2]=102;}else if(mode==3){f=fopen(path,"wb");fputs("bad",f);fclose(f);events[0]=101;events[1]=102;}else{strcpy(d.layout.name,"Changed");events[0]=100;events[1]=mode==4 ? 101:100;events[2]=102;}backup_dialog(&d);assert(!alive);if(mode==0)assert(!d.dirty&&ah_dashboard_import(&loaded,path)&&!strcmp(loaded.pages[0].name,"Before"));if(mode==1)assert(d.dirty&&!strcmp(d.layout.name,"Before"));if(mode==2||mode==3)assert(!d.dirty&&!strcmp(d.layout.name,"Before"));if(mode==4)assert(!d.dirty&&ah_dashboard_import(&loaded,path)&&!strcmp(loaded.pages[0].name,"Before"));if(mode==5)assert(!d.dirty&&ah_dashboard_import(&loaded,path)&&!strcmp(loaded.pages[0].name,"Changed"));}puts("Backup UI: export/import, invalid input, replacement confirmation, cancellation and sequential native panels passed.");return 0;}
 '''
 with tempfile.TemporaryDirectory() as t:
- p=Path(t);(p/'test.c').write_text(code);subprocess.run([os.environ.get('CC','cc'),'-std=c99','-I'+str(root/'include'),'-I'+str(root/'SDK'),str(p/'test.c'),str(root/'src/dashboard_layout.c'),str(root/'src/core.c'),'-o',str(p/'test')],check=True);subprocess.run([str(p/'test')],cwd=p,check=True)
+ p=Path(t);(p/'test.c').write_text(code);subprocess.run([os.environ.get('CC','cc'),'-std=c99','-I'+str(root/'include'),'-I'+str(root/'SDK'),str(p/'test.c'),str(root/'src/dashboard_layout.c'),'-DAH_HOST_TEST','-include','ah_locale.h',str(root/'src/ah_locale.c'),str(root/'src/core.c'),'-o',str(p/'test')],check=True);subprocess.run([str(p/'test')],cwd=p,check=True)

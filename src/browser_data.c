@@ -25,6 +25,8 @@ static const struct AHBrowserEntity entities[]={
  {"camera.driveway","Driveway camera","idle","{\"stream_available\":true}"},
  {"sensor.garden_battery","Garden battery","unavailable","{\"unit_of_measurement\":\"%\",\"device_class\":\"battery\"}"},
  {"retro_bridge.demo_device","Custom integration device","ready","{\"firmware\":\"0.1\",\"channels\":[1,2],\"details\":{\"mode\":\"demo\"}}"},
+ {"button.doorbell_test","Sample notification button","unknown","{}"},
+ {"input_button.reminder","Sample reminder button","unknown","{}"},
 };
 unsigned int ah_browser_count(void){return sizeof(entities)/sizeof(entities[0]);}
 const struct AHBrowserEntity *ah_browser_entity(unsigned int i){return i<ah_browser_count() ? &entities[i]:0;}

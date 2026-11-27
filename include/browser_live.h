@@ -8,7 +8,7 @@ struct AHBrowserLive {
  int page_size,page_refresh,sample_mode;
  int wanted,sent_kind,refresh,terminal_error,devices;
  unsigned long ticks,next,age;
- char area[96],domain[24],filter[64],entity[96],device[96],server_state[40],error[96];
+ char server[160];char label[64],area[96],domain[24],filter[64],entity[96],device[96],server_state[40],error[96];
 };
 void ah_browser_live_init(struct AHBrowserLive *live);
 void ah_browser_live_close(struct AHBrowserLive *live);

@@ -1,0 +1,7 @@
+{
+  "name": "AmiHASS 0.3 sample-only long-running client stability",
+  "application": "QATests:AmiHASSConnectionCheck",
+  "arguments": ["SAMPLE-STABILITY"],
+  "timeoutSeconds": 480,
+  "expectedReturnCode": 0
+}

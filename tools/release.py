@@ -120,10 +120,14 @@ def config_read(root, path):
         need(re.fullmatch(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+', c['uploader']), 'Aminet requires an uploader email contact')
     need(isinstance(c['credentials'], dict) and set(c['credentials']) <= {'github','gitlab'}, 'Invalid credential service')
     for service, spec in c['credentials'].items():
-        need(isinstance(spec, dict) and set(spec) <= {'provider','variable','reference','vault','item','field','account'}, 'Invalid credential configuration')
+        need(isinstance(spec, dict) and set(spec) <= {'provider','variable','reference','vault','item','field','account','helper'}, 'Invalid credential configuration')
         need(all(isinstance(v,str) and not any(ch in v for ch in ('\r','\n','\0')) for v in spec.values()), 'Invalid credential selector')
-        need(spec.get('provider','env') in ('env','1password'), 'Unknown credential provider')
-        if spec.get('provider','env') == 'env':
+        need(spec.get('provider','env') in ('env','1password','github_app'), 'Unknown credential provider')
+        if spec.get('provider') == 'github_app':
+            need(service=='github' and set(spec)<={'provider','helper','vault','item'} and
+                 all(spec.get(k) for k in ('helper','vault','item')) and Path(spec['helper']).is_absolute(),
+                 'GitHub App credentials require an absolute helper path and exact vault/item')
+        elif spec.get('provider','env') == 'env':
             need(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',spec.get('variable',service.upper()+'_TOKEN')), 'Invalid token variable')
         else:
             need((spec.get('reference','').startswith('op://') and not any(spec.get(k) for k in ('vault','item','field'))) or
@@ -134,7 +138,19 @@ ACTIVE_SECRETS = set()
 
 def credential(service, config):
     spec = config.get('credentials',{}).get(service,{})
-    if spec.get('provider','env') == 'env':
+    if spec.get('provider') == 'github_app':
+        helper=Path(spec['helper'])
+        need(service=='github' and helper.is_file() and os.access(helper,os.X_OK), 'GitHub token helper is missing or not executable')
+        host,repository=repo_url(config['github'])
+        need(host=='github.com', 'GitHub App helper supports GitHub.com only')
+        env=dict(os.environ,GITHUB_OP_VAULT=spec['vault'],GITHUB_OP_ITEM=spec['item'],GITHUB_OP_SAVE='0',GITHUB_WORKFLOWS='none')
+        try:
+            result=subprocess.run([str(helper),'github','https://'+host,repository,'rw'],env=env,capture_output=True,text=True,timeout=180)
+        except (OSError,subprocess.TimeoutExpired):
+            raise ReleaseError('GitHub token generation failed or timed out; check 1Password access. No secret output displayed') from None
+        need(result.returncode==0, 'GitHub token generation failed or was cancelled; check 1Password access. No secret output displayed')
+        token=result.stdout.strip()
+    elif spec.get('provider','env') == 'env':
         token = os.environ.get(spec.get('variable',service.upper()+'_TOKEN'),'')
     else:
         reference = spec.get('reference')
@@ -808,7 +824,7 @@ class Release:
         need(record.get('artifacts')=={name:sha(self.out/name) for name in self.names}, 'Release artifact checksum changed')
         for name in self.payload_names:
             need((self.out/(name+'.sha256')).read_text()==sha(self.out/name)+'  '+name+'\n', 'Changed per-file checksum')
-        verify_lha(self.out / ('AmiHASS-' + self.version + '.lha'), self.runtime_entries(), self.config['env'].get('LHA'))
+        verify_lha(self.out / ('AmiHASS-' + self.version + '.lha'), self.runtime_entries(), self.config['env'].get('LHA'), canonical_paths=True)
         verify_zip(self.out/self.sdk_name,{n:d for n,d,_ in sdk_entries(self.root)})
         self.aminet_files()
         return {name: sha(self.out / name) for name in sorted(expected)}

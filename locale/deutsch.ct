@@ -1,0 +1,154 @@
+## version $VER: amihass.catalog 0.3 (24.11.2026)
+## language deutsch
+## codeset 0
+; AmiHASS - deutsch
+MSG_MENU_DASHBOARD
+AmiHASS-Dashboard
+;
+MSG_MENU_BROWSER
+AmiHASS-Browser
+;
+MSG_MENU_PREFS
+AmiHASS-Einstellungen
+;
+MSG_NO_ENTITIES
+Keine Entitäten: ENTITIES setzen oder Kacheln zum Dashboard hinzufügen
+;
+MSG_BAD_ENTITIES
+ENTITIES enthält eine ungültige Entitäts-ID
+;
+MSG_READING
+AmiHASS wird gelesen...
+;
+MSG_NO_REPLY
+Der AmiHASS-Dienst hat nicht geantwortet
+;
+MSG_NOT_RUNNING
+Der AmiHASS-Dienst läuft nicht
+;
+MSG_NOTIFICATION_ONE
+%d Benachrichtigung
+;
+MSG_NOTIFICATION_MANY
+%d Benachrichtigungen
+;
+MSG_ATTR_READING
+Attribute werden gelesen...
+;
+MSG_ATTR_NOT_RUNNING
+Dienst läuft nicht - zuerst AmiHASS starten
+;
+MSG_ATTR_STOPPED
+Dienst angehalten
+;
+MSG_ATTR_NO_REPLY
+Dienst hat nicht geantwortet
+;
+MSG_ATTR_SLOW
+Server ist langsam - Aktualisieren drücken und erneut versuchen
+;
+MSG_ATTR_COUNT
+%ld Attribute
+;
+MSG_ATTR_FIRST64
+ (die ersten 64 werden gezeigt)
+;
+MSG_ATTR_NONE
+Keine Attribute.
+;
+MSG_ATTR_HISTORY
+Verlauf (24 h): zuletzt %s%s%s, min. %s, max. %s
+;
+MSG_REFRESH
+Aktualisieren
+;
+MSG_CLOSE
+Schließen
+;
+MSG_TIMING_FROM
+Zeigen ab
+;
+MSG_TIMING_UNTIL
+Zeigen bis
+;
+MSG_TIMING_SET
+Zeiten setzen
+;
+MSG_PROFILE_NORMAL
+Normal
+;
+MSG_PROFILE_FAST
+Schnell (5 s)
+;
+MSG_PROFILE_SLOW
+Langsam (1 min)
+;
+MSG_PROFILE_VERY_SLOW
+Sehr langsam (5 min)
+;
+MSG_NEVER
+Nie
+;
+MSG_TIMING_SAVED
+Zeiten gespeichert; die Seite öffnet sich in ihren Stunden automatisch
+;
+MSG_TIMING_SAVED_NONE
+Zeiten gespeichert; kein automatischer Wechsel
+;
+MSG_TIMING_FAILED
+Zeiten konnten nicht gespeichert werden
+;
+MSG_GRAPH
+Verlaufsgrafik
+;
+MSG_SRV_TITLE
+AmiHASS - Serverprofile
+;
+MSG_SRV_BUTTON
+Profile
+;
+MSG_SRV_LOAD
+Laden
+;
+MSG_SRV_SAVE
+Aktuelle speichern
+;
+MSG_SRV_DELETE
+Löschen
+;
+MSG_SRV_PROFILE
+Profil
+;
+MSG_SRV_NAME
+Name
+;
+MSG_SRV_ABOUT_LABEL
+Info
+;
+MSG_SRV_ABOUT
+Bis zu 8 Server. Laden, Verbindung testen und speichern zum Wechseln.
+;
+MSG_SRV_NONE
+(keine gespeichert)
+;
+MSG_SRV_NO_PROFILE
+Noch kein Profil gespeichert
+;
+MSG_SRV_LOADED
+Profil geladen - Verbindung testen, dann speichern
+;
+MSG_SRV_INVALID
+Namen eingeben; URL und Token müssen gültig sein (höchstens 8)
+;
+MSG_SRV_SAVE_FAILED
+Profile konnten nicht gespeichert werden; ENVARC: prüfen
+;
+MSG_SRV_NOTHING
+Nichts entfernt
+;
+MSG_SERVER_MENU
+AmiHASS-Server:
+;
+MSG_MENU_HELP
+AmiHASS-Hilfe
+;

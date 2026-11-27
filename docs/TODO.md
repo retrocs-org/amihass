@@ -1,43 +1,51 @@
 # AmiHASS roadmap
 
-## Service and Preferences
+## Completed and verified
 
-- [x] Separate AmiHASSService and AmiHASSPrefs; close Preferences without stopping
-  the service. Preserve custom install paths and connection settings on update.
-- [ ] Validate fresh installation, development-build migration, update and both
-  uninstall choices in Workbench for each package layout.
-- [x] Validate authenticated HTTPS, catalogue discovery and a state read against
-  a real Home Assistant server without sending device controls.
-- [ ] Show distinct DNS, TLS, HTTP/authentication and offline errors in Preferences.
+- [x] Separate bridge service and Preferences with persistent component paths.
+- [x] Current runtime package: fresh install, update and both uninstall choices
+  in all three Installer modes; optional Preferences launch after installation.
+- [x] Authenticated HTTPS discovery and read-only state queries.
+- [x] Distinct DNS, TLS, HTTP/authentication and network errors.
+- [x] Configurable reconnect intervals and client-visible server status.
+- [x] Rejected credentials pause automatic HTTP traffic until settings reload
+  or an explicit reconnect request.
+- [x] Shared selected-entity polling, leases and client cleanup.
+- [x] Device and room browsing with combined room, type and name filters.
+- [x] Brightness, RGB, temperature, media, cover and lock capabilities.
+- [x] Shared offline sample devices and client-visible action readback.
+- [x] Capability-filtered Dashboard actions; offline edits preserve saved actions.
+- [x] Door-state labels and confirmation with post-consent connection/state checks.
+- [x] ARexx discovery, queries, status and validated actions.
+- [x] Current archive dates and portable LHA paths; exact Amiga OLHa 0.4.4 tests.
+- [x] Fresh repository-scoped GitHub App tokens generated at publication time.
 
-## Shared connection framework
+## Remaining work
 
-- [ ] Add a portable WebSocket state machine with selected-entity subscriptions.
-- [ ] Add optional native bsdsocket.library/AmiSSL transport using Exec-aware waits.
-  Keep verified REST fallback and explicitly report the transport in use.
-- [x] Add REST health checks, configurable reconnect intervals and client server status.
-- [ ] Add an authentication-rejected
-  state that waits for credential correction or an explicit user retry.
-- [x] Add ARexx QUERY, LIST, STATUS and validated action commands backed by the
-  existing cache/queue, plus script examples. Do not expose the token.
-- [ ] Design an SDK event subscription API with coalesced bounded notifications,
-  safe client teardown and no replay of stale queued actions.
+- [x] Validate migration from older development-only layouts separately from
+  the supported installed-package paths (legacy path files, Private/connection
+  and in-cfg tokens; damaged legacy paths keep defaults).
+- [x] Add selected-entity native WebSocket updates with bounded REST fallback.
+- [x] Add optional native bsdsocket.library/AmiSSL transport using Exec-aware
+  waits, with verified REST fallback and explicit transport reporting.
+- [x] Home Assistant change events for scripts (ARexx WAITEVENT on shared leases).
+- [x] Per-page refresh profiles and time-of-day Dashboard pages.
+- [x] Persistent notifications over the live-update connection.
+- [x] Saved server profiles (one active server at a time).
+- [x] locale.library catalogs (Swedish, German).
+- [x] All window text in the catalogs (English-keyed table).
+- [x] Native HTTP worker with keep-alive and curl fallback (needs testing on
+  real 68k hardware).
+- [x] Expose complete typed entity attributes through the SDK and live Browser.
+- [x] Numeric history in the SDK and ARexx, and history-graph Dashboard tiles.
+- [x] Multi-entity SDK queries; scenes/scripts as confirmable Dashboard buttons;
+  climate modes, automations, selects, numbers, vacuums, valves, humidifiers
+  and code-free alarm panels.
+- [x] Add Home Assistant label filters alongside existing room filters.
+- [x] Improve display-only Unicode fallbacks for names and units.
+- [ ] Add lock PIN entry without saving codes in layouts or diagnostics.
+- [x] Add shared bounded camera snapshots, server-side size requests and a
+  native datatype viewer in Dashboard and Browser.
 
-## Entity browsing and controls
-
-- [x] Bundle a standalone read-only Browser with offline sample entities,
-  search, domain filters and JSON attribute details.
-- [x] Connect the Browser to live SDK catalogue paging and entity state reads,
-  with separately selected sample data.
-- [ ] Extend live Browser details with complete typed attributes through the SDK.
-
-- [ ] Add optional Home Assistant label/area filters to discovery.
-- [ ] Extend SDK capabilities and action payloads for brightness, colour, media
-  controls and covers. Keep unsupported entities read-only.
-- [ ] Improve display-only Unicode fallbacks for names and units.
-- [ ] Consider camera snapshots in a separate optional client, fetched/scaled on
-  the server with datatype-based display and bounded image sizes.
-
-See [ami2ha review](AMI2HA-REVIEW.md) for implementation references, licensing,
-verification limits and adaptation requirements. These tasks are not release
-claims; the current service polls REST endpoints.
+See [ami2ha review](AMI2HA-REVIEW.md) for references and licensing.
+REST is the default; native verified-TLS WebSocket updates are optional in 0.3.

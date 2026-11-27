@@ -18,6 +18,10 @@ struct AmiHASSClient {void *pending;};struct AmiHASSMessage{int result;unsigned 
 static int amihass_send(struct AmiHASSClient *c,int kind,const char *owner,const char *entity,const char *action,int offset,int flags,const char *domain,const char *filter){assert(kind==AMIHASS_QUERY&&!action&&!offset&&flags==AMIHASS_QUERY_ONCE);(void)owner;(void)entity;(void)domain;(void)filter;++sends;if(mode==3)return 0;c->pending=&reply;return 1;}
 static struct AmiHASSMessage *amihass_reply(struct AmiHASSClient *c){++polls;if(mode==4)return NULL;c->pending=NULL;memset(&reply,0,sizeof(reply));reply.result=mode==2 ? 10:polls==1 ? AMIHASS_WAIT:AMIHASS_OK;reply.count=1;strcpy(reply.items[0].id,"control.lock");strcpy(reply.items[0].state,"yes");return &reply;}
 static void amihass_client_close(struct AmiHASSClient *c){c->pending=NULL;++closed;}static void FreeVec(void *p){(void)p;}static void Delay(int n){assert(n==5);}
+/* Production loops wait on signals; in tests this is one scripted Delay step. */
+void nd_panel_wait(struct NDPanel *p,unsigned long e,unsigned long t){(void)p;(void)e;(void)t;Delay(5);}
+unsigned long amihass_client_signal(const struct AmiHASSClient *c){(void)c;return 0;}
+
 struct NDPanel *nd_panel_open(const char *title,const struct NDPanelField *fields,unsigned int count,const char **buttons,unsigned int n){(void)title;(void)fields;assert(count==1&&n==1&&!strcmp(buttons[0],"Cancel"));return &panel;}
 int nd_panel_event(struct NDPanel *p){(void)p;++events;return mode==1 ? 100:0;}void nd_panel_close(struct NDPanel *p){assert(p==&panel);}
 '''+s[a:b]+r'''

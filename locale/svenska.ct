@@ -1,0 +1,154 @@
+## version $VER: amihass.catalog 0.3 (24.11.2026)
+## language svenska
+## codeset 0
+; AmiHASS - svenska
+MSG_MENU_DASHBOARD
+AmiHASS-instrumentpanel
+;
+MSG_MENU_BROWSER
+AmiHASS-bläddrare
+;
+MSG_MENU_PREFS
+AmiHASS-inställningar
+;
+MSG_NO_ENTITIES
+Inga entiteter: ange ENTITIES eller lägg till rutor i instrumentpanelen
+;
+MSG_BAD_ENTITIES
+ENTITIES innehåller ett ogiltigt entitets-ID
+;
+MSG_READING
+Läser AmiHASS...
+;
+MSG_NO_REPLY
+AmiHASS-tjänsten svarade inte
+;
+MSG_NOT_RUNNING
+AmiHASS-tjänsten körs inte
+;
+MSG_NOTIFICATION_ONE
+%d avisering
+;
+MSG_NOTIFICATION_MANY
+%d aviseringar
+;
+MSG_ATTR_READING
+Läser attribut...
+;
+MSG_ATTR_NOT_RUNNING
+Tjänsten körs inte - starta AmiHASS först
+;
+MSG_ATTR_STOPPED
+Tjänsten stoppades
+;
+MSG_ATTR_NO_REPLY
+Tjänsten svarade inte
+;
+MSG_ATTR_SLOW
+Servern är långsam - tryck Uppdatera och försök igen
+;
+MSG_ATTR_COUNT
+%ld attribut
+;
+MSG_ATTR_FIRST64
+ (de första 64 visas)
+;
+MSG_ATTR_NONE
+Inga attribut.
+;
+MSG_ATTR_HISTORY
+Historik (24 h): senast %s%s%s, lägst %s, högst %s
+;
+MSG_REFRESH
+Uppdatera
+;
+MSG_CLOSE
+Stäng
+;
+MSG_TIMING_FROM
+Visa från
+;
+MSG_TIMING_UNTIL
+Visa till
+;
+MSG_TIMING_SET
+Spara tider
+;
+MSG_PROFILE_NORMAL
+Normal
+;
+MSG_PROFILE_FAST
+Snabb (5 s)
+;
+MSG_PROFILE_SLOW
+Långsam (1 min)
+;
+MSG_PROFILE_VERY_SLOW
+Mycket långsam (5 min)
+;
+MSG_NEVER
+Aldrig
+;
+MSG_TIMING_SAVED
+Tider sparade; sidan öppnas automatiskt under sina timmar
+;
+MSG_TIMING_SAVED_NONE
+Tider sparade; inget automatiskt byte
+;
+MSG_TIMING_FAILED
+Tiderna kunde inte sparas
+;
+MSG_GRAPH
+Historikgraf
+;
+MSG_SRV_TITLE
+AmiHASS - Serverprofiler
+;
+MSG_SRV_BUTTON
+Profiler
+;
+MSG_SRV_LOAD
+Hämta
+;
+MSG_SRV_SAVE
+Spara aktuell
+;
+MSG_SRV_DELETE
+Ta bort
+;
+MSG_SRV_PROFILE
+Profil
+;
+MSG_SRV_NAME
+Namn
+;
+MSG_SRV_ABOUT_LABEL
+Om
+;
+MSG_SRV_ABOUT
+Upp till 8 servrar. Hämta, testa anslutningen och spara för att byta.
+;
+MSG_SRV_NONE
+(inga sparade)
+;
+MSG_SRV_NO_PROFILE
+Ingen sparad profil ännu
+;
+MSG_SRV_LOADED
+Profil hämtad - testa anslutningen och spara
+;
+MSG_SRV_INVALID
+Ange ett namn; URL och token måste vara giltiga (högst 8)
+;
+MSG_SRV_SAVE_FAILED
+Profilerna kunde inte sparas; kontrollera ENVARC:
+;
+MSG_SRV_NOTHING
+Inget togs bort
+;
+MSG_SERVER_MENU
+AmiHASS-server:
+;
+MSG_MENU_HELP
+AmiHASS-hjälp
+;

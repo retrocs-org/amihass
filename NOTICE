@@ -1,3 +1,5 @@
 AmiHASS includes Home Assistant REST, native panel, reply ownership and installer-launch code adapted from NovaDock, under the included MIT licence.
 
 Release and packaging tooling is adapted from Beam68, Copyright (c) 2026 Beam68 contributors, under the MIT licence in tools/RELEASE-LICENSE.txt (Docs/RELEASE-LICENSE.txt in runtime packages).
+
+WebSocket framing, HTTP upgrade and native TCP/TLS transport adapted from ami2ha (evil4dmin), MIT licence in docs/AMI2HA-LICENSE.txt (Docs/AMI2HA-LICENSE.txt in packages).

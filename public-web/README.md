@@ -94,3 +94,9 @@ only file format conversion is performed.
 The compact Features section sits between Overview and Screenshots and lists
 shared connections, device controls, selected updates, sample data, SDK/ARexx
 and diagnostics. Download versions and links still come from GitHub releases.
+
+## Website changelog
+
+Record website changes in [changelog.md](changelog.md), separately from the
+application changelog. Use the same version headings and Features, Enhancements
+and Bug fixes sections.

@@ -1,4 +1,4 @@
-; AmiHASS 0.2 installer. Installer 42+, AmigaOS 3.x.
+; AmiHASS 0.3 installer. Installer 42+, AmigaOS 3.x.
 (set @app-name "AmiHASS")
 (set @language "english")
 (if (= @icon "") (set #src (expandpath "")) (set #src (pathonly (expandpath @icon))))
@@ -10,11 +10,27 @@
 (set #startup (= (getenv "AmiHASS/InstallerBoot") "1"))
 (set #old-dest #dest)
 (set #old-prefs #prefs)
+(set #old-startup-dir #startup-dir)
+; Shared components live outside the visible Utilities applications.
+(if (= #dest "SYS:Utilities/AmiHASS") (set #dest "SYS:AmiHASS"))
 (set #installed (or (= (exists (tackon #dest "AmiHASSService") (noreq)) 1) (= (exists (tackon #prefs "AmiHASSPrefs") (noreq)) 1)))
 (procedure P_DELETE (if (exists #del (noreq)) (delete #del (optional "force"))))
 (procedure P_COPY
  (copyfiles (source (tackon #src #copy)) (dest #copy-dest)
   (prompt "Installing " #copy) (help @copyfiles-help) (optional "force")))
+(procedure P_CATALOG
+ (set #copy-dest (tackon "LOCALE:Catalogs" #lang))
+ (if (<> (exists #copy-dest (noreq)) 2) (makedir #copy-dest))
+ (set #copy (tackon (tackon "Catalogs" #lang) "amihass.catalog")) (P_COPY))
+(procedure P_REMOVE_DOCK
+ (set #del "SYS:Utilities/AmiHASSDock") (P_DELETE)
+ (set #del "SYS:Utilities/AmiHASSDock.info") (P_DELETE)
+ (set #del (tackon #startup-dir "AmiHASSDock")) (P_DELETE)
+ (set #del (tackon #startup-dir "AmiHASSDock.info")) (P_DELETE)
+ (set #del (tackon #old-startup-dir "AmiHASSDock")) (P_DELETE)
+ (set #del (tackon #old-startup-dir "AmiHASSDock.info")) (P_DELETE)
+ (set #del "SYS:WBStartup/AmiHASSDock") (P_DELETE)
+ (set #del "SYS:WBStartup/AmiHASSDock.info") (P_DELETE))
 (procedure P_STOP
  (working "Stopping the AmiHASS service...")
  (if (<> (run (cat "\"" (tackon #src "AmiHASSService") "\" STOP")) 0)
@@ -29,6 +45,8 @@
  (if #remove-browser ((set #del (tackon #remove-dir "AmiHASSBrowser")) (P_DELETE)
  (set #del (tackon #remove-dir "AmiHASSBrowser.info")) (P_DELETE)))
  (set #del (tackon #remove-dir "AmiHASSService")) (P_DELETE)
+ (set #del (tackon #remove-dir "AmiHASSFetch")) (P_DELETE)
+ (set #del (tackon #remove-dir "AmiHASS.guide")) (P_DELETE)
  (set #del (tackon #remove-dir "StartInstaller")) (P_DELETE)
  (set #del (tackon #remove-dir "SetupStartup")) (P_DELETE)
  (set #del (tackon #remove-dir "Install")) (P_DELETE)
@@ -39,7 +57,7 @@
  (set #del (tackon #remove-dir "LICENSE")) (P_DELETE)
  (set #del (tackon #remove-dir "NOTICE")) (P_DELETE)
  )
-(welcome "AmiHASS 0.2 - Amiga Home Assistant\nShared Home Assistant service for AmigaOS applications.")
+(welcome "AmiHASS 0.3 - Amiga Home Assistant\nShared Home Assistant service for AmigaOS applications.")
 (set #level @user-level)
 (set #action 0)
 ; Novice mode still offers maintenance on an existing installation.
@@ -57,6 +75,7 @@
    (help "The service is stopped before removing the applications and startup shortcut. Keep settings is the default. Use Abort Install to leave without changes.")
    (choices "Keep settings" "Remove settings") (default 0)))
   (P_STOP)
+  (P_REMOVE_DOCK)
   (if #remove-settings (if (<> (run (cat "\"" #helper "\" PURGE")) 0) (abort "Settings could not be removed. Application files remain installed.")))
   (P_CLEAN)
   (set #del (tackon #prefs "AmiHASSPrefs")) (P_DELETE)
@@ -67,6 +86,8 @@
   (set #del "SYS:Utilities/AmiHASSBrowser.info") (P_DELETE)
   (set #del "SYS:Utilities/AmiHASSDashboard") (P_DELETE)
   (set #del "SYS:Utilities/AmiHASSDashboard.info") (P_DELETE)
+  (set #del "LOCALE:Catalogs/svenska/amihass.catalog") (P_DELETE)
+  (set #del "LOCALE:Catalogs/deutsch/amihass.catalog") (P_DELETE)
   (set #remove-browser 1)
   (set #remove-dir #dest) (P_REMOVE_APP)
   (complete 100)
@@ -76,14 +97,23 @@
   (exit (quiet)))
  ((user #level)
   (if (<> #level 0)
-   ((set #dest (askdir (prompt "Choose the service/application drawer") (help "Service and maintenance files are installed here.") (default #dest)))
+   ((if (= #level 2)
+     ((set #parent (askdir
+       (prompt "Choose a parent drawer for shared data")
+       (help "An AmiHASS drawer is created here for the service, helpers and manual. Saved settings stay in ENVARC:AmiHASS/. Preferences, Browser and Dashboard are installed separately.")
+       (default (pathonly #dest))))
+      (set #dest (tackon #parent "AmiHASS"))))
     (set #prefs (askdir (prompt "Choose the Preferences drawer") (help "AmiHASSPrefs and its icon are installed here.") (default #prefs)))
     (set #startup-dir (askdir (prompt "Choose the Workbench startup drawer") (help "The optional boot shortcut is installed here.") (default #startup-dir)))
     (set #startup (askbool (prompt "Start the service at system boot?") (help "An AmiHASS shortcut starts the service when Workbench starts.") (choices "Yes" "No") (default #startup))))
    (if (= #installed 0) (set #startup 1)))
-  (if (= (expandpath #dest) (expandpath #src)) ((P_CLEAN) (abort "Run installation/update from a separate package drawer.")))
+  (set #dest-check (tackon (expandpath (pathonly #dest)) (fileonly #dest)))
+  (if (= #dest-check (expandpath #src)) ((P_CLEAN) (abort "Run installation/update from a separate package drawer.")))
+  (if (= #dest-check (expandpath #prefs)) (abort "Choose a Preferences drawer separate from the shared-data drawer."))
+  (if (= #dest-check (expandpath "SYS:Utilities")) (abort "Shared data must have its own AmiHASS drawer outside SYS:Utilities."))
   (set #was-running (= (run (cat "\"" #helper "\" STATE")) 0))
   (P_STOP)
+  (P_REMOVE_DOCK)
   (if (<> (exists #dest (noreq)) 2) (makedir #dest))
   (if (<> (exists #prefs (noreq)) 2) (makedir #prefs))
   (set #copy-dest #prefs)
@@ -95,10 +125,12 @@
   (set #copy "AmiHASSBrowser.info") (P_COPY)
   (set #copy "AmiHASSDashboard") (P_COPY)
   (set #copy "AmiHASSDashboard.info") (P_COPY)
+  (set #lang "svenska") (P_CATALOG)
+  (set #lang "deutsch") (P_CATALOG)
   (set #copy-dest #dest)
-  (set #copy "AmiHASSPrefs") (P_COPY)
-  (set #copy "AmiHASSPrefs.info") (P_COPY)
   (set #copy "AmiHASSService") (P_COPY)
+  (set #copy "AmiHASSFetch") (P_COPY)
+  (set #copy "AmiHASS.guide") (P_COPY)
   (set #copy "StartInstaller") (P_COPY)
   (set #copy "SetupStartup") (P_COPY)
   (set #copy "Install") (P_COPY)
@@ -125,7 +157,7 @@
     (set #result "AmiHASS updated. The service was restarted.")
     (set #result "AmiHASS updated, but the service could not be restarted. Open Preferences to start it manually.")))
   (if (= #installed 0)
-   (set #result "AmiHASS 0.2 installed. The service is stopped."))
+   (set #result "AmiHASS 0.3 installed. The service is stopped."))
   (set #boot-result "Disabled")
   (if #startup (set #boot-result (cat "Enabled - " #startup-dir)))
   (P_CLEAN)
@@ -133,7 +165,7 @@
   ; MESSAGE is suppressed in Novice mode. Force this final page in every mode.
   (user 1)
   (message #result
-   "\n\nService drawer: " #dest
+   "\n\nShared data and service: " #dest
    "\nPreferences: " (tackon #prefs "AmiHASSPrefs")
    "\nBrowser and Dashboard: SYS:Utilities/"
    "\nBoot startup: " #boot-result

@@ -15,6 +15,9 @@
 #include "nd_panel.h"
 #include "preferences.h"
 #include "amihass_config.h"
+#include "browser_live.h"
+#include "dashboard.h"
+#include "dashboard_favourites.h"
 #include <proto/icon.h>
 #include <workbench/workbench.h>
 struct Library *IconBase=NULL;
@@ -22,22 +25,25 @@ static void memory_sample(void);
 long __stack=65536;
 static int token_input_check(void)
 {
- struct NDPanelField fields[4];struct NDPanel *panel;char token[1025];int i,ok;
+ struct NDPanelField fields[5];static const char *names[]={"Home","Cabin"};struct NDPanel *panel;char token[1025];int i,ok;
  fields[0].label="Server URL";fields[0].value="https://homeassistant.local:8123";fields[0].limit=160;
  fields[1].label="Token";fields[1].value="fixture-initial-token-for-validation";fields[1].limit=sizeof(token);
  fields[2].label="Transport";fields[2].value="HTTPS (encrypted)";fields[2].limit=0;
  fields[3].label="Connection";fields[3].value="Not Connected";fields[3].limit=0;
- panel=nd_panel_server_settings(fields,1,60);if(!panel){puts("FAIL: Server Settings could not open.");return 10;}
- ok=!nd_panel_secret_shown(panel)&&!nd_panel_enabled(panel,2)&&!strcmp(nd_panel_get(panel,1),fields[1].value)&&nd_panel_reconnect(panel)&&nd_panel_retry(panel)==60&&nd_panel_enabled(panel,112);
+ fields[4].label="Name";fields[4].value="Home";fields[4].limit=33;
+ panel=nd_panel_server_editor(fields,names,2,0,1,60);if(!panel){puts("FAIL: Server Settings could not open.");return 10;}
+ ok=nd_panel_server_selected(panel)==0&&nd_panel_enabled(panel,117)&&nd_panel_enabled(panel,118)&&nd_panel_enabled(panel,100)&&nd_panel_enabled(panel,101)&&nd_panel_enabled(panel,102)&&nd_panel_enabled(panel,103)&&nd_panel_enabled(panel,104)&&nd_panel_enabled(panel,105)&&!nd_panel_secret_shown(panel)&&!nd_panel_enabled(panel,2)&&!strcmp(nd_panel_get(panel,1),fields[1].value)&&nd_panel_reconnect(panel)&&nd_panel_retry(panel)==60&&nd_panel_enabled(panel,112);
+ {struct NDPanel *child;struct NDPanelField info;static const char *buttons[]={"Close"};info.label="Profiles";info.value="Nested profile window";info.limit=0;child=nd_panel_open("Server profile window QA",&info,1,buttons,1);if(!child){nd_panel_close(panel);return 10;}nd_panel_close(child);nd_panel_close(NULL);nd_panel_set(panel,3,"Not Connected");ok=ok&&nd_panel_enabled(panel,105);}
  nd_panel_show_secret(panel,1);ok=ok&&nd_panel_secret_shown(panel)&&nd_panel_enabled(panel,2)&&!strcmp(nd_panel_get(panel,1),fields[1].value);nd_panel_show_secret(panel,0);ok=ok&&!nd_panel_secret_shown(panel)&&!nd_panel_enabled(panel,2);
  nd_panel_set_input(panel,1,"fixture-imported-token-for-validation");ok=ok && !strcmp(nd_panel_get(panel,1),"fixture-imported-token-for-validation");
  for(i=0;i<1024;++i)token[i]='a';token[1024]=0;
  nd_panel_set_input(panel,1,token);ok=ok && strlen(nd_panel_get(panel,1))==1024 && !strcmp(nd_panel_get(panel,1),token);
  nd_panel_show_secret(panel,1);ok=ok&&!strcmp(nd_panel_get(panel,1),token);nd_panel_show_secret(panel,0);ok=ok&&!strcmp(nd_panel_get(panel,1),token);
  nd_panel_set_input(panel,1,"");ok=ok && !nd_panel_get(panel,1)[0];
+ nd_panel_servers(panel,names,2,1);ok=ok&&nd_panel_server_selected(panel)==1;
  nd_panel_close(panel);
- {static const unsigned int intervals[]={60,600,900,1800};for(i=0;i<4;++i){panel=nd_panel_server_settings(fields,1,intervals[i]);if(!panel){ok=0;break;}ok=ok&&nd_panel_reconnect(panel)&&nd_panel_retry(panel)==intervals[i]&&nd_panel_enabled(panel,112);nd_panel_close(panel);}
- panel=nd_panel_server_settings(fields,0,900);if(panel){ok=ok&&!nd_panel_reconnect(panel)&&nd_panel_retry(panel)==900&&!nd_panel_enabled(panel,112);nd_panel_close(panel);}else ok=0;}
+ {static const unsigned int intervals[]={60,600,900,1800};for(i=0;i<4;++i){panel=nd_panel_server_editor(fields,names,2,0,1,intervals[i]);if(!panel){ok=0;break;}ok=ok&&nd_panel_reconnect(panel)&&nd_panel_retry(panel)==intervals[i]&&nd_panel_enabled(panel,112);nd_panel_close(panel);}
+ panel=nd_panel_server_editor(fields,names,2,0,0,900);if(panel){ok=ok&&!nd_panel_reconnect(panel)&&nd_panel_retry(panel)==900&&!nd_panel_enabled(panel,112);nd_panel_close(panel);}else ok=0;}
  amihass_erase(token,sizeof(token));
  puts(ok ? "PASS: editable token field, import population, 1024-character capacity and clearing.":"FAIL: native token input did not preserve its contents.");return ok ? 0:10;
 }
@@ -47,14 +53,19 @@ static struct AmiHASSMessage *qa_exchange(struct AmiHASSClient *client,int kind,
  if(!amihass_send(client,kind,"AmiHASS.QA",kind==AMIHASS_QUERY ? "sensor.amihass_qa":NULL,NULL,offset,0,NULL,NULL))return NULL;
  for(n=0;n<120;++n){reply=amihass_reply(client);if(reply)return reply;memory_sample();Delay(5);}return NULL;
 }
+static int favourite_native_check(void)
+{struct AHFavourites *f=AllocVec(sizeof(*f),MEMF_PUBLIC|MEMF_CLEAR),*loaded=AllocVec(sizeof(*loaded),MEMF_PUBLIC|MEMF_CLEAR);struct AHFavourite e;int ok=0;if(!f||!loaded)goto cleanup;memset(&e,0,sizeof(e));strcpy(e.source,"sample://amihass");strcpy(e.id,"light.amihass_sample_living_room");strcpy(e.name,"QA favourite");if(!ah_favourite_set(f,&e)||!ah_favourites_save(f,"RAM:AmiHASS-Favourites-QA.cfg")||!ah_favourites_load(loaded,"RAM:AmiHASS-Favourites-QA.cfg")||loaded->count!=1)goto cleanup;ah_favourite_remove(loaded,0);ok=ah_favourites_save(loaded,"RAM:AmiHASS-Favourites-QA.cfg")&&ah_favourites_load(f,"RAM:AmiHASS-Favourites-QA.cfg")&&!f->count;
+cleanup:DeleteFile("RAM:AmiHASS-Favourites-QA.cfg");DeleteFile("RAM:AmiHASS-Favourites-QA.cfg.old");if(f)FreeVec(f);if(loaded)FreeVec(loaded);puts(ok ? "PASS: native favourites persistence and removal; no device action.":"FAIL: native favourites persistence.");return ok;}
 static int preferences_check(void)
 {
- struct NDPanelField fields[5];struct NDPanel *panel;struct AmiHASSPreferences prefs;
+ struct NDPanelField fields[6];struct NDPanel *panel;struct AmiHASSPreferences prefs;
  struct AmiHASSConnection connection,loaded;struct AmiHASSClient client;struct AmiHASSMessage *reply;
  char token[1025];int i,ok=1,live;BPTR input,output;LONG rc;
- for(i=0;i<4;++i){fields[i].label="Status";fields[i].value="QA";fields[i].limit=0;}
+ if(!favourite_native_check())return 10;
+ for(i=0;i<6;++i){fields[i].label="Status";fields[i].value="QA";fields[i].limit=0;}
  panel=nd_panel_preferences(fields,0);if(!panel){puts("FAIL: Preferences could not open.");return 10;}
  nd_panel_set_source(panel,1);ok=nd_panel_source(panel)==1;nd_panel_set_source(panel,0);ok=ok&&nd_panel_source(panel)==0;
+ nd_panel_connection_state(panel,1,1);ok=ok&&!nd_panel_enabled(panel,115);nd_panel_connection_state(panel,0,1);ok=ok&&nd_panel_enabled(panel,115);
  nd_panel_service_state(panel,0,0);ok=ok&&nd_panel_enabled(panel,100)&&!nd_panel_enabled(panel,101)&&nd_panel_enabled(panel,110);
  nd_panel_service_state(panel,1,0);ok=ok&&!nd_panel_enabled(panel,100)&&nd_panel_enabled(panel,101);
  nd_panel_service_state(panel,1,1);ok=ok&&!nd_panel_enabled(panel,100)&&!nd_panel_enabled(panel,101);
@@ -76,7 +87,7 @@ static int preferences_check(void)
  for(i=0;i<100;++i){Forbid();live=FindPort(AMIHASS_PORT)!=NULL;Permit();if(live)break;Delay(5);}if(!live)return 10;
  memset(&client,0,sizeof(client));
  for(i=0;i<120;++i){reply=qa_exchange(&client,AMIHASS_STATUS,0);if(!reply)return 10;
-  ok=!reply->status.connected && strcmp(reply->item.state,AMIHASS_SERVER_CONNECTED) && reply->count==3 && !strcmp(reply->items[0].state,"0") && !strcmp(reply->items[1].state,"600");
+  ok=!reply->status.connected && strcmp(reply->item.state,AMIHASS_SERVER_CONNECTED) && reply->count>=3 && !strcmp(reply->items[0].state,"0") && !strcmp(reply->items[1].state,"600");
   live=!strcmp(reply->item.state,AMIHASS_SERVER_NETWORK_DOWN)||!strcmp(reply->item.state,AMIHASS_SERVER_DISCONNECTED);FreeVec(reply);if(!ok)return 10;if(live)break;Delay(5);
  }
  if(i==120){puts("FAIL: unreachable server did not report disconnected.");return 10;}
@@ -84,9 +95,11 @@ static int preferences_check(void)
  reply=qa_exchange(&client,AMIHASS_RECONNECT,0);if(!reply || reply->result!=AMIHASS_OK){if(reply)FreeVec(reply);return 10;}FreeVec(reply);
  reply=qa_exchange(&client,AMIHASS_QUERY,0);if(!reply){amihass_client_close(&client);return 10;}FreeVec(reply);
  reply=qa_exchange(&client,AMIHASS_DIAGNOSTICS,0);if(!reply){amihass_client_close(&client);return 10;}
- ok=reply->result==AMIHASS_OK&&reply->count==16&&reply->total==25&&!strcmp(reply->items[0].id,"ipc.received")&&strtoul(reply->items[0].state,NULL,10)>=2&&strtoul(reply->items[4].state,NULL,10)>=1&&!strcmp(reply->items[8].state,"0");FreeVec(reply);
+ ok=reply->result==AMIHASS_OK&&reply->count==16&&reply->total==27&&!strcmp(reply->items[0].id,"ipc.received")&&strtoul(reply->items[0].state,NULL,10)>=2&&strtoul(reply->items[4].state,NULL,10)>=1&&!strcmp(reply->items[8].state,"0");FreeVec(reply);
  reply=qa_exchange(&client,AMIHASS_DIAGNOSTICS,16);if(!reply){amihass_client_close(&client);return 10;}
- ok=ok&&reply->result==AMIHASS_OK&&reply->count==9&&!strcmp(reply->items[0].id,"service.uptime");FreeVec(reply);
+ ok=ok&&reply->result==AMIHASS_OK&&reply->count==11&&!strcmp(reply->items[0].id,"service.uptime");FreeVec(reply);
+ if(!amihass_send(&client,AMIHASS_DIAGNOSTICS,"AmiHASS.QA",NULL,NULL,0,0,"overview",NULL))return 10;
+ for(i=0;i<120;++i){reply=amihass_reply(&client);if(reply)break;Delay(5);}if(!reply)return 10;ok=ok&&reply->result==AMIHASS_OK&&reply->count==6&&!strcmp(reply->items[0].id,"discovery.state")&&!strcmp(reply->items[3].id,"memory.tracked")&&strtoul(reply->items[3].state,NULL,10)>0;FreeVec(reply);
  reply=qa_exchange(&client,AMIHASS_STOP,0);if(reply)FreeVec(reply);amihass_client_close(&client);
  if(!ok){puts("FAIL: live diagnostic counters did not reflect bridge traffic.");return 10;}
  puts("PASS: live service diagnostic pages report real IPC traffic, queries and zero HA actions.");return 0;
@@ -101,26 +114,30 @@ static int installer_mode_check(int mode)
 {
  struct AmiHASSConfig c,loaded;struct MsgPort *guard;struct DiskObject *icon;BPTR lock,f;int ok;
  lock=CreateDir("RAM:AmiHASS-QA");if(lock)UnLock(lock);
- amihass_config_defaults(&c);c.sample_mode=1;c.boot=1;c.connection.poll=45;strcpy(c.connection.url,"https://127.0.0.1:1");strcpy(c.token,"fixture-config-token-for-validation");strcpy(c.service_dir,"RAM:AmiHASS-QA/Service");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
+ amihass_config_defaults(&c);c.sample_mode=1;c.boot=1;c.connection.poll=45;strcpy(c.connection.url,"https://127.0.0.1:1");strcpy(c.token,"fixture-config-token-for-validation");strcpy(c.service_dir,"RAM:AmiHASS-QA/AmiHASS");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
  if(!amihass_config_save(&c) || !amihass_config_load(&loaded) || strcmp(loaded.token,c.token) || loaded.connection.poll!=45){puts("FAIL: unified native cfg roundtrip.");return 10;}
  printf("QA: Installer mode %d\n",mode);
  puts("PASS: unified native cfg preserves server, token, polling, boot and component paths.");
+ f=Open("ENVARC:AmiHASS/CameraRefresh.cfg",MODE_NEWFILE);if(!f)return 10;Write(f,"camera policy",13);Close(f);
+ f=Open("ENVARC:AmiHASS/Favourites.cfg",MODE_NEWFILE);if(!f)return 10;Write(f,"favourites fixture",18);Close(f);
  f=Open("ENVARC:AmiHASS/Dashboard.cfg",MODE_NEWFILE);if(!f)return 10;Write(f,"dashboard layout",16);Close(f);
  if(qa_installer("Update",mode,"install.log")){puts("FAIL: native fresh install.");return 10;}
- if(!qa_exists("SYS:Utilities/AmiHASSDashboard") || !qa_exists("SYS:Utilities/AmiHASSDashboard.info") || !qa_exists("SYS:Utilities/AmiHASSBrowser") || !qa_exists("SYS:Utilities/AmiHASSBrowser.info") || !qa_exists("RAM:AmiHASS-QA/Service/AmiHASSService") || !qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs.info") || !qa_exists("RAM:AmiHASS-QA/Startup/AmiHASS.info")){puts("FAIL: install targets missing.");return 10;}
- IconBase=OpenLibrary("icon.library",36);if(!IconBase)return 10;icon=GetDiskObject("RAM:AmiHASS-QA/Startup/AmiHASS");ok=icon && !strcmp(icon->do_DefaultTool,"RAM:AmiHASS-QA/Service/AmiHASSService");if(icon)FreeDiskObject(icon);CloseLibrary(IconBase);IconBase=NULL;if(!ok)return 10;
+ if(!qa_exists("SYS:Utilities/AmiHASSDashboard") || !qa_exists("SYS:Utilities/AmiHASSDashboard.info") || !qa_exists("SYS:Utilities/AmiHASSBrowser") || !qa_exists("SYS:Utilities/AmiHASSBrowser.info") || !qa_exists("RAM:AmiHASS-QA/AmiHASS/AmiHASSService") || !qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs.info") || !qa_exists("RAM:AmiHASS-QA/Startup/AmiHASS.info")){puts("FAIL: install targets missing.");return 10;}
+ IconBase=OpenLibrary("icon.library",36);if(!IconBase)return 10;icon=GetDiskObject("RAM:AmiHASS-QA/Startup/AmiHASS");ok=icon && !strcmp(icon->do_DefaultTool,"RAM:AmiHASS-QA/AmiHASS/AmiHASSService");if(icon)FreeDiskObject(icon);CloseLibrary(IconBase);IconBase=NULL;if(!ok)return 10;
  puts("PASS: native Installer installs service, Preferences icon and correct boot shortcut.");
  guard=CreateMsgPort();if(!guard)return 10;guard->mp_Node.ln_Name="AmiHASS.Maintenance";Forbid();AddPort(guard);Permit();
- if(qa_command("QATests:SetupStartup RESTART RAM:AmiHASS-QA/Service/AmiHASSService") || qa_command("QATests:SetupStartup STATE"))return 10;
+ if(qa_command("QATests:SetupStartup RESTART RAM:AmiHASS-QA/AmiHASS/AmiHASSService") || qa_command("QATests:SetupStartup STATE"))return 10;
  if(qa_installer("Update",mode,"update.log") || qa_command("QATests:SetupStartup STATE")){puts("FAIL: running update did not restore service.");return 10;}
  puts("PASS: native update restarts a previously running service through the maintenance guard.");
- if(qa_installer("Keep",mode,"uninstall-keep.log") || qa_command("QATests:SetupStartup STATE")!=5 || qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs") || qa_exists("SYS:Utilities/AmiHASSDashboard") || qa_exists("SYS:Utilities/AmiHASSDashboard.info") || qa_exists("SYS:Utilities/AmiHASSBrowser") || qa_exists("SYS:Utilities/AmiHASSBrowser.info") || qa_exists("RAM:AmiHASS-QA/Service/AmiHASSService") || !qa_exists("ENVARC:AmiHASS/Dashboard.cfg") || !amihass_config_load(&loaded) || strcmp(loaded.token,c.token)){puts("FAIL: uninstall keep settings.");return 10;}
+ f=Open(AMIHASS_CONFIG_FILE ".old",MODE_NEWFILE);if(!f)return 10;Write(f,"recovery fixture",16);Close(f);
+ if(qa_installer("Keep",mode,"uninstall-keep.log") || qa_command("QATests:SetupStartup STATE")!=5 || qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs") || qa_exists("SYS:Utilities/AmiHASSDashboard") || qa_exists("SYS:Utilities/AmiHASSDashboard.info") || qa_exists("SYS:Utilities/AmiHASSBrowser") || qa_exists("SYS:Utilities/AmiHASSBrowser.info") || qa_exists("RAM:AmiHASS-QA/AmiHASS/AmiHASSService") || !qa_exists("ENVARC:AmiHASS/CameraRefresh.cfg") || !qa_exists("ENVARC:AmiHASS/Favourites.cfg") || !qa_exists("ENVARC:AmiHASS/Dashboard.cfg") || !qa_exists(AMIHASS_CONFIG_FILE ".old") || !amihass_config_load(&loaded) || strcmp(loaded.token,c.token)){puts("FAIL: uninstall keep settings.");return 10;}
  puts("PASS: native uninstall stops service, removes both apps and preserves unified cfg.");
  if(qa_installer("Update",mode,"reinstall.log"))return 10;
  if(qa_installer("Update",mode,"stopped-update.log") || qa_command("QATests:SetupStartup STATE")!=5)return 10;
  puts("PASS: native update leaves a previously stopped service stopped.");
- f=Open("RAM:AmiHASS-QA/Service/unrelated",MODE_NEWFILE);if(f)Close(f);
- if(qa_installer("Remove",mode,"uninstall-remove.log") || qa_exists(AMIHASS_CONFIG_FILE) || qa_exists("ENVARC:AmiHASS/Dashboard.cfg") || qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs.info") || !qa_exists("RAM:AmiHASS-QA/Service/unrelated")){puts("FAIL: uninstall remove settings.");return 10;}
+ f=Open(AMIHASS_CONFIG_FILE ".old",MODE_NEWFILE);if(!f)return 10;Write(f,"recovery fixture",16);Close(f);
+ f=Open("RAM:AmiHASS-QA/AmiHASS/unrelated",MODE_NEWFILE);if(f)Close(f);
+ if(qa_installer("Remove",mode,"uninstall-remove.log") || qa_exists(AMIHASS_CONFIG_FILE) || qa_exists(AMIHASS_CONFIG_FILE ".old") || qa_exists("ENVARC:AmiHASS/CameraRefresh.cfg") || qa_exists("ENVARC:AmiHASS/Favourites.cfg") || qa_exists("ENVARC:AmiHASS/Dashboard.cfg") || qa_exists("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs.info") || !qa_exists("RAM:AmiHASS-QA/AmiHASS/unrelated")){puts("FAIL: uninstall remove settings.");return 10;}
  Forbid();RemPort(guard);Permit();DeleteMsgPort(guard);
  amihass_erase(&c,sizeof(c));amihass_erase(&loaded,sizeof(loaded));
  puts("PASS: native uninstall removes cfg/token, retains unrelated files and exits without a Guru.");return 0;
@@ -130,12 +147,12 @@ static int installer_check(void)
 static int maintenance_choice_check(void)
 {
  struct AmiHASSConfig c;BPTR l,f;int rc;
- amihass_config_defaults(&c);strcpy(c.service_dir,"RAM:AmiHASS-QA/Service");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
+ amihass_config_defaults(&c);strcpy(c.service_dir,"RAM:AmiHASS-QA/AmiHASS");strcpy(c.prefs_dir,"RAM:AmiHASS-QA/Prefs");strcpy(c.startup_dir,"RAM:AmiHASS-QA/Startup");
  l=CreateDir("RAM:AmiHASS-QA");if(l)UnLock(l);l=CreateDir(c.service_dir);if(l)UnLock(l);l=CreateDir(c.prefs_dir);if(l)UnLock(l);
- f=Open("RAM:AmiHASS-QA/Service/AmiHASSService",MODE_NEWFILE);if(!f)return 10;Close(f);f=Open("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs",MODE_NEWFILE);if(!f)return 10;Close(f);
+ f=Open("RAM:AmiHASS-QA/AmiHASS/AmiHASSService",MODE_NEWFILE);if(!f)return 10;Close(f);f=Open("RAM:AmiHASS-QA/Prefs/AmiHASSPrefs",MODE_NEWFILE);if(!f)return 10;Close(f);
  if(!amihass_config_save(&c))return 10;amihass_erase(&c,sizeof(c));
  rc=qa_command("SYS:System/Installer QATests:Install APPNAME AmiHASS MINUSER NOVICE DEFUSER NOVICE NOPRETEND NOLOG NOPRINT LOGFILE AutoRun:maintenance-choice.log");
- if(!qa_exists("RAM:AmiHASS-QA/Service/AmiHASSService") || !qa_exists(AMIHASS_CONFIG_FILE))return 10;
+ if(!qa_exists("RAM:AmiHASS-QA/AmiHASS/AmiHASSService") || !qa_exists(AMIHASS_CONFIG_FILE))return 10;
  puts("PASS: real Installer maintenance was inspected in Novice mode and cancelled without changes.");return 0;
 }
 /* Credentials are supplied through a private external test mount, never the package. */
@@ -238,9 +255,10 @@ static int sample_bridge_check(int dock)
  fields[0].label="Sample data";fields[0].value="1";fields[0].limit=ND_PANEL_CHECKBOX;fields[1].label="Mode";fields[1].value="Shared bridge simulation";fields[1].limit=0;
  panel=nd_panel_open("AmiHASS sample mode QA",fields,2,buttons,1);if(!panel)goto cleanup;i=nd_panel_toggle(panel,0);nd_panel_close(panel);if(!i)goto cleanup;
  if(qa_command("QATests:SetupStartup RESTART QATests:AmiHASSService"))goto cleanup;
- m=sample_exchange(&a,AMIHASS_STATUS,"SampleClient1",NULL,NULL);if(!m)goto cleanup;i=m->status.connected&&!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE)&&m->count==6&&!strcmp(m->items[3].id,AMIHASS_CAP_AREAS)&&!strcmp(m->items[4].id,AMIHASS_CAP_FILTERS)&&!strcmp(m->items[5].id,AMIHASS_CAP_SUBSCRIPTIONS)&&!strcmp(m->items[3].state,"1")&&!strcmp(m->items[4].state,"1")&&!strcmp(m->items[5].state,"1");FreeVec(m);if(!i)goto cleanup;
+ m=sample_exchange(&a,AMIHASS_STATUS,"SampleClient1",NULL,NULL);if(!m)goto cleanup;i=m->status.connected&&!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE)&&m->count>=7&&!strcmp(m->items[6].id,"poll.seconds")&&!strcmp(m->items[6].state,"30")&&!strcmp(m->items[3].id,AMIHASS_CAP_AREAS)&&!strcmp(m->items[4].id,AMIHASS_CAP_FILTERS)&&!strcmp(m->items[5].id,AMIHASS_CAP_SUBSCRIPTIONS)&&!strcmp(m->items[3].state,"1")&&!strcmp(m->items[4].state,"1")&&!strcmp(m->items[5].state,"1");FreeVec(m);if(!i)goto cleanup;
  m=sample_exchange(&a,AMIHASS_AREAS,"Rooms.QA",NULL,NULL);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&m->total==4&&m->count==4&&!strcmp(m->items[3].id,"study")&&!strcmp(m->items[3].name,"Study");FreeVec(m);if(!i)goto cleanup;
  puts("PASS: room catalogue exposes stable IDs and friendly names through the shared bridge.");
+ if(!amihass_send_scope(&a,AMIHASS_LIST,"Labels.QA",NULL,0,0,"","","","lighting"))goto cleanup;m=wait_reply(&a);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&m->total==2;FreeVec(m);if(!i)goto cleanup;if(!amihass_send_scope(&a,AMIHASS_DEVICES,"Labels.QA",NULL,0,0,"","","","missing-label"))goto cleanup;m=wait_reply(&a);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&!m->total;FreeVec(m);if(!i)goto cleanup;puts("PASS: native shared label filters select lighting devices and return empty unknown labels.");
  m=sample_exchange(&a,AMIHASS_QUERY,"SampleClient1","light.amihass_sample_living_room",NULL);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&!strcmp(m->item.state,"on");FreeVec(m);if(!i)goto cleanup;
  m=sample_exchange(&a,AMIHASS_ACTION,"SampleClient1","light.amihass_sample_living_room","Toggle");if(!m)goto cleanup;i=m->result==AMIHASS_WAIT;FreeVec(m);if(!i)goto cleanup;
  m=sample_exchange(&b,AMIHASS_QUERY,"SampleClient2","light.amihass_sample_living_room",NULL);if(!m)goto cleanup;i=m->result==AMIHASS_OK&&!strcmp(m->item.state,"off");FreeVec(m);if(!i)goto cleanup;
@@ -268,6 +286,18 @@ static int sample_bridge_check(int dock)
 cleanup:
  amihass_client_close(&a);amihass_client_close(&b);qa_command("QATests:AmiHASSService STOP");Forbid();i=FindPort(AMIHASS_PORT)!=NULL;Permit();if(i)ok=0;DeleteFile(AMIHASS_CONFIG_FILE);return ok ? 0:10;
 }
+static int sample_stability_check(void)
+{struct AmiHASSConfig cfg;struct AmiHASSClient a,b,observer;struct AmiHASSMessage *m;struct AHBrowserLive *live=NULL;struct AHDashboardBook *book=NULL;unsigned long warm=0,ending;int i,j,ok=0,row;const char *entity;
+ memset(&a,0,sizeof(a));memset(&b,0,sizeof(b));memset(&observer,0,sizeof(observer));amihass_config_defaults(&cfg);cfg.sample_mode=1;cfg.boot=0;cfg.background_budget=10;strcpy(cfg.service_dir,"QATests:");if(!amihass_config_save(&cfg))return 10;amihass_erase(&cfg,sizeof(cfg));if(qa_command("QATests:SetupStartup RESTART QATests:AmiHASSService"))return 10;live=AllocVec(sizeof(*live),MEMF_PUBLIC|MEMF_CLEAR);book=AllocVec(sizeof(*book),MEMF_PUBLIC|MEMF_CLEAR);if(!live||!book)goto failed;ah_dashboard_book_defaults(book);if(!ah_dashboard_page_add(book,"Second page"))goto failed;strcpy(book->pages[0].tiles[0].entity,"light.amihass_sample_living_room");strcpy(book->pages[1].tiles[0].entity,"media_player.amihass_sample_living_room");
+ for(i=0;i<300;++i){book->current=i%2;entity=book->pages[book->current].tiles[0].entity;if(!amihass_subscribe(&a,"Soak.A",entity,5))goto failed;m=wait_reply(&a);if(!m)goto failed;ok=m->result==AMIHASS_OK;FreeVec(m);if(!ok)goto failed;if(!amihass_subscribe(&b,"Soak.B",entity,60))goto failed;m=wait_reply(&b);if(!m)goto failed;ok=m->result==AMIHASS_OK;FreeVec(m);if(!ok)goto failed;
+ ah_browser_live_init(live);strcpy(live->area,i%2 ? "study":"Living room");ah_browser_live_devices_type(live,"light","",0,0);for(j=0;j<250;++j){ah_browser_live_step(live);if(!live->loading&&!live->wanted&&live->count)break;Delay(1);}if(j==250||live->total!=1)goto failed;live->area[0]=0;ah_browser_live_page(live,"","",16,0);for(j=0;j<250;++j){ah_browser_live_step(live);if(!live->loading&&!live->wanted)break;Delay(1);}if(j==250||live->offset!=16||live->total<17)goto failed;ah_browser_live_details(live,0);ah_browser_live_step(live);ah_browser_live_cancel_details(live);ah_browser_live_close(live);amihass_client_close(&a);amihass_client_close(&b);
+ m=sample_exchange(&observer,AMIHASS_STATUS,"Soak.Observer",NULL,NULL);if(!m)goto failed;ok=m->status.connected&&!strcmp(m->item.state,AMIHASS_SERVER_SAMPLE)&&!m->status.subscriptions&&!m->status.queued;FreeVec(m);if(!ok)goto failed;if(i%25==24){m=sample_exchange(&observer,AMIHASS_RECONNECT,"Soak.Observer",NULL,NULL);if(!m)goto failed;ok=m->result==AMIHASS_OK;FreeVec(m);if(!ok)goto failed;}if(i==29)warm=AvailMem(MEMF_FAST);if(i%50==49)printf("STABILITY %d cycles: %lu Fast bytes free.\n",i+1,AvailMem(MEMF_FAST));
+ }
+ ending=AvailMem(MEMF_FAST);ok=warm&&ending+131072UL>=warm;if(!ok)goto failed;if(!amihass_send(&observer,AMIHASS_DIAGNOSTICS,"Soak.Observer",NULL,NULL,0,0,NULL,NULL))goto failed;m=wait_reply(&observer);if(!m)goto failed;for(row=0;row<m->count;++row)if(!strcmp(m->items[row].id,"http.actions")||!strcmp(m->items[row].id,"http.polls")||!strcmp(m->items[row].id,"http.catalogue"))if(strcmp(m->items[row].state,"0"))ok=0;FreeVec(m);printf("STABILITY retained Fast change: %ld bytes.\n",(long)warm-(long)ending);
+goto cleanup;
+failed:ok=0;
+cleanup:if(live){ah_browser_live_close(live);FreeVec(live);}if(book)FreeVec(book);amihass_client_close(&a);amihass_client_close(&b);amihass_client_close(&observer);qa_command("QATests:AmiHASSService STOP");DeleteFile(AMIHASS_CONFIG_FILE);puts(ok ? "PASS: 300 sample-only browse/page/cancel/lease/reconnect cycles; bounded RAM and no stuck work.":"FAIL: sample stability invariant or memory threshold.");return ok ? 0:10;}
+
 static int sample_memory_check(void)
 {struct AmiHASSConfig config;struct AmiHASSClient a,b;struct AmiHASSMessage *m;unsigned long warm,ending;int i,ok=0;static const char *commands[]={"Brightness 45","Color #123456","Temperature 22.5","Toggle"};
  memset(&a,0,sizeof(a));memset(&b,0,sizeof(b));amihass_config_defaults(&config);config.sample_mode=1;config.boot=0;strcpy(config.service_dir,"QATests:");if(!amihass_config_save(&config))return 10;amihass_erase(&config,sizeof(config));if(qa_command("QATests:SetupStartup RESTART QATests:AmiHASSService"))return 10;
@@ -315,6 +345,7 @@ int main(int argc,char **argv)
  BPTR file,report;LONG count;char text[8193];int result;
  if(argc>1 && !strcmp(argv[1],"LIVE-CONTROLS"))return live_controls_check();
  if(argc>1 && !strcmp(argv[1],"TRANSPORT-CHECK"))return transport_check();
+ if(argc>1 && !strcmp(argv[1],"SAMPLE-STABILITY"))return sample_stability_check();
  if(argc>1 && !strcmp(argv[1],"SAMPLE-MEMORY"))return sample_memory_check();
  if(argc>1 && !strcmp(argv[1],"HTTPS-MEMORY"))return https_memory_check(0);
  if(argc>1 && !strcmp(argv[1],"HTTPS-TRANSPORT-MEMORY"))return https_memory_check(1);

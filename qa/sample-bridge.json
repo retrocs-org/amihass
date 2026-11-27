@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 shared sample mode and two-client controls",
+  "name": "AmiHASS 0.3 shared sample mode and two-client controls",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "SAMPLE-BRIDGE"

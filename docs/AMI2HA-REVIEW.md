@@ -48,8 +48,8 @@ Keep HTTPS certificate/hostname verification enabled by default. An optional
 AmiSSL transport must fail clearly when unavailable; it must never silently
 fall back to plain HTTP. Preserve current credential ownership, bounded IPC,
 installation maintenance guard, stale-state rules and no action replay after
-reconnect. Our current build still uses REST polling through curl; WebSocket,
-Native AmiSSL transport remains planned. ARexx is implemented through the
+reconnect. Version 0.3 keeps REST polling through curl as the default and adds
+optional native WebSocket/AmiSSL updates. ARexx is implemented through the
 AMIHASS command port; see ../ARexx/README.MD.
 
 The reference uses a 2 MB WebSocket message cap. Do not copy that limit blindly
@@ -67,10 +67,47 @@ This was a local source review; no real hardware or live device controls were
 exercised, and the upstream project's runtime claims were not independently
 certified.
 
-The repository's LICENSE is MIT, copyright 2026 ami2ha contributors. No source
-code has been imported into AmiHASS from this review. Any later substantial
-reuse must retain the upstream copyright and full licence notice and record
-its source commit. Keep its third-party notices with the files actually used.
+The repository's LICENSE is MIT, copyright 2026 ami2ha contributors. Version 0.3
+adapts its framing, HTTP and native TCP/TLS modules. The source commit and full
+licence are retained with the imported files and runtime notices.
 
 Protocol reference:
 https://contributors.home-assistant.io/core/internals/websocket-api/
+
+## Rechecked 24 November 2026
+
+The public main branch still resolves to
+`4b1f3482d5e83b0c449bdefe88a8c4976d312238`. This recheck read the current
+README, selected-subscription/label client, character conversion and socket wait
+code; no upstream code was imported or executed.
+
+Best next candidates for AmiHASS:
+
+1. UTF-8 display-name conversion, preserving machine IDs and JSON values.
+2. Optional Home Assistant label discovery using bounded server-side templates.
+3. Sensor gauges with user-defined ranges and explicit unavailable readings.
+4. Native verified TLS and selected-entity WebSocket deltas inside the central
+   service, preserving client leases and REST fallback. Measure before promising
+   lower RAM or CPU: the reference's measurements are not AmiHASS measurements.
+5. On-demand camera thumbnails in a separately bounded client/worker. Request
+   small server-side images, keep certificate verification and avoid allowing a
+   slow camera to block ordinary controls.
+6. A native AmigaGuide manual accessible through MultiView.
+
+ARexx, media capabilities, selected polling, capability gating and Dashboard
+pages already exist here. The reference's ARexx notification subscriptions remain
+marked as design work in docs/AREXX.md; do not list them as an implemented
+feature to copy. Drag-and-drop is also listed as future work upstream.
+
+References: [README](https://github.com/evil4dmin/ami2ha),
+[client](https://github.com/evil4dmin/ami2ha/blob/main/src/core/ha_client.c),
+[text](https://github.com/evil4dmin/ami2ha/blob/main/src/core/charset.c),
+[network waits](https://github.com/evil4dmin/ami2ha/blob/main/src/net/socket.c).
+
+## Implemented in 0.3
+
+UTF-8 display folding, label-scoped discovery, sensor gauges and selected-entity
+live updates are implemented. The portable framing/HTTP and native socket/TLS
+modules are adapted under the upstream MIT licence; see `AMI2HA-LICENSE.txt`
+and `src/vendor/ami2ha/README.txt`. The typed cache and service integration are
+AmiHASS code. No upstream UI or application configuration is imported.

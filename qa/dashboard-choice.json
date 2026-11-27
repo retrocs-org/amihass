@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 dashboard choice controls",
+  "name": "AmiHASS 0.3 dashboard choice controls",
   "application": "QATests:AmiHASSDashboard",
   "arguments": [
     "CHOICE-SELFTEST"

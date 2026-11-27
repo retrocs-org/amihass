@@ -1,7 +1,7 @@
-# AmiHASS 0.2 releases
+# AmiHASS 0.3 releases
 
 The release workflow follows Beam68: build once, verify the exact artifacts,
-prepare reviewed copies, then publish those same bytes. Version stays at 0.2.
+prepare reviewed copies, then publish those same bytes. Version stays at 0.3.
 The pipeline does not require Git for local building or preparation.
 
 ## Configure
@@ -9,8 +9,12 @@ The pipeline does not require Git for local building or preparation.
 Copy `examples/release-config.json` outside the source directory. Set its `env`
 object to the non-secret toolchain configuration: `AMIHASS_VC` is the vbcc
 command including its Amiga target configuration; `AMIHASS_CFLAGS` defaults
-to `-O`. An optional `LHA` executable enables compressed LH5 archives; without
-it, portable stored LH0 archives need no external tool. Python 3.9+, make,
+to `-O`. Archives are compressed (LH5) by the built-in writer in
+tools/lh5.py, which also checks every member by unpacking it again; members
+that would not shrink are stored (LH0). An optional `LHA` executable is used
+instead when configured. Both writers use ASCII
+forward slashes in level-0 member paths for Amiga OLHa compatibility; compressed
+outputs are normalized with recalculated header checksums, leaving payloads intact. Python 3.9+, make,
 a host C compiler and the configured Amiga compiler are required.
 Do not use local.mk for release builds. Supply host compiler selection through
 `CC` in the invoking environment. Credentials belong in environment variables
@@ -19,13 +23,13 @@ or exact 1Password references, never in build env or committed configuration.
 Use the same external configuration and output directory throughout:
 
 ```sh
-python3 tools/release.py plan --config /path/to/release.json --output outputs/release-0.2
-python3 tools/release.py build --config /path/to/release.json --output outputs/release-0.2
-python3 tools/release.py check --config /path/to/release.json --output outputs/release-0.2
-python3 tools/release.py prepare --config /path/to/release.json --output outputs/release-0.2
+python3 tools/release.py plan --config /path/to/release.json --output outputs/release-0.3
+python3 tools/release.py build --config /path/to/release.json --output outputs/release-0.3
+python3 tools/release.py check --config /path/to/release.json --output outputs/release-0.3
+python3 tools/release.py prepare --config /path/to/release.json --output outputs/release-0.3
 ```
 
-Build scans public inputs, runs portable tests, forces all seven native builds,
+Build scans public inputs, runs portable tests, forces all native builds,
 records executable/toolchain/source hashes, checks legacy ZIP compatibility,
 and creates the runtime LHA, SDK ZIP and their `.sha256` files. Check rejects
 changed source, native executables, configuration, archive contents or checksums.
@@ -43,7 +47,7 @@ excluding local configuration, credentials, build products and nested archives.
 ## Stage and test
 
 ```sh
-python3 tools/stage-builds.py --output outputs/release-0.2 --destination /path/to/builds
+python3 tools/stage-builds.py --output outputs/release-0.3 --destination /path/to/builds
 ```
 
 This verifies the archive and checksum, backs up replaced owned files and
@@ -52,7 +56,7 @@ Unrelated files and existing custom drawer icons are retained. Runtime payload
 and SDK inventories are shared by the builders and verification tools.
 After building the native QA driver with `make qa`, prepare the verified runtime
 and SDK together with `python3 tools/prepare_release_qa.py
-outputs/release-0.2/AmiHASS-0.2.lha build/qa-release` (one command on one line).
+outputs/release-0.3/AmiHASS-0.3.lha build/qa-release` (one command on one line).
 Use Amiga Workbench.app's isolated test workflow described in `qa/README.md`.
 Never interrupt an existing user or another project's emulator session.
 
@@ -71,7 +75,7 @@ Publication requires a clean Git checkout, an unchanged prepared manifest,
 valid credentials, and explicit `--confirm-publish`:
 
 ```sh
-python3 tools/release.py publish --config /path/to/release.json --output outputs/release-0.2 --to github --confirm-publish
+python3 tools/release.py publish --config /path/to/release.json --output outputs/release-0.3 --to github --confirm-publish
 ```
 
 Publication checks remote conflicts before mutation, uses annotated tags,
@@ -92,11 +96,15 @@ The build compiles the example from the actual SDK ZIP in a disposable directory
 Run each native suite against the verified runtime and SDK:
 
 ```sh
-python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.2 --suite installer
-python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.2 --suite integration
-python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.2 --suite sample-memory
-python3 tools/release.py readiness --config /path/to/release.json --output outputs/release-0.2
+python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.3 --suite installer
+python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.3 --suite integration
+python3 tools/run-release-qa.py --config /path/to/release.json --output outputs/release-0.3 --suite sample-memory
+python3 tools/release.py readiness --config /path/to/release.json --output outputs/release-0.3
 ```
+
+For the optional extended sample-only run, use `--suite sample-stability`.
+It records browsing, page switching, cancellation, reconnect and bounded RAM
+checks through the same source-bound report.
 
 `release/readiness.md` and `.json` collect portable tests, native build, archive,
 SDK and isolated Workbench results. Missing, failed, skipped or changed evidence
@@ -136,9 +144,9 @@ profiles afterward. An explicit private fixture can still test a real server.
 
 ## Public release format
 
-GitHub and GitLab use the exact numeric version as the tag (`0.2`) and
-`AmiHASS 0.2` as the release title. Tags with a `v` prefix or project name are
-rejected. VERSION remains 0.2 until the maintainer explicitly changes it.
+GitHub and GitLab use the exact numeric version as the tag (`0.3`) and
+`AmiHASS 0.3` as the release title. Tags with a `v` prefix or project name are
+rejected. VERSION remains 0.3 until the maintainer explicitly changes it.
 
 Release bodies contain change bullets under these headings only, in this order:
 
@@ -157,8 +165,8 @@ heading named Bug fixes is rendered as Bugs. Optional --notes files must match
 the generated change notes exactly. docs/RELEASE-NOTES.md is a review copy.
 
 Aminet uploads are always named AmiHASS.lha with AmiHASS.readme. GitHub and
-GitLab retain versioned archive names such as AmiHASS-0.2.lha and the separate
-AmiHASS-0.2-sdk.zip. The Aminet archive is an exact copy of the verified runtime.
+GitLab retain versioned archive names such as AmiHASS-0.3.lha and the separate
+AmiHASS-0.3-sdk.zip. The Aminet archive is an exact copy of the verified runtime.
 
 ## Explicit replacement of published 0.1
 
@@ -182,3 +190,14 @@ or edit that directory once replacement has started.
 Aminet receives AmiHASS.lha and AmiHASS.readme, with a Replaces header for
 util/wb/AmiHASS.lha. A pending incoming submission is not overwritten; moderation
 remains external. The original release receipts are kept intact.
+
+## Fresh GitHub App tokens
+
+For automatic token generation at publication time, configure the GitHub
+credential provider as `github_app` with an absolute `helper` path to the
+existing create-repo-token.sh script and exact 1Password `vault`/`item` names.
+The helper receives the configured repository and rw mode with workflow
+permissions disabled. Its output stays in process memory; the temporary token
+is not printed or saved to 1Password. Failure or cancellation stops publication
+before remote changes. The active 1Password account supplies App credentials.
+Environment-token and exact 1Password-token providers remain supported.

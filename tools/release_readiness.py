@@ -3,11 +3,12 @@ import hashlib,json,xml.etree.ElementTree as ET
 from pathlib import Path
 from release_support import ReleaseError,atomic_json,sha
 REQUIRED=('installer','integration','sample-memory')
-OPTIONAL=('https-memory',)
+OPTIONAL=('https-memory','sample-stability')
 SUITES={
  'installer':'qa/installer.json',
  'integration':'qa/sample-bridge.json',
  'sample-memory':'qa/sample-memory.json',
+ 'sample-stability':'qa/sample-stability.json',
  'https-memory':'qa/https-memory.json',
 }
 def binding(tool):

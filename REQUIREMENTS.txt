@@ -1,4 +1,4 @@
-AmiHASS 0.2 - Requirements
+AmiHASS 0.3 - Requirements
 ==========================
 
 Classic AmigaOS 3.x, a 68000 or better CPU, and Installer 42 or newer.
@@ -83,3 +83,11 @@ CPU compatibility: the bridge targets 68000 or better, but the documented
 AmiSSL AmigaOS 3 runtime requires 68020 or better. Your chosen curl build may
 require more. Use the highest CPU/OS requirements of all installed components.
 Plain HTTP needs curl and networking, but no TLS library; it is unencrypted.
+
+Optional Live updates use native bsdsocket.library and AmiSSL with verified
+certificates. Keep curl installed for discovery, controls and REST fallback.
+Persistent TLS uses additional resident RAM. Low memory mode uses REST instead.
+
+Camera snapshots use datatypes.library 39+ and installed JPEG/PNG picture
+datatypes for those formats. The offline sample camera uses built-in ILBM.
+Allow RAM for a 256 KiB image cache, client image copy and datatype decoding.

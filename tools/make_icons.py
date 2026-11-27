@@ -57,7 +57,6 @@ for x in (8,27):
         dashboard.rect(x,y,x+14,y+5,1);dashboard.rect(x+1,y+1,x+13,y+4,3);dashboard.line(x+2,y+1,x+12,y+1,2)
 for name,canvas in [('AmiHASSPrefs',prefs),('AmiHASSBrowser',browser),('AmiHASSDashboard',dashboard)]:
     (ROOT/(name+'.info')).write_bytes(wb.disk_object(canvas))
-
 # PNG previews use the same pixels as the classic Workbench .info files.
 def preview_png(path,width,height,rows):
     def chunk(kind,data):

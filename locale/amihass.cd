@@ -1,0 +1,153 @@
+; AmiHASS catalog description. Edit here, then run tools/make_catalogs.py.
+#language english
+#version 1
+MSG_MENU_DASHBOARD (1//)
+AmiHASS Dashboard
+;
+MSG_MENU_BROWSER (2//)
+AmiHASS Browser
+;
+MSG_MENU_PREFS (4//)
+AmiHASS Preferences
+;
+MSG_NO_ENTITIES (6//)
+No entities: set ENTITIES or add tiles to the Dashboard
+;
+MSG_BAD_ENTITIES (7//)
+ENTITIES has an invalid entity ID
+;
+MSG_READING (8//)
+Reading AmiHASS...
+;
+MSG_NO_REPLY (9//)
+AmiHASS service did not reply
+;
+MSG_NOT_RUNNING (10//)
+AmiHASS service not running
+;
+MSG_NOTIFICATION_ONE (11//)
+%d notification
+;
+MSG_NOTIFICATION_MANY (12//)
+%d notifications
+;
+MSG_ATTR_READING (13//)
+Reading attributes...
+;
+MSG_ATTR_NOT_RUNNING (14//)
+Service not running - start AmiHASS first
+;
+MSG_ATTR_STOPPED (15//)
+Service stopped
+;
+MSG_ATTR_NO_REPLY (16//)
+Service did not reply
+;
+MSG_ATTR_SLOW (17//)
+Server is slow - press Refresh to try again
+;
+MSG_ATTR_COUNT (18//)
+%ld attributes
+;
+MSG_ATTR_FIRST64 (19//)
+ (first 64 shown)
+;
+MSG_ATTR_NONE (20//)
+No attributes.
+;
+MSG_ATTR_HISTORY (21//)
+History (24 h): latest %s%s%s, low %s, high %s
+;
+MSG_REFRESH (22//)
+Refresh
+;
+MSG_CLOSE (23//)
+Close
+;
+MSG_TIMING_FROM (24//)
+Show from
+;
+MSG_TIMING_UNTIL (25//)
+Show until
+;
+MSG_TIMING_SET (26//)
+Set timing
+;
+MSG_PROFILE_NORMAL (27//)
+Normal
+;
+MSG_PROFILE_FAST (28//)
+Fast (5 s)
+;
+MSG_PROFILE_SLOW (29//)
+Slow (1 min)
+;
+MSG_PROFILE_VERY_SLOW (30//)
+Very slow (5 min)
+;
+MSG_NEVER (31//)
+Never
+;
+MSG_TIMING_SAVED (32//)
+Timing saved; the page opens automatically in its hours
+;
+MSG_TIMING_SAVED_NONE (33//)
+Timing saved; no automatic switching
+;
+MSG_TIMING_FAILED (34//)
+Timing could not be saved
+;
+MSG_GRAPH (35//)
+History graph
+;
+MSG_SRV_TITLE (36//)
+AmiHASS - Server profiles
+;
+MSG_SRV_BUTTON (37//)
+Profiles
+;
+MSG_SRV_LOAD (38//)
+Load
+;
+MSG_SRV_SAVE (39//)
+Save current
+;
+MSG_SRV_DELETE (40//)
+Delete
+;
+MSG_SRV_PROFILE (41//)
+Profile
+;
+MSG_SRV_NAME (42//)
+Name
+;
+MSG_SRV_ABOUT_LABEL (43//)
+About
+;
+MSG_SRV_ABOUT (44//)
+Up to 8 servers. Load, then Test connection and Save to switch.
+;
+MSG_SRV_NONE (45//)
+(none saved)
+;
+MSG_SRV_NO_PROFILE (46//)
+No saved profile yet
+;
+MSG_SRV_LOADED (47//)
+Profile loaded - Test connection, then Save
+;
+MSG_SRV_INVALID (48//)
+Enter a name; URL and token must be valid (8 at most)
+;
+MSG_SRV_SAVE_FAILED (49//)
+Could not save profiles; check ENVARC:
+;
+MSG_SRV_NOTHING (50//)
+Nothing removed
+;
+MSG_SERVER_MENU (51//)
+AmiHASS server:
+;
+MSG_MENU_HELP (52//)
+AmiHASS Help
+;

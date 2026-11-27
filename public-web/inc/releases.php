@@ -41,7 +41,7 @@ function ah_release_fetch(string $endpoint): array
 {
     if (!in_array($endpoint, ['latest', 'history'], true)) throw new InvalidArgumentException('Unknown release endpoint');
     $url = AH_RELEASE_API . ($endpoint === 'latest' ? '/latest' : '?per_page=20');
-    $headers = ['User-Agent: AmiHASS-website/0.2', 'Accept: application/vnd.github+json'];
+    $headers = ['User-Agent: AmiHASS-website/0.3', 'Accept: application/vnd.github+json'];
     if (function_exists('curl_init')) {
         $handle = curl_init($url);
         if ($handle === false) return ['status' => 0];

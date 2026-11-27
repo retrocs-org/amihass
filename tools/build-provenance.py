@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the native build against the exact code and seven executable hashes."""
+"""Verify the native build against the exact code and native executable hashes."""
 import argparse,hashlib,json
 from pathlib import Path
 from inventory import BINARIES

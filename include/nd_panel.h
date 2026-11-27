@@ -12,8 +12,13 @@ struct NDPanel *nd_panel_open(const char *title,const struct NDPanelField *field
 struct NDPanel *nd_panel_preferences(const struct NDPanelField *fields,int boot);
 void nd_panel_enable(struct NDPanel *panel,unsigned int id,int enabled);
 struct NDPanel *nd_panel_server_settings(const struct NDPanelField *fields,int reconnect,unsigned int retry_interval);
+/* Server editor: URL/token/transport/status/name fields, saved connections left. */
+struct NDPanel *nd_panel_server_editor(const struct NDPanelField *fields,const char **names,unsigned int count,unsigned int selected,int reconnect,unsigned int retry_interval);
+void nd_panel_servers(struct NDPanel *panel,const char **names,unsigned int count,unsigned int selected);
+unsigned int nd_panel_server_selected(struct NDPanel *panel);
 int nd_panel_reconnect(struct NDPanel *panel);
 unsigned int nd_panel_retry(struct NDPanel *panel);
+void nd_panel_connection_state(struct NDPanel *panel,int connected,int enabled);
 void nd_panel_service_state(struct NDPanel *panel,int running,int busy);
 void nd_panel_show_secret(struct NDPanel *panel,int show);
 int nd_panel_secret_shown(struct NDPanel *panel);
@@ -29,6 +34,8 @@ int nd_panel_checked(struct NDPanel *panel);
 void nd_panel_close(struct NDPanel *panel);
 void nd_panel_raise(struct NDPanel *panel);
 unsigned long nd_panel_signals(const struct NDPanel *panel);
+/* Wait for panel input, an extra signal or ticks (1/50 s), whichever is first. */
+void nd_panel_wait(struct NDPanel *panel,unsigned long extra,unsigned long ticks);
 /* 0 no action, -1 close/Escape, 100+button index, 1+field index on Return/Tab. */
 int nd_panel_event(struct NDPanel *panel);
 const char *nd_panel_get(struct NDPanel *panel,unsigned int index);

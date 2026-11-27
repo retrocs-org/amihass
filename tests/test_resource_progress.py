@@ -19,7 +19,7 @@ int main(void){struct AHMemoryStats ram={0};struct AHActionProgress progress;str
  ah_sample_init(&sample);memset(&m,0,sizeof(m));m.kind=AMIHASS_DEVICES;strcpy(m.domain,"light");strcpy(m.item.id,"Living room");ah_sample_request(&sample,&m,100);assert(m.result==AMIHASS_OK&&m.total==1&&!strcmp(m.items[0].name,"Sample living room"));
  memset(&m,0,sizeof(m));m.kind=AMIHASS_LIST;strcpy(m.domain,"light");strcpy(m.item.id,"study");ah_sample_request(&sample,&m,100);assert(m.total==1&&strstr(m.items[0].id,"desk"));
  memset(&m,0,sizeof(m));m.kind=AMIHASS_LIST;strcpy(m.item.id,"No such room");ah_sample_request(&sample,&m,100);assert(m.result==AMIHASS_OK&&!m.total);
- assert(amihass_devices_area_request("Kitchen's lights","light","cabinet",0,out,sizeof(out)));assert(strstr(out,"area_devices")&&strstr(out,"Kitchen\\\\'s lights")&&strstr(out,"cabinet"));assert(amihass_device_area_page_request("","living_room","light","",16,out,sizeof(out))&&strstr(out,"area_entities")&&strstr(out,"entries[16:32]"));assert(!amihass_devices_area_request("bad\nroom","light","",0,out,sizeof(out)));
+ assert(amihass_devices_area_request("Kitchen's lights","light","cabinet",0,out,sizeof(out)));assert(strstr(out,"area_devices")&&strstr(out,"Kitchen\\\\'s lights")&&strstr(out,"cabinet"));assert(amihass_device_area_page_request("","living_room","light","",16,out,sizeof(out))&&strstr(out,"area_entities")&&strstr(out,"ns.count>16 and ns.count<=32"));assert(!amihass_devices_area_request("bad\nroom","light","",0,out,sizeof(out)));
  puts("Resources/progress: bounded RAM metrics, failed/delayed/unknown readback, action stages and scoped room discovery passed.");return 0;}
 '''
 with tempfile.TemporaryDirectory() as t:

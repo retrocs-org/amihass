@@ -1,5 +1,5 @@
 {
-  "name": "AmiHASS 0.2 service controls, offline save, About and diagnostics",
+  "name": "AmiHASS 0.3 service controls, offline save, About and diagnostics",
   "application": "QATests:AmiHASSConnectionCheck",
   "arguments": [
     "PREFERENCES"

@@ -1,0 +1,1 @@
+{"name":"AmiHASS 0.3 authenticated camera image fixture","application":"QATests:AmiHASSCameraCheck","arguments":["FIXTURE"],"timeoutSeconds":150,"expectedReturnCode":0}

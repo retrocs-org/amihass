@@ -10,4 +10,4 @@ for bad in (['light.a']*0+['light.bad\nsecret'],['light.'+'x'*96],[f'light.a{i}'
     else:raise AssertionError('Invalid/unbounded subscription accepted')
 assert len(module.measurements())==4
 assert all(row['subscription_bytes']<8192 for row in module.measurements())
-print('Push design: explicit selection only, deduplication, limits and bounded subscription frames passed; no live transport enabled.')
+print('Push design: explicit selection only, deduplication, limits and bounded subscription frames passed.')
